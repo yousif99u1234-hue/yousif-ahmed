@@ -23,6 +23,10 @@ browser — including offline — and it runs.
   SVG, and no horizontal overflow from 360 px up
 - **Print stylesheet** — strips every effect into a clean, plain, one-column CV
 
+## Other pages
+
+- **Finance Ops Ledger Review** (sample report, fictional test data): https://yousif99u1234-hue.github.io/yousif-ahmed/finance-ops-report/
+
 ## Contact
 
 - yousif99u1234@gmail.com

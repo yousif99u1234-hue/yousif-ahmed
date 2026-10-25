@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive finance ops ledger review: decision queue, spend by month, supplier and category, control checks and strategy decisions.">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Finance Ops Ledger Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: analyst's ledger notebook — unboxed chart panels on warm paper, a decision queue up top, one slide-in dossier for every detail */
+:root{
+  --paper:#eeebe4; --sheet:#f7f5f0; --ink:#2b2d33; --muted:#6c6b66; --rule:#cfcabf; --grid:#dcd7cc;
+  --steel:#4c7aa8; --steel-2:#9bb6d2; --violet:#8b6bc0; --moss:#4f9a55; --brick:#c2504a; --amber:#d9862b; --teal:#3f9a96; --rose:#c46b97; --sand:#b39a5f;
+  --hm0:#e3ded3; --hm1:#c9d8e6; --hm2:#93b3d1; --hm3:#5c8bb8; --hm4:#335f8c; --scrim:rgba(30,30,34,.28);
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,-apple-system,Segoe UI,sans-serif;
+  --f-ar:"IBM Plex Sans Arabic","IBM Plex Sans",Tahoma,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:grid;gap:10px;border-bottom:1px solid var(--rule);padding-bottom:22px;margin-bottom:24px}
+.eyebrow{font-family:var(--f-data);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(38px,6vw,64px);line-height:.98;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{max-width:70ch;color:var(--muted);margin:0}
+.banner{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--amber);padding:10px 14px;border-radius:4px;font-size:13px;max-width:900px}
+.banner b{color:var(--amber);font-family:var(--f-data);font-size:11px;letter-spacing:.06em;white-space:nowrap;padding-top:2px}
+.hint{display:inline-flex;gap:8px;align-items:center;font-size:13px}
+.hint i{width:8px;height:8px;border-radius:50%;background:var(--brick);display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:44px 40px}
+.panel{min-width:0;display:grid;gap:8px;align-content:start}
+.s5{grid-column:span 5}.s7{grid-column:span 7}.s12{grid-column:span 12}.s4{grid-column:span 4}.s8{grid-column:span 8}.s6{grid-column:span 6}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2{font-family:var(--f-body);font-weight:600;font-size:15px;margin:0}
+h2 .n{font-family:var(--f-data);font-weight:500;color:var(--muted);font-size:12px;margin-right:6px}
+.more{font:500 12px var(--f-data);color:var(--steel);background:none;border:1px solid var(--rule);border-radius:999px;padding:3px 10px;cursor:pointer}
+.more:hover{border-color:var(--steel)}
+.note{font-size:13px;color:var(--muted);margin:0;max-width:70ch}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--f-data);font-size:11px;fill:var(--muted)}
+svg .lbl{fill:var(--ink);font-family:var(--f-body);font-size:12px}
+svg .val{fill:var(--ink);font-weight:500}
+svg .ax{stroke:var(--rule);stroke-width:1}
+svg .gl{stroke:var(--grid);stroke-width:1}
+.hit{cursor:pointer;outline:none;transition:opacity .15s}
+.hit:hover,.hit:focus-visible{opacity:.7}
+.hit:focus-visible{stroke:var(--ink);stroke-width:2}
+.takeaways{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-block:1px solid var(--rule)}
+.tk{all:unset;box-sizing:border-box;padding:16px 16px 16px 0;display:grid;gap:4px;align-content:start;cursor:pointer;min-width:0}
+.tk+.tk{padding-left:16px;border-left:1px solid var(--rule)}
+.tk:hover b,.tk:focus-visible b{color:var(--steel)}
+.tk:focus-visible{outline:2px solid var(--steel);outline-offset:-2px}
+.tk b{font-family:var(--f-display);font-size:36px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;transition:color .15s}
+.tk b small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
+.tk span{font-size:13px;color:var(--muted)}
+.tk em{font:500 11px var(--f-data);font-style:normal;color:var(--steel)}
+const SHORT={"P-0018":"3.2× supplier average","P-0024":"Probable duplicate of approved L-0021","P-0025":"Weekend · no tax number · new supplier","P-0022":"Exact duplicate of L-0020"};
+/* queue */
+.queue{display:grid;gap:0;border-top:1px solid var(--rule)}
+.q{all:unset;box-sizing:border-box;display:grid;grid-template-columns:6px 92px minmax(0,1.6fr) minmax(0,1fr) 150px 170px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.q:hover .qs,.q:focus-visible .qs{text-decoration:underline}
+.q:focus-visible{outline:2px solid var(--steel)}
+.stripe{align-self:stretch;border-radius:3px}
+.qid{font:500 13px var(--f-data)}
+.qs{font-weight:600;min-width:0}
+.qs small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.qf{font-size:12.5px;color:var(--muted);min-width:0}
+.qa{font:500 14px var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
+.pill{font:600 11px var(--f-data);letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:999px;justify-self:start;border:1px solid}
+.p-hold{color:var(--brick);border-color:var(--brick)}
+.p-verify{color:var(--amber);border-color:var(--amber)}
+.p-ok{color:var(--moss);border-color:var(--moss)}
+.p-done{color:var(--muted);border-color:var(--rule)}
+/* projection */
+.proj{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:start}
+.checks{display:grid;gap:8px}
+.chk{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--steel)}
+.chk span:last-child{font:13px var(--f-data);color:var(--muted)}
+.projout{font:600 44px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.projout small{font-size:18px;color:var(--muted)}
+.delta{font:500 13px var(--f-data)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend i.sq{border-radius:2px}
+.scroll{overflow-x:auto}
+.play{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--rule)}
+.pcol{padding:14px 18px 6px 0;display:grid;gap:8px;align-content:start;min-width:0}
+.pcol+.pcol{padding-left:18px;border-left:1px solid var(--rule)}
+.pcol h3{font:600 22px var(--f-display);margin:0}
+.pcol p{margin:0;font-size:12.5px;color:var(--muted)}
+.step{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px 1fr;gap:8px;padding:9px 0;border-top:1px dashed var(--rule);cursor:pointer}
+.step b{font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center}
+.step:hover .st,.step:focus-visible .st{color:var(--steel);text-decoration:underline}
+.step:focus-visible{outline:2px solid var(--steel)}
+.st{font-size:14px}
+.st small{display:block;font:12px var(--f-data);color:var(--muted)}
+footer{margin-top:44px;border-top:1px solid var(--rule);padding-top:14px;font-size:12px;color:var(--muted);display:grid;gap:4px}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--f-data);font-size:12px;padding:6px 9px;border-radius:3px;opacity:0;transition:opacity .12s;z-index:5;max-width:260px}
+#scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+#dr{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--sheet);border-left:1px solid var(--rule);z-index:21;display:grid;grid-template-rows:auto 1fr;box-shadow:-12px 0 40px rgba(0,0,0,.12);transition:transform .22s ease}
+#dr[hidden]{display:grid!important;transform:translateX(105%);visibility:hidden}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 12px 20px;border-bottom:1px solid var(--rule)}
+.dh button{font:500 12px var(--f-data);background:none;border:1px solid var(--rule);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.dh button:hover{border-color:var(--ink)}
+.db{overflow-y:auto;padding:20px calc(20px + env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) 22px;display:grid;gap:18px;align-content:start}
+.kind{font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--muted)}
+.kind i{width:9px;height:9px;border-radius:50%}
+.db h3{font:700 30px/1.05 var(--f-display);margin:6px 0 0;text-wrap:balance}
+.ar{font-family:var(--f-ar);direction:rtl;unicode-bidi:isolate;color:var(--muted);font-size:14px;margin-top:4px;display:block;text-align:left}
+.stat{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.stat b{font:600 46px/1 var(--f-display);color:var(--steel);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted);max-width:32ch}
+.sec{display:grid;gap:6px}
+.sec h4{margin:0;font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:5px}
+.sec p{margin:0}
+.sec ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.dec{list-style:none;padding:0!important}
+.dec li{display:grid;grid-template-columns:24px 1fr;gap:6px;counter-increment:d}
+.dec{counter-reset:d}
+.dec li::before{content:counter(d);font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px}
+.kv dt{color:var(--muted);font-family:var(--f-data);font-size:12px;padding-top:1px}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th{font:500 11px var(--f-data);color:var(--muted);text-align:left;border-bottom:1px solid var(--rule);padding:4px 6px 4px 0}
+.tbl td{border-bottom:1px solid var(--grid);padding:5px 6px 5px 0;vertical-align:top}
+.tbl td.num{text-align:right;font-family:var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl td.arc{font-family:var(--f-ar);direction:rtl;text-align:right}
+.tbl tr.go{cursor:pointer}.tbl tr.go:hover td{background:var(--paper)}
+.kpis{display:flex;flex-wrap:wrap;gap:6px}
+.kpis span{font:12px var(--f-data);border:1px solid var(--rule);padding:3px 8px;border-radius:3px}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.rel button{font:13px var(--f-body);background:none;color:var(--steel);border:1px solid var(--steel-2);border-radius:999px;padding:3px 11px;cursor:pointer}
+.rel button:hover{background:var(--steel);color:var(--paper)}
+.src{font-size:12px;color:var(--muted);font-style:italic}
+.flag{font:500 11px var(--f-data);color:var(--brick)}
+.fl{display:grid;gap:6px}
+.fl div{border-left:3px solid var(--amber);padding:4px 10px;font-size:13.5px;background:var(--paper)}
+.fl div.hi{border-color:var(--brick)}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}.s5,.s7,.s4,.s8,.s6,.s12{grid-column:auto}.takeaways{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tk:nth-child(odd){padding-left:0;border-left:0}.tk:nth-child(even){padding-left:16px;border-left:1px solid var(--rule)}.tk:nth-child(n+3){border-top:1px solid var(--rule)}
+ .q{grid-template-columns:6px minmax(0,1fr) auto;row-gap:4px}.q .qid{grid-column:2}.q .qs{grid-column:2/4}.q .qf{grid-column:2/4}.q .qa{grid-column:2;text-align:left}.q .pill{grid-column:3;grid-row:1;justify-self:end}.stripe{grid-row:1/5}
+ .proj{grid-template-columns:1fr}
+ .play{grid-template-columns:1fr}.pcol+.pcol{padding-left:0;border-left:0;border-top:1px solid var(--rule)}
+ #dr{top:auto;left:0;width:100%;max-height:86vh;border-left:0;border-top:1px solid var(--rule);border-radius:12px 12px 0 0}
+ #dr[hidden]{transform:translateY(105%)}
+ .dh{padding-left:max(16px,env(safe-area-inset-left,0px));padding-top:12px}
+ .db{padding-left:max(18px,env(safe-area-inset-left,0px))}}
+@media (prefers-reduced-motion:reduce){#tip,#dr,.hit{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Finance Ops Agent · Ledger review · June–September 2026 · IQD and USD kept separate</div>
+    <h1>Finance Ops Ledger Review</h1>
+    <p class="lede">What the company spent, which invoices are waiting for a decision, how well the agent’s checks worked, and the decisions to take next. Click any bar, dot, cell, row or figure for its details.</p>
+    <div class="banner"><b>TEST DATA</b><span>Built from <code>data/stage4_test.db</code>: 30 fictional invoices from the Stage 4 test (15 seeded June–August, 15 sample invoices for September). The live ledger <code>data/ledger.db</code> holds 2 approved invoices so far (Dijla, 2,010,000 IQD, approved by يوسف).</span></div>
+    <span class="hint"><i></i>Everything is clickable. Press Esc to close the details panel.</span>
+  </header>
+
+  <section class="takeaways" aria-label="Key figures" id="tiles"></section>
+
+  <div class="grid" style="margin-top:38px">
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">1</span>Decision queue</h2><button class="more" data-open="ov-queue">How to decide</button></div>
+      <p class="note">Invoices that need a person. Sorted by money at risk. The status pill is the recommended next step.</p>
+      <div class="queue" id="queue"></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">2</span>What September looks like if you approve</h2><button class="more" data-open="ov-proj">About this</button></div>
+      <div class="proj">
+        <div class="checks" id="checks"></div>
+        <div style="display:grid;gap:6px">
+          <div class="projout" id="projout"></div>
+          <div class="delta" id="projdelta"></div>
+          <svg id="projbar" viewBox="0 0 560 96" aria-label="Projected September IQD total vs. previous months"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">3</span>Every invoice on one timeline</h2><button class="more" data-open="ov-time">How to read it</button></div>
+      <p class="note">One dot per invoice. Dot size = amount (IQD and USD on separate scales). Click a dot for the invoice, a name for the supplier.</p>
+      <div class="legend"><span><i style="background:var(--steel-2)"></i>Approved history (seeded)</span><span><i style="background:var(--steel)"></i>Approved September</span><span><i style="background:var(--amber)"></i>Waiting decision</span><span><i style="background:var(--brick)"></i>Rejected</span></div>
+      <div class="scroll"><svg id="time" viewBox="0 0 1100 340" style="min-width:820px" role="group" aria-label="Invoice timeline by supplier"></svg></div>
+    </div>
+
+    <div class="panel s7">
+      <div class="ph"><h2><span class="n">4</span>Approved IQD spend per month, by category</h2></div>
+      <p class="note">Million IQD, approved invoices only. June holds only one seeded invoice. Click a segment or a month.</p>
+      <div class="legend" id="catleg"></div>
+      <svg id="stack" viewBox="0 0 600 300" role="group" aria-label="Stacked bar chart of monthly IQD spend by category"></svg>
+    </div>
+    <div class="panel s5">
+      <div class="ph"><h2><span class="n">5</span>USD spend (Gulf Bridge IT)</h2></div>
+      <p class="note">USD per month, never converted to IQD. September includes annual licences.</p>
+      <svg id="usd" viewBox="0 0 460 300" role="group" aria-label="USD spend per month"></svg>
+    </div>
+
+    <div class="panel s5">
+      <div class="ph"><h2><span class="n">6</span>Suppliers by approved IQD spend</h2></div>
+      <p class="note">June–September total. The light extension shows invoices still waiting.</p>
+      <svg id="sup" viewBox="0 0 460 300" role="group" aria-label="Bar chart of supplier totals"></svg>
+    </div>
+    <div class="panel s7">
+      <div class="ph"><h2><span class="n">7</span>Supplier × month</h2></div>
+      <p class="note">Approved IQD per supplier per month. Darker = more. Click a cell for the invoices behind it.</p>
+      <div class="scroll"><svg id="heat" viewBox="0 0 640 300" style="min-width:540px" role="group" aria-label="Heatmap of supplier spend per month"></svg></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">8</span>Control checks: what the agent caught</h2><button class="more" data-open="ov-agent">Test score</button></div>
+      <p class="note">The 7 warning rules from the README, and how many September invoices triggered each. Click a rule.</p>
+      <div class="scroll"><svg id="rules" viewBox="0 0 1100 220" style="min-width:760px" role="group" aria-label="Warning rules and triggers"></svg></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">9</span>Strategy decisions</h2><span class="note">Analyst recommendations, not output of the agent</span></div>
+      <div class="play" id="play"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Sources: <code>data/stage4_test.db</code> (pending, ledger, audit_log tables), <code>reports/stage4/RESULTS.md</code>, <code>reports/stage4/anomaly_review.md</code>, <code>README.md</code>. Amounts read from the ledger; categories assigned by supplier.</span>
+    <span>“Strategy decisions”, “recommended next step” and KPIs are analyst recommendations. The agent itself never approves, pays or advises.</span>
+  </footer>
+</div>
+
+<div id="tip" aria-hidden="true"></div>
+<div id="scrim" hidden></div>
+<aside id="dr" hidden role="dialog" aria-modal="true" aria-labelledby="dtitle">
+  <div class="dh"><button id="back" hidden>← Back</button><span></span><button id="close">Close ✕</button></div>
+  <div class="db" id="db" tabindex="-1"></div>
+</aside>
+
+<script>
+const INV=[{"p":"P-0010","l":"L-0010","s":"مولدة أور الأهلية","inv":"UR-06-2026-098","tax":"300660913","d":"2026-06-03","cur":"IQD","amt":870000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Utilities","seed":true},{"p":"P-0011","l":"L-0011","s":"مولدة أور الأهلية","inv":"UR-07-2026-104","tax":"300660913","d":"2026-07-02","cur":"IQD","amt":900000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Utilities","seed":true},{"p":"P-0001","l":"L-0001","s":"شركة دجلة للتجهيزات المكتبية","inv":"DJ-2026-0611","tax":"300418275","d":"2026-07-07","cur":"IQD","amt":1150000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Office supplies","seed":true},{"p":"P-0013","l":"L-0013","s":"Gulf Bridge IT Trading LLC","inv":"GB-INV-54710","tax":"100234567800003","d":"2026-07-09","cur":"USD","amt":1180.0,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"IT (USD)","seed":true},{"p":"P-0004","l":"L-0004","s":"مؤسسة النخيل للمواد الغذائية","inv":"NK/1031","tax":"300552190","d":"2026-07-13","cur":"IQD","amt":640000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Pantry","seed":true},{"p":"P-0007","l":"L-0007","s":"شركة بابل للمقاولات والصيانة","inv":"BB-0331","tax":"300731044","d":"2026-07-15","cur":"IQD","amt":2100000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Maintenance","seed":true},{"p":"P-0002","l":"L-0002","s":"شركة دجلة للتجهيزات المكتبية","inv":"DJ-2026-0688","tax":"300418275","d":"2026-07-22","cur":"IQD","amt":980000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Office supplies","seed":true},{"p":"P-0005","l":"L-0005","s":"مؤسسة النخيل للمواد الغذائية","inv":"NK/1092","tax":"300552190","d":"2026-08-03","cur":"IQD","amt":585000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Pantry","seed":true},{"p":"P-0012","l":"L-0012","s":"مولدة أور الأهلية","inv":"UR-08-2026-111","tax":"300660913","d":"2026-08-04","cur":"IQD","amt":945000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Utilities","seed":true},{"p":"P-0008","l":"L-0008","s":"شركة بابل للمقاولات والصيانة","inv":"BB-0352","tax":"300731044","d":"2026-08-05","cur":"IQD","amt":1850000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Maintenance","seed":true},{"p":"P-0014","l":"L-0014","s":"Gulf Bridge IT Trading LLC","inv":"GB-INV-54866","tax":"100234567800003","d":"2026-08-06","cur":"USD","amt":1320.5,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"IT (USD)","seed":true},{"p":"P-0003","l":"L-0003","s":"شركة دجلة للتجهيزات المكتبية","inv":"DJ-2026-0794","tax":"300418275","d":"2026-08-11","cur":"IQD","amt":1240000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Office supplies","seed":true},{"p":"P-0015","l":"L-0015","s":"Gulf Bridge IT Trading LLC","inv":"GB-INV-54930","tax":"100234567800003","d":"2026-08-20","cur":"USD","amt":1095.0,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"IT (USD)","seed":true},{"p":"P-0006","l":"L-0006","s":"مؤسسة النخيل للمواد الغذائية","inv":"NK/1140","tax":"300552190","d":"2026-08-24","cur":"IQD","amt":710000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Pantry","seed":true},{"p":"P-0009","l":"L-0009","s":"شركة بابل للمقاولات والصيانة","inv":"BB-0377","tax":"300731044","d":"2026-08-26","cur":"IQD","amt":2300000,"items":[],"src":"seed: prior months","st":"approved","by":"seed history (test)","note":"","cat":"Maintenance","seed":true},{"p":"P-0019","l":"L-0018","s":"مولدة أور الأهلية","inv":"UR-09-2026-117","tax":"300660913","d":"2026-09-01","cur":"IQD","amt":896000,"items":[["اشتراك مولدة - شهر آب (أمبير)",32,"896,000 IQD"]],"src":"samples/inv04_ur_generator.jpg","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Utilities","seed":false},{"p":"P-0027","l":"L-0023","s":"شركة نبض الشبكة لخدمات الإنترنت","inv":"NB-77310","tax":"300927358","d":"2026-09-02","cur":"IQD","amt":475000,"items":[["اشتراك إنترنت فايبر 100 ميكا - شهر أيلول",1,"450,000 IQD"],["إيجار راوتر",1,"25,000 IQD"]],"src":"samples/inv12_nabd_internet.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Utilities","seed":false},{"p":"P-0016","l":"L-0016","s":"شركة دجلة للتجهيزات المكتبية","inv":"DJ-2026-0917","tax":"300418275","d":"2026-09-06","cur":"IQD","amt":950000,"items":[["ورق A4 (رزمة ٥٠٠ ورقة)",40,"300,000 IQD"],["حبر طابعة HP 85A",4,"380,000 IQD"],["ملفات بلاستيكية",100,"150,000 IQD"],["أقلام جاف (علبة)",10,"120,000 IQD"]],"src":"samples/inv01_dijla.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Office supplies","seed":false},{"p":"P-0017","l":"L-0017","s":"مؤسسة النخيل للمواد الغذائية","inv":"NK/1184","tax":"300552190","d":"2026-09-07","cur":"IQD","amt":521000,"items":[["شاي ٥٠٠ غم",24,"144,000 IQD"],["سكر كيس ٥٠ كغم",2,"110,000 IQD"],["ماء معدني (كارتون)",30,"135,000 IQD"],["قهوة عربية ٥٠٠ غم",6,"132,000 IQD"]],"src":"samples/inv02_nakheel.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Pantry","seed":false},{"p":"P-0018","l":null,"s":"شركة بابل للمقاولات والصيانة","inv":"BB-0392","tax":"300731044","d":"2026-09-08","cur":"IQD","amt":6750000,"items":[["تبديل كمبرسر منظومة التبريد المركزي",2,"3,700,000 IQD"],["غاز تبريد R410A (قنينة)",6,"750,000 IQD"],["أجور عمل فنيين (٤ أيام)",1,"2,300,000 IQD"]],"src":"samples/inv03_babel.pdf","st":"pending","by":null,"note":null,"cat":"Maintenance","seed":false},{"p":"P-0020","l":"L-0019","s":"Gulf Bridge IT Trading LLC","inv":"GB-INV-55021","tax":"100234567800003","d":"2026-09-09","cur":"USD","amt":1208.0,"items":[["Ubiquiti U6-Pro access point",3,"567.00 USD"],["Cat6 cable, 305 m box",2,"291.00 USD"],["Installation and configuration",1,"350.00 USD"]],"src":"samples/inv05_gulfbridge.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"IT (USD)","seed":false},{"p":"P-0026","l":"L-0022","s":"مطبعة المنصور الحديثة","inv":"MP-2291","tax":"300814467","d":"2026-09-10","cur":"IQD","amt":800000,"items":[["بطاقات عمل (علبة ١٠٠)",5,"125,000 IQD"],["مطويات A4 ملونة",1000,"350,000 IQD"],["فولدرات مطبوعة",200,"350,000 IQD"],["خصم","","-25,000 IQD"]],"src":"samples/inv11_mansour_press.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Printing & marketing","seed":false},{"p":"P-0021","l":"L-0020","s":"شركة دجلة للتجهيزات المكتبية","inv":"DJ-2026-0952","tax":"300418275","d":"2026-09-16","cur":"IQD","amt":1060000,"items":[["كرسي مكتب دوار",2,"570,000 IQD"],["طاولة طابعة",1,"190,000 IQD"],["ورق A4 (رزمة ٥٠٠ ورقة)",40,"300,000 IQD"]],"src":"samples/inv06_dijla.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Office supplies","seed":false},{"p":"P-0022","l":null,"s":"شركة دجلة للتجهيزات المكتبية","inv":"DJ-2026-0952","tax":"300418275","d":"2026-09-16","cur":"IQD","amt":1060000,"items":[["كرسي مكتب دوار",2,"570,000 IQD"],["طاولة طابعة",1,"190,000 IQD"],["ورق A4 (رزمة ٥٠٠ ورقة)",40,"300,000 IQD"]],"src":"samples/inv07_dijla_photo.jpg","st":"rejected","by":"Test manager (simulated, Stage 4)","note":"Duplicate of P-0021 (photo of same invoice)","cat":"Office supplies","seed":false},{"p":"P-0025","l":null,"s":"ورشة الأمين لتصليح السيارات","inv":"٠٤٣١","tax":null,"d":"2026-09-18","cur":"IQD","amt":200000,"items":[["تبديل فحمات أمامية",1,"85,000 IQD"],["زيت محرك + فلتر",1,"65,000 IQD"],["أجور تصليح",1,"50,000 IQD"]],"src":"samples/inv10_amin_workshop.jpg","st":"pending","by":null,"note":null,"cat":"Vehicles","seed":false},{"p":"P-0023","l":"L-0021","s":"مؤسسة النخيل للمواد الغذائية","inv":"NK/1207","tax":"300552190","d":"2026-09-21","cur":"IQD","amt":488000,"items":[["شاي ٥٠٠ غم",24,"144,000 IQD"],["ماء معدني (كارتون)",40,"180,000 IQD"],["بسكويت (كارتون)",8,"164,000 IQD"]],"src":"samples/inv08_nakheel.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Pantry","seed":false},{"p":"P-0028","l":"L-0024","s":"شركة بابل للمقاولات والصيانة","inv":"BB-0401","tax":"300731044","d":"2026-09-22","cur":"IQD","amt":1025000,"items":[["صيانة دورية للمولدة الاحتياطية",1,"650,000 IQD"],["تبديل فلاتر",3,"135,000 IQD"],["زيت محرك (برميل صغير)",2,"240,000 IQD"]],"src":"samples/inv13_babel.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Maintenance","seed":false},{"p":"P-0024","l":null,"s":"مؤسسة النخيل للمواد الغذائية","inv":"NK/1213","tax":"300552190","d":"2026-09-23","cur":"IQD","amt":488000,"items":[["شاي ٥٠٠ غم",24,"144,000 IQD"],["ماء معدني (كارتون)",40,"180,000 IQD"],["بسكويت (كارتون)",8,"164,000 IQD"]],"src":"samples/inv09_nakheel.pdf","st":"pending","by":null,"note":null,"cat":"Pantry","seed":false},{"p":"P-0029","l":"L-0025","s":"Gulf Bridge IT Trading LLC","inv":"GB-INV-55108","tax":"100234567800003","d":"2026-09-24","cur":"USD","amt":942.5,"items":[["Microsoft 365 Business Standard, annual",5,"750.00 USD"],["Endpoint antivirus licence, annual",5,"192.50 USD"]],"src":"samples/inv14_gulfbridge.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"IT (USD)","seed":false},{"p":"P-0030","l":"L-0026","s":"مكتب الكرخ للاستشارات المحاسبية","inv":"KA-2026-031","tax":"300349902","d":"2026-09-29","cur":"IQD","amt":1500000,"items":[["أتعاب إعداد الحسابات الختامية - الربع الثالث ٢٠٢٦",1,"1,500,000 IQD"]],"src":"samples/inv15_karkh_accounting.pdf","st":"approved","by":"Test manager (simulated, Stage 4)","note":"clean / verified (test)","cat":"Professional fees","seed":false}];
+/* ---------- reference data ---------- */
+const SUP={"شركة بابل للمقاولات والصيانة":"Babel Maintenance","شركة دجلة للتجهيزات المكتبية":"Dijla Office Supplies","مولدة أور الأهلية":"Ur Generator","مؤسسة النخيل للمواد الغذائية":"Al-Nakheel Foodstuffs","مكتب الكرخ للاستشارات المحاسبية":"Al-Karkh Accounting","مطبعة المنصور الحديثة":"Al-Mansour Press","شركة نبض الشبكة لخدمات الإنترنت":"Nabd Internet","ورشة الأمين لتصليح السيارات":"Al-Amin Auto Workshop","Gulf Bridge IT Trading LLC":"Gulf Bridge IT"};
+const SUPORDER=Object.keys(SUP);
+const sid=s=>"sup-"+SUPORDER.indexOf(s);
+const CATS=[["Maintenance","var(--brick)"],["Office supplies","var(--steel)"],["Utilities","var(--teal)"],["Pantry","var(--amber)"],["Professional fees","var(--violet)"],["Printing & marketing","var(--rose)"],["Vehicles","var(--sand)"]];
+const CATC=Object.fromEntries(CATS);
+const MONTHS=["2026-06","2026-07","2026-08","2026-09"],MN={"2026-06":"Jun","2026-07":"Jul","2026-08":"Aug","2026-09":"Sep"};
+const fmt=(v,c)=>c==="USD"?v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" USD":Math.round(v).toLocaleString("en-US")+" IQD";
+const M=v=>(v/1e6).toFixed(v>=1e7?1:2).replace(/\.?0+$/,"")+"M";
+const appr=INV.filter(x=>x.st==="approved"),pend=INV.filter(x=>x.st==="pending"),rej=INV.filter(x=>x.st==="rejected");
+const sum=(a)=>a.reduce((s,x)=>s+x.amt,0);
+const monthIQD=m=>sum(appr.filter(x=>x.cur==="IQD"&&x.d.startsWith(m)));
+const monthUSD=m=>sum(appr.filter(x=>x.cur==="USD"&&x.d.startsWith(m)));
+const byP=Object.fromEntries(INV.map(x=>[x.p,x]));
+
+/* per-invoice flags + recommendation (from anomaly_review.md) */
+const FLAGS={
+ "P-0018":[["hi","Amount well above normal: 6,750,000 IQD is 3.2× this supplier’s average of 2,083,333 IQD over 3 approved invoices."]],
+ "P-0022":[["hi","Exact duplicate: same supplier and invoice number (DJ-2026-0952) as P-0021. This file is a phone photo of the same paper invoice."]],
+ "P-0023":[["","Probable duplicate of P-0024: same supplier, same amount (488,000 IQD), 2 days apart. Approved in the test with this flag."]],
+ "P-0024":[["hi","Probable duplicate of P-0023 (already approved as L-0021): same supplier, same amount 488,000 IQD, identical line items, 2 days apart, new invoice number NK/1213."]],
+ "P-0025":[["","Weekend date: Friday 18 Sep 2026."],["","Missing tax number (الرقم الضريبي) on the invoice."],["","New supplier: no history to compare with."]],
+ "P-0021":[["","Exact duplicate of P-0022 at staging. The photo copy was rejected, this PDF was approved."]]};
+const REC={
+ "P-0018":["hold","Hold · verify",
+   ["Ask for the work order and who requested the cooling repair before approving.","Check the labour line: 2,300,000 IQD for 4 days of technicians. Ask for the number of technicians and the daily rate.","Compare compressor price (1,850,000 IQD each) with one other quote. For future jobs above 2M IQD, require the quote before work starts.","If the work is confirmed, approve with a note so the flag and reason stay on record."]],
+ "P-0024":["hold","Hold · confirm",
+   ["Ask the person who receives deliveries whether two identical pantry deliveries arrived on 21 and 23 Sep.","If only one arrived, reject P-0024 with the reason “re-issued copy of NK/1207”.","If both arrived, approve with a note. Then move Al-Nakheel to one scheduled order per month to stop this repeating."]],
+ "P-0025":["verify","Get tax no. → approve",
+   ["Ask Al-Amin workshop for its tax number before approving; without it the expense is harder to support for the General Commission for Taxes.","Confirm the car was serviced on Friday 18 Sep (workshops often open on Fridays).","Approve once both are confirmed. Amount is small (200,000 IQD), so speed matters more than depth here."]],
+ "P-0022":["done","Done · rejected",
+   ["No action needed: the ledger refused to approve it as a duplicate of L-0020, and it was rejected and kept on record.","Habit to keep: when a supplier sends both a PDF and a paper copy, enter only one."]]};
+
+/* ---------- details registry ---------- */
+const D={};
+const KIND={inv:["Invoice","var(--steel)"],sup:["Supplier","var(--violet)"],cat:["Category","var(--teal)"],mon:["Month","var(--steel)"],rule:["Control rule","var(--amber)"],play:["Strategy decision","var(--brick)"],ov:["Overview","var(--muted)"],kpi:["Key figure","var(--steel)"]};
+
+INV.forEach(x=>{
+ const r=REC[x.p];
+ const items=x.items.length?`<div class="tbl"><table><tr><th>Item</th><th>Qty</th><th style="text-align:right">Line total</th></tr>${x.items.map(i=>`<tr><td class="arc">${esc(i[0])}</td><td>${i[1]}</td><td class="num">${esc(i[2])}</td></tr>`).join("")}</table></div>`:`<p class="note">Seeded history entry: line items were not recorded.</p>`;
+ D[x.p]={k:"inv",t:`${x.p} · ${SUP[x.s]}`,ar:x.s,stat:[fmt(x.amt,x.cur),`${x.st}${x.l?" as "+x.l:""} · ${x.d}`],
+  html:`<div class="sec"><h4>Invoice</h4><dl class="kv"><dt>Supplier</dt><dd><span class="ar" style="margin:0;color:var(--ink)">${esc(x.s)}</span></dd><dt>Invoice no.</dt><dd>${esc(x.inv||"—")}</dd><dt>Tax no.</dt><dd>${x.tax?esc(x.tax):'<span class="flag">missing</span>'}</dd><dt>Date</dt><dd>${x.d} (${new Date(x.d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"long"})})</dd><dt>Category</dt><dd>${x.cat}</dd><dt>Source file</dt><dd>${esc(x.src)}</dd>${x.by?`<dt>Decided by</dt><dd>${esc(x.by)}</dd>`:""}${x.note?`<dt>Note</dt><dd>${esc(x.note)}</dd>`:""}</dl></div>
+  <div class="sec"><h4>Line items</h4>${items}</div>
+  ${FLAGS[x.p]?`<div class="sec"><h4>Warnings raised</h4><div class="fl">${FLAGS[x.p].map(f=>`<div class="${f[0]}">${esc(f[1])}</div>`).join("")}</div></div>`:""}`,
+  dec:r?r[2]:null,decTitle:r?"Recommended decision · "+r[1]:null,rel:[sid(x.s),"cat-"+x.cat,"mon-"+x.d.slice(0,7)]};
+});
+
+/* supplier text */
+const SUPTXT={
+ "شركة بابل للمقاولات والصيانة":["Largest IQD supplier. Repair and maintenance jobs vary a lot: 1.0M to 2.3M IQD per approved invoice, and a pending 6.75M job.","Maintenance is unpredictable and is the biggest single risk to the monthly budget. If P-0018 is approved, Babel alone reaches 14.0M IQD in four months.",["Negotiate an annual maintenance contract with a fixed monthly fee for routine work (generator, filters, cooling checks).","Require a written quote and work order before any job above 2,000,000 IQD.","Get a second quote for large one-off jobs such as compressor replacement.","Keep a maintenance reserve in the budget: around 2.5M IQD per month based on Jul–Sep."],["Maintenance spend per month","Jobs above 2M with a quote (%)","Repeat repairs on same equipment"]],
+ "شركة دجلة للتجهيزات المكتبية":["Office supplies and furniture. Paper (A4, 40 reams) appears on both September invoices, plus printer toner and two office chairs.","Frequent small orders cost time and make duplicates more likely (the duplicate photo came from this supplier).",["Combine stationery into one monthly order with a fixed list.","Ask for a volume price on A4 paper and toner.","Record furniture (chairs, printer table) separately: it is an asset purchase, not a monthly expense."],["Orders per month","Paper reams per month","Price per ream"]],
+ "مولدة أور الأهلية":["Neighbourhood generator subscription billed per ampere: 32 amps × 28,000 IQD in September. Between 870,000 and 945,000 IQD every month.","A fixed cost that cannot be avoided, but the amperage can be reviewed.",["Check whether 32 amps is still needed (e.g. after cooling repairs or seasonal change in Oct–Nov).","Budget about 0.9M IQD per month (about 10.8M per year).","Compare the price per ampere with other generator owners in the area each season."],["Price per ampere","Amps subscribed","Monthly generator cost"]],
+ "مؤسسة النخيل للمواد الغذائية":["Pantry supplies: tea, sugar, water, biscuits. Usually 0.5–0.7M IQD per invoice, sometimes two invoices a month.","Two identical invoices 2 days apart (P-0023, P-0024) show the risk of unplanned repeat orders.",["Set a monthly pantry budget, for example 900,000 IQD.","Move to one scheduled order per month with a standard list.","Resolve P-0024 before month-end close."],["Pantry spend per month","Orders per month","Spend per employee"]],
+ "مكتب الكرخ للاستشارات المحاسبية":["External accountant: 1,500,000 IQD for Q3 2026 closing accounts.","A quarterly fee: about 6.0M IQD per year if it repeats each quarter.",["Confirm the fee is under a written yearly contract.","Put the next quarterly payment (around end of December) in the cash calendar.","Ask whether the Finance Ops Agent’s clean ledger can reduce their hours and fee."],["Fee per quarter","Days to receive closing accounts"]],
+ "مطبعة المنصور الحديثة":["Business cards, A4 leaflets (1,000) and printed folders: 800,000 IQD, one invoice.","One-off marketing print. Useful only if linked to a campaign result.",["Link print orders to a named campaign and measure leads from it.","Collect one other quote for the next print order."],["Cost per campaign","Leads per campaign"]],
+ "شركة نبض الشبكة لخدمات الإنترنت":["Fibre internet 100 Mbps for September (450,000 IQD) plus router rental (25,000 IQD).","Recurring fixed cost of 475,000 IQD per month (5.7M per year).",["Ask to buy the router instead of renting it if the contract will continue more than a year.","Compare plans once a year."],["Monthly internet cost","Downtime hours"]],
+ "ورشة الأمين لتصليح السيارات":["New supplier: brake pads, oil and filter, labour. 200,000 IQD, dated a Friday, no tax number.","Small amount, but missing tax documentation.",["Ask for the tax number before approving.","For vehicle costs, keep a simple log per car: date, km, work, cost."],["Vehicle cost per month","Invoices with tax number (%)"]],
+ "Gulf Bridge IT Trading LLC":["UAE IT supplier invoicing in USD. September: Wi-Fi access points and cabling (1,208.00 USD) and annual Microsoft 365 + antivirus for 5 users (942.50 USD).","The only USD supplier, so the only currency exposure. Annual licences repeat each September.",["Add the licence renewal (about 942.50 USD) to the September 2027 calendar.","Keep a separate USD budget; the ledger never converts currencies.","Ask whether they can invoice in IQD, or agree the exchange rate before ordering."],["USD spend per month","Licence cost per user","Renewal dates tracked"]]};
+SUPORDER.forEach(s=>{const all=INV.filter(x=>x.s===s),ap=all.filter(x=>x.st==="approved"),cur=all[0].cur,[says,means,dec,kpi]=SUPTXT[s];
+ const tot=sum(ap),avg=ap.length?tot/ap.length:0;
+ D[sid(s)]={k:"sup",t:SUP[s],ar:s,stat:[fmt(tot,cur),`approved, ${ap.length} invoice${ap.length===1?"":"s"} · average ${fmt(avg,cur)}`],says,means,dec,kpi,
+  html:`<div class="sec"><h4>All invoices</h4><div class="tbl"><table><tr><th>Ref</th><th>Date</th><th>Status</th><th style="text-align:right">Amount</th></tr>${all.map(x=>`<tr class="go" data-go="${x.p}"><td>${x.p}</td><td>${x.d}</td><td>${x.st}</td><td class="num">${fmt(x.amt,x.cur)}</td></tr>`).join("")}</table></div></div>`,
+  rel:[...new Set(all.map(x=>"cat-"+x.cat))]};});
+
+/* categories */
+const CATTXT={"Maintenance":"Repairs and servicing from Babel. The most volatile category.","Office supplies":"Stationery, toner and furniture from Dijla.","Utilities":"Generator subscription (Ur) and internet (Nabd). Fixed every month.","Pantry":"Tea, sugar, water, biscuits from Al-Nakheel.","Professional fees":"Quarterly accounting fee from Al-Karkh.","Printing & marketing":"Leaflets, cards and folders from Al-Mansour Press.","Vehicles":"Car servicing from Al-Amin workshop (pending).","IT (USD)":"Network equipment and software licences from Gulf Bridge, in USD."};
+const CATDEC={"Maintenance":["Fix a monthly maintenance budget and a 2M IQD pre-approval threshold.","Move routine servicing to a fixed contract."],"Office supplies":["One monthly stationery order; separate furniture as assets."],"Utilities":["Treat as fixed: budget about 1.37M IQD per month (generator + internet).","Review generator amperage each season."],"Pantry":["Set a monthly cap and a single scheduled order."],"Professional fees":["Put quarterly payments in the cash calendar."],"Printing & marketing":["Tie each print order to a campaign and measure the result."],"Vehicles":["Require tax numbers; keep a cost log per vehicle."],"IT (USD)":["Track licence renewals; budget USD separately."]};
+[...CATS.map(c=>c[0]),"IT (USD)"].forEach(c=>{const all=INV.filter(x=>x.cat===c),ap=all.filter(x=>x.st==="approved"),cur=c==="IT (USD)"?"USD":"IQD";
+ const per=MONTHS.map(m=>sum(ap.filter(x=>x.d.startsWith(m))));
+ D["cat-"+c]={k:"cat",t:c,stat:[fmt(sum(ap),cur),"approved, June–September"],says:CATTXT[c],
+  html:`<div class="sec"><h4>Per month</h4><div class="tbl"><table><tr>${MONTHS.map(m=>`<th>${MN[m]}</th>`).join("")}</tr><tr>${per.map(v=>`<td class="num" style="text-align:left">${v?fmt(v,cur).replace(/ (IQD|USD)/,""):"—"}</td>`).join("")}</tr></table></div></div>
+  <div class="sec"><h4>Invoices</h4><div class="tbl"><table>${all.map(x=>`<tr class="go" data-go="${x.p}"><td>${x.p}</td><td>${SUP[x.s]}</td><td>${x.st}</td><td class="num">${fmt(x.amt,x.cur)}</td></tr>`).join("")}</table></div></div>`,
+  dec:CATDEC[c],rel:[...new Set(all.map(x=>sid(x.s)))]};});
+
+/* months */
+MONTHS.forEach((m,i)=>{const iq=monthIQD(m),us=monthUSD(m),prev=i?monthIQD(MONTHS[i-1]):0,ap=appr.filter(x=>x.d.startsWith(m));
+ const cats={};ap.filter(x=>x.cur==="IQD").forEach(x=>cats[x.cat]=(cats[x.cat]||0)+x.amt);
+ D["mon-"+m]={k:"mon",t:new Date(m+"-15").toLocaleDateString("en-GB",{month:"long",year:"numeric"}),stat:[fmt(iq,"IQD"),`approved · ${us?fmt(us,"USD")+" · ":""}${ap.length} invoices${i&&prev?` · ${iq>=prev?"+":""}${((iq/prev-1)*100).toFixed(1)}% IQD vs ${MN[MONTHS[i-1]]}`:""}`],
+  says:m==="2026-06"?"Only one seeded history invoice (Ur generator). Not a full month of data.":m==="2026-09"?"September is the month processed by the agent: 15 sample invoices read, 11 approved, 1 rejected, 3 waiting.":"Seeded history used to give the 2× supplier-average rule a baseline.",
+  html:`<div class="sec"><h4>IQD by category</h4><div class="tbl"><table>${Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<tr class="go" data-go="cat-${c}"><td>${c}</td><td class="num">${fmt(v,"IQD")}</td><td class="num">${(v/iq*100).toFixed(1)}%</td></tr>`).join("")}</table></div></div>
+  <div class="sec"><h4>Invoices</h4><div class="tbl"><table>${INV.filter(x=>x.d.startsWith(m)).map(x=>`<tr class="go" data-go="${x.p}"><td>${x.p}</td><td>${SUP[x.s]}</td><td>${x.st}</td><td class="num">${fmt(x.amt,x.cur)}</td></tr>`).join("")}</table></div></div>`,
+  dec:m==="2026-09"?["Decide the 3 waiting invoices before closing September; they are not in the totals until approved.","Compare with August: IQD is almost flat (+1.1%) but the mix changed. Maintenance fell, while professional fees and printing appeared."]:null,rel:m==="2026-09"?["P-0018","P-0024","P-0025"]:[]};});
+
+/* rules */
+const RULES=[["dup-exact","Exact duplicate","Same supplier and same invoice number as another entry.",1,["P-0022"],"Usually one invoice entered twice (PDF + photo). Approve only one.","hi"],
+ ["dup-prob","Probable duplicate","Same supplier and same amount within 7 days.",1,["P-0024","P-0023"],"Re-issued invoice or a genuine repeat order. Compare items or ask the supplier.","hi"],
+ ["large","Unusually large","More than 2× this supplier’s normal amount (needs 3 approved invoices).",1,["P-0018"],"Check against the purchase or work order. An extra zero is a common typo.","hi"],
+ ["weekend","Weekend date","Dated Friday or Saturday.",1,["P-0025"],"Not necessarily wrong. Confirm the delivery or service happened.",""],
+ ["notax","No tax number","Supplier tax number not printed.",1,["P-0025"],"Ask the supplier for it; needed for the tax authority.",""],
+ ["future","Future date","Dated after today.",0,[],"Usually day and month swapped. Check the paper.",""],
+ ["sum","Items don’t add up","Line items don’t add up to the printed total.",0,[],"Supplier arithmetic error or a misread line. Check the original.",""]];
+RULES.forEach(([id,n,def,c,refs,act,sev])=>{D["rule-"+id]={k:"rule",t:n,stat:[c,`September invoice${c===1?"":"s"} triggered this rule`],says:def,means:act,
+ html:id==="future"?`<div class="sec"><h4>Known gap</h4><p>A day/month swap (09/08 read as 9 August instead of 8 September) still gives a valid past date, so neither this rule nor the validator catches it. The test confirmed this (RESULTS.md, problem 5).</p></div>`:"",
+ dec:id==="future"?["Add a code check: flag dates where day ≤ 12 and the swapped date is closer to the upload date.","Until then, glance at the date on the paper for every invoice."]:c?["Keep the rule as is: it caught the planted case with no false positives."]:["Keep the rule; no September invoice triggered it."],rel:refs}});
+
+/* overviews + kpis */
+const pendIQD=sum(pend);
+Object.assign(D,{
+ "ov-queue":{k:"ov",t:"How to decide the queue",says:"The agent never approves or rejects on its own. Each approval needs your name, and Claude Code asks for confirmation every time.",means:"Decide by money at risk first: one 6.75M IQD invoice matters more than a 200,000 IQD invoice with a missing tax number.",dec:["Have the paper invoice or PDF open while deciding.","Write a short note on every invoice you approve despite a warning; it is stored with the entry.","Approved entries cannot be edited or deleted, so check carefully before clicking Yes."],rel:["P-0018","P-0024","P-0025"]},
+ "ov-proj":{k:"ov",t:"Projected September total",says:"Pending invoices are not counted in any total until approved. Tick an invoice to see the September IQD total if it were approved.",means:"P-0018 alone would raise September IQD spend from 7.7M to 14.5M (+87%), almost double August.",dec:["Decide P-0018 before reporting September to management, or report it as a known pending item."],rel:["P-0018","mon-2026-09"]},
+ "ov-time":{k:"ov",t:"Reading the timeline",says:"Each row is a supplier, each dot an invoice placed on its date. Bigger dot = larger amount. IQD and USD use separate size scales.",means:"Patterns to look for: regular monthly dots (fixed costs like generator, internet), clusters of identical dots (possible duplicates), and one oversized dot (P-0018).",rel:["sup-2","sup-3","P-0018"]},
+ "ov-agent":{k:"ov",t:"Agent test score",stat:["5 of 5","planted problems caught · 0 missed · 0 false alarms"],says:"In the Stage 4 test the agent read 15 sample invoices (12 PDFs, 3 phone-style photos) and extracted 90 of 90 fields correctly. All 15 passed the validator first time. The ledger refused to approve the duplicate photo.",means:"The pipeline and safeguards work. Reading accuracy on real, messy invoices is not proven yet: the sample invoices were generated and then read by the same system.",dec:["Before going live, run the reader on 20–30 real past invoices whose correct values are known.","Add a code check for day/month swaps.","Build a reversing-entry feature to correct approved mistakes."],kpi:["Field accuracy on real invoices","Invoices needing human reading (%)","False alarms per month"],rel:["rule-future","play-golive"]},
+ "kpi-sep":{k:"kpi",t:"September approved spend (IQD)",stat:[fmt(monthIQD("2026-09"),"IQD"),"9 approved IQD invoices · +1.1% vs August (7,630,000)"],says:"Matches the September report produced by the monthly-report skill, which was checked against the ledger.",means:"Spend is flat month to month, but the mix shifted: maintenance fell from 4.15M to 1.03M while accounting fees (1.5M) and printing (0.8M) appeared.",rel:["mon-2026-09","mon-2026-08","cat-Maintenance"]},
+ "kpi-usd":{k:"kpi",t:"September approved spend (USD)",stat:["2,150.50 USD","2 invoices · −11% vs August (2,415.50)"],says:"All USD spend is with Gulf Bridge IT. The ledger never converts USD to IQD.",means:"942.50 USD of September is annual licences, so expect a lower USD month in October unless new hardware is bought.",rel:[sid("Gulf Bridge IT Trading LLC"),"cat-IT (USD)"]},
+ "kpi-pend":{k:"kpi",t:"Waiting for a decision",stat:[fmt(pendIQD,"IQD"),"3 invoices, all flagged"],says:"P-0018 (6,750,000), P-0024 (488,000) and P-0025 (200,000) are pending and excluded from all totals.",means:"Pending money equals 96% of September’s approved IQD spend. Leaving it open makes the month-end report incomplete.",dec:["Clear the queue before month-end close."],rel:["P-0018","P-0024","P-0025"]},
+ "kpi-dup":{k:"kpi",t:"Duplicate payment blocked",stat:["1,060,000 IQD","exact duplicate stopped by the ledger"],says:"P-0022 was a phone photo of invoice DJ-2026-0952, already approved as L-0020. The ledger refused to approve it; it was rejected and kept on record.",means:"One more 488,000 IQD probable duplicate (P-0024) is still open. Together that is 1.55M IQD of possible double payment in one month.",rel:["P-0022","P-0024","rule-dup-exact"]},
+ "kpi-acc":{k:"kpi",t:"Reading accuracy",stat:["90 / 90","fields read correctly on 15 test invoices"],says:"Supplier, invoice number, tax number, date, currency and amount on every invoice, including Arabic-Indic digits and totals written in words.",means:"Strong on generated samples; real scans and handwriting still need testing.",rel:["ov-agent"]}});
+
+/* playbook */
+const PLAY=[["This week","Clear the queue",[["play-p18","Decide Babel P-0018 after the work-order check","6,750,000 IQD at risk"],["play-p24","Confirm or reject Al-Nakheel P-0024","488,000 IQD possible double payment"],["play-p25","Get the tax number, then approve P-0025","200,000 IQD"]]],
+ ["This month","Control the spend",[["play-threshold","Set a 2M IQD pre-approval threshold","Covers the largest risk"],["play-recurring","Build a recurring-cost calendar","≈1.37M IQD fixed per month + quarterly + annual"],["play-orders","One scheduled order per month for pantry and stationery","Fewer duplicates"]]],
+ ["Before go-live","Make the agent safe for real books",[["play-golive","Test on 20–30 real past invoices","Accuracy on real scans"],["play-dates","Add a day/month swap check in code","Known gap"],["play-backup","Back up ledger.db and remove test data","Protect the books"]]]];
+const PT={
+ "play-p18":["Babel compressor job","6,750,000 IQD is 3.2× Babel’s average and on its own almost equals a normal month of total spend.",["Get the work order and requester.","Ask for labour detail (2.3M IQD for 4 days).","Approve with a note only when confirmed."],["P-0018",sid("شركة بابل للمقاولات والصيانة")]],
+ "play-p24":["Al-Nakheel repeat invoice","Same items, same 488,000 IQD, two days apart, new invoice number.",["Ask the person who receives deliveries.","Reject if it is a re-issue; approve with a note if both deliveries arrived."],["P-0024","P-0023"]],
+ "play-p25":["Workshop tax number","Small invoice, but without a tax number it is weak support for the tax authority.",["Request the tax number by phone or WhatsApp.","Approve when received."],["P-0025","rule-notax"]],
+ "play-threshold":["Pre-approval threshold","The only invoice that broke the 2× rule was a large job approved after the fact.",["Any purchase or job above 2,000,000 IQD needs a quote and a named approver before work starts.","Attach the quote to the invoice when staging it."],["cat-Maintenance","play-p18"]],
+ "play-recurring":["Recurring-cost calendar","Fixed costs are predictable: generator ≈0.9M and internet 0.475M IQD monthly, accounting 1.5M quarterly, Microsoft 365 + antivirus 942.50 USD yearly in September.",["List each recurring cost with amount, due month and owner.","Use it as the base of next year’s budget: about 16.5M IQD per year in generator + internet, 6.0M in accounting fees."],["cat-Utilities","cat-Professional fees",sid("Gulf Bridge IT Trading LLC")]],
+ "play-orders":["Scheduled monthly orders","Pantry and stationery come in several small orders; both duplicate cases in September came from these two suppliers.",["One order per month with a standard list for each.","Ask both suppliers for a monthly price list."],["cat-Pantry","cat-Office supplies"]],
+ "play-golive":["Real-invoice test","The Stage 4 test proves the pipeline, not accuracy on crumpled paper, stamps or handwriting.",["Collect 20–30 past invoices with known correct values.","Run the reader and compare field by field.","Go live only if accuracy stays near 100% on amount and invoice number."],["ov-agent"]],
+ "play-dates":["Day/month swap check","Iraqi dates are day/month/year; a swap gives a valid date that nothing in code catches today.",["Flag any date where day ≤ 12 and the swapped reading is closer to the upload date.","Show both readings to the approver."],["rule-future"]],
+ "play-backup":["Protect the ledger","data/ledger.db is the company’s books in one file. The samples folder and stage4_test.db are fictional.",["Schedule a daily backup copy of ledger.db.","Delete samples/ and stage4_test.db before going live.","Never run Claude Code with permission checks turned off."],["ov-queue"]]};
+Object.entries(PT).forEach(([id,[t,says,dec,rel]])=>D[id]={k:"play",t,says,dec,rel});
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const txt=(p,x,y,s,a={})=>{const t=el("text",{x,y,...a},p);t.textContent=s;return t};
+const tip=document.getElementById("tip");
+const act=(n,s,id)=>{n.classList.add("hit");n.setAttribute("tabindex","0");n.setAttribute("role","button");n.setAttribute("aria-label",s);
+ n.addEventListener("mousemove",e=>{tip.textContent=s+"  ·  click for details";tip.style.opacity=1;tip.style.left=Math.min(e.clientX+12,innerWidth-270)+"px";tip.style.top=(e.clientY+12)+"px"});
+ n.addEventListener("mouseleave",()=>tip.style.opacity=0);
+ n.addEventListener("click",e=>{e.stopPropagation();tip.style.opacity=0;open(id)});
+ n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open(id)}});};
+
+/* tiles */
+(()=>{const T=[["kpi-sep",M(monthIQD("2026-09")),"IQD","approved September spend, +1.1% vs August"],["kpi-usd","2,150.50","USD","approved September spend, kept separate"],["kpi-pend",M(pendIQD),"IQD","in 3 flagged invoices waiting for you"],["kpi-dup","1.06M","IQD","duplicate payment blocked by the ledger"],["kpi-acc","90/90","fields","read correctly in the agent test"]];
+ document.getElementById("tiles").innerHTML=T.map(([id,v,u,s])=>`<button class="tk" data-open="${id}"><b>${v}<small>${u}</small></b><span>${s}</span><em>Open details →</em></button>`).join("");})();
+
+const SHORT={"P-0018":"3.2× supplier average","P-0024":"Probable duplicate of approved L-0021","P-0025":"Weekend · no tax number · new supplier","P-0022":"Exact duplicate of L-0020"};
+/* queue */
+(()=>{const order=["P-0018","P-0024","P-0025","P-0022"],col={hold:"var(--brick)",verify:"var(--amber)",done:"var(--rule)"};
+ document.getElementById("queue").innerHTML=order.map(p=>{const x=byP[p],r=REC[p];return `<button class="q" data-open="${p}"><span class="stripe" style="background:${col[r[0]]}"></span><span class="qid">${p}</span><span class="qs">${SUP[x.s]}<small>${x.d} · ${esc(x.inv)}</small></span><span class="qf">${SHORT[p]}</span><span class="qa">${fmt(x.amt,x.cur)}</span><span class="pill p-${r[0]}">${r[1]}</span></button>`}).join("");})();
+
+/* projection */
+(()=>{const box=document.getElementById("checks");const base=monthIQD("2026-09"),aug=monthIQD("2026-08"),jul=monthIQD("2026-07");
+ ["P-0018","P-0024","P-0025"].forEach(p=>{const x=byP[p];const l=document.createElement("label");l.className="chk";l.innerHTML=`<input type="checkbox" id="pj-${p}"><span>${p} · ${SUP[x.s]}</span><span>+${fmt(x.amt,"IQD")}</span>`;box.appendChild(l);l.querySelector("input").addEventListener("change",draw)});
+ const out=document.getElementById("projout"),dl=document.getElementById("projdelta"),s=document.getElementById("projbar");
+ function draw(){let add=0;["P-0018","P-0024","P-0025"].forEach(p=>{if(document.getElementById("pj-"+p).checked)add+=byP[p].amt});
+  const v=base+add;out.innerHTML=`${v.toLocaleString("en-US")} <small>IQD September</small>`;
+  dl.innerHTML=`<span style="color:${v>aug*1.2?"var(--brick)":"var(--muted)"}">${v>=aug?"+":""}${((v/aug-1)*100).toFixed(1)}% vs August (${aug.toLocaleString("en-US")})</span>${add?` · includes ${add.toLocaleString("en-US")} pending`:" · approved only"}`;
+  s.innerHTML="";const max=15e6,x0=40,w=500,sc=q=>q/max*w;
+  [["Jul",jul],["Aug",aug],["Sep",v]].forEach(([m,q],i)=>{const y=6+i*28;txt(s,x0-8,y+13,m,{"text-anchor":"end",class:"lbl"});
+   if(m==="Sep"){el("rect",{x:x0,y,width:sc(base),height:18,fill:"var(--steel)"},s);if(add)el("rect",{x:x0+sc(base),y,width:sc(add),height:18,fill:"var(--amber)"},s)}
+   else el("rect",{x:x0,y,width:sc(q),height:18,fill:"var(--steel-2)"},s);
+   txt(s,x0+sc(q)+6,y+13,M(q),{class:"val"})});}
+ draw();})();
+
+/* timeline */
+(()=>{const s=document.getElementById("time");const x0=190,x1=1080,t0=new Date("2026-06-01").getTime(),t1=new Date("2026-10-01").getTime();
+ const sx=d=>x0+(new Date(d).getTime()-t0)/(t1-t0)*(x1-x0);const rowH=34,y0=24;
+ ["2026-06-01","2026-07-01","2026-08-01","2026-09-01","2026-10-01"].forEach((d,i)=>{el("line",{x1:sx(d),x2:sx(d),y1:y0-10,y2:y0+SUPORDER.length*rowH,class:"gl"},s);if(i<4)txt(s,sx(d)+4,12,new Date(d).toLocaleDateString("en-GB",{month:"long"}))});
+ // fridays shading for september
+ SUPORDER.forEach((sp,i)=>{const y=y0+i*rowH+rowH/2;el("line",{x1:x0,x2:x1,y1:y,y2:y,stroke:"var(--grid)","stroke-dasharray":"2 4"},s);
+  const t=txt(s,x0-12,y+4,SUP[sp],{"text-anchor":"end",class:"lbl"});act(t,SUP[sp],sid(sp));
+  INV.filter(x=>x.s===sp).forEach(x=>{const r=x.cur==="USD"?3+Math.sqrt(x.amt/2500)*10:3+Math.sqrt(x.amt/7e6)*15;
+   const fill=x.st==="rejected"?"var(--brick)":x.st==="pending"?"var(--amber)":x.seed?"var(--steel-2)":"var(--steel)";
+   const c=el("circle",{cx:sx(x.d),cy:y,r:r.toFixed(1),fill,"fill-opacity":.85,stroke:"var(--paper)","stroke-width":1},s);
+   act(c,`${x.p} · ${SUP[sp]} · ${x.d} · ${fmt(x.amt,x.cur)} · ${x.st}`,x.p);});});})();
+
+/* stacked */
+(()=>{const s=document.getElementById("stack");document.getElementById("catleg").innerHTML=CATS.filter(c=>c[0]!=="Vehicles").map(([c,col])=>`<span><i class="sq" style="background:${col}"></i>${c}</span>`).join("");
+ const x0=46,h=230,y0=250,max=8e6,sy=v=>v/max*h,bw=90,gap=46;
+ [0,2e6,4e6,6e6,8e6].forEach(v=>{el("line",{x1:x0,x2:590,y1:y0-sy(v),y2:y0-sy(v),class:v?"gl":"ax"},s);txt(s,x0-8,y0-sy(v)+4,v/1e6+"M",{"text-anchor":"end"})});
+ MONTHS.forEach((m,i)=>{const x=x0+20+i*(bw+gap);let acc=0;
+  CATS.forEach(([c,col])=>{const v=sum(appr.filter(q=>q.cur==="IQD"&&q.cat===c&&q.d.startsWith(m)));if(!v)return;
+   const r=el("rect",{x,y:y0-sy(acc+v),width:bw,height:sy(v)-1,fill:col},s);act(r,`${MN[m]} · ${c}: ${fmt(v,"IQD")}`,"cat-"+c);acc+=v});
+  txt(s,x+bw/2,y0-sy(acc)-6,M(acc),{"text-anchor":"middle",class:"val"});
+  const t=txt(s,x+bw/2,y0+18,MN[m]+(m==="2026-06"?"*":""),{"text-anchor":"middle",class:"lbl"});act(t,MN[m],"mon-"+m);});
+ txt(s,x0,y0+40,"* June: one seeded invoice only");})();
+
+/* usd */
+(()=>{const s=document.getElementById("usd");const x0=56,h=210,y0=250,max=3000,sy=v=>v/max*h,ms=MONTHS.slice(1),bw=80,gap=50;
+ [0,1000,2000,3000].forEach(v=>{el("line",{x1:x0,x2:450,y1:y0-sy(v),y2:y0-sy(v),class:v?"gl":"ax"},s);txt(s,x0-8,y0-sy(v)+4,v.toLocaleString(),{"text-anchor":"end"})});
+ ms.forEach((m,i)=>{const x=x0+30+i*(bw+gap);const inv=appr.filter(q=>q.cur==="USD"&&q.d.startsWith(m));let acc=0;
+  inv.forEach((q,j)=>{const r=el("rect",{x,y:y0-sy(acc+q.amt),width:bw,height:sy(q.amt)-1,fill:j?"var(--steel-2)":"var(--steel)"},s);act(r,`${q.p} · ${fmt(q.amt,"USD")}`,q.p);acc+=q.amt});
+  txt(s,x+bw/2,y0-sy(acc)-6,acc.toLocaleString("en-US",{minimumFractionDigits:2}),{"text-anchor":"middle",class:"val"});
+  const t=txt(s,x+bw/2,y0+18,MN[m],{"text-anchor":"middle",class:"lbl"});act(t,MN[m],"mon-"+m)});
+ txt(s,x0,y0+40,"Segments = individual invoices");})();
+
+/* supplier bars */
+(()=>{const s=document.getElementById("sup");const rows=SUPORDER.filter(sp=>INV.find(x=>x.s===sp).cur==="IQD").map(sp=>[sp,sum(appr.filter(x=>x.s===sp)),sum(pend.filter(x=>x.s===sp))]).sort((a,b)=>(b[1]+b[2])-(a[1]+a[2]));
+ const x0=160,w=270,max=18e6,sc=v=>v/max*w;
+ [0,5e6,10e6,15e6].forEach(v=>{el("line",{x1:x0+sc(v),x2:x0+sc(v),y1:0,y2:276,class:"gl"},s);txt(s,x0+sc(v),292,v/1e6+"M",{"text-anchor":"middle"})});
+ rows.forEach(([sp,a,p],i)=>{const y=4+i*34,g=el("g",{},s);el("rect",{x:0,y:y-6,width:460,height:30,fill:"transparent"},g);
+  txt(g,x0-8,y+13,SUP[sp],{"text-anchor":"end",class:"lbl"});
+  el("rect",{x:x0,y,width:Math.max(sc(a),1),height:18,fill:"var(--steel)"},g);
+  if(p)el("rect",{x:x0+sc(a),y,width:sc(p),height:18,fill:"var(--amber)","fill-opacity":.55},g);
+  txt(g,x0+sc(a+p)+5,y+13,M(a)+(p?` +${M(p)}`:""),{class:"val"});
+  act(g,`${SUP[sp]}: ${fmt(a,"IQD")} approved${p?", "+fmt(p,"IQD")+" waiting":""}`,sid(sp))});
+ el("line",{x1:x0,x2:x0,y1:0,y2:276,class:"ax"},s);})();
+
+/* heatmap */
+(()=>{const s=document.getElementById("heat");const sups=SUPORDER.filter(sp=>INV.find(x=>x.s===sp).cur==="IQD"&&appr.some(x=>x.s===sp));
+ const x0=170,cw=106,ch=30,y0=26;const steps=[0,5e5,1e6,2e6,3e6];const col=v=>!v?"var(--hm0)":v<1e6?"var(--hm1)":v<2e6?"var(--hm2)":v<3e6?"var(--hm3)":"var(--hm4)";
+ MONTHS.forEach((m,j)=>{const t=txt(s,x0+j*cw+cw/2,y0-10,MN[m],{"text-anchor":"middle",class:"lbl"});act(t,MN[m],"mon-"+m)});
+ sups.forEach((sp,i)=>{const y=y0+i*(ch+3);const t=txt(s,x0-10,y+19,SUP[sp],{"text-anchor":"end",class:"lbl"});act(t,SUP[sp],sid(sp));
+  MONTHS.forEach((m,j)=>{const inv=appr.filter(x=>x.s===sp&&x.d.startsWith(m)),v=sum(inv);
+   const r=el("rect",{x:x0+j*cw+2,y,width:cw-4,height:ch,fill:col(v)},s);
+   if(v)txt(s,x0+j*cw+cw/2,y+19,M(v),{"text-anchor":"middle",style:`fill:${v>=2e6?"var(--paper)":"var(--ink)"};pointer-events:none`});
+   const id=`cell-${i}-${j}`;D[id]={k:"sup",t:`${SUP[sp]} · ${MN[m]}`,ar:sp,stat:[fmt(v,"IQD"),`${inv.length} approved invoice${inv.length===1?"":"s"}`],
+    html:inv.length?`<div class="tbl"><table>${inv.map(x=>`<tr class="go" data-go="${x.p}"><td>${x.p}</td><td>${x.d}</td><td class="num">${fmt(x.amt,"IQD")}</td></tr>`).join("")}</table></div>`:`<p class="note">No approved invoices from this supplier in ${MN[m]}.</p>`,rel:[sid(sp),"mon-"+m]};
+   act(r,`${SUP[sp]} · ${MN[m]}: ${fmt(v,"IQD")}`,id)})});})();
+
+/* rules */
+(()=>{const s=document.getElementById("rules");const cw=150,x0=20;
+ RULES.forEach(([id,n,def,c,refs,act_,sev],i)=>{const x=x0+i*cw,g=el("g",{},s);
+  el("rect",{x,y:0,width:cw-12,height:210,fill:"transparent"},g);
+  el("line",{x1:x,x2:x+cw-14,y1:30,y2:30,class:"ax"},g);
+  txt(g,x,20,n,{class:"lbl",style:"font-weight:600"});
+  const cx=x+40,cy=96;el("circle",{cx,cy,r:34,fill:c?(sev?"var(--brick)":"var(--amber)"):"var(--hm0)","fill-opacity":c?.85:1},g);
+  txt(g,cx,cy+9,c,{"text-anchor":"middle",style:`font:600 28px var(--f-display);fill:${c?"var(--paper)":"var(--muted)"}`});
+  txt(g,x+84,cy-4,c?"triggered":"none",{});txt(g,x+84,cy+12,refs.filter(r=>!(id==="dup-prob"&&r==="P-0023")).join(" ")||"—",{style:"fill:var(--ink)"});
+  const words=def.split(" ");let line="",ly=156;words.forEach(w=>{if((line+" "+w).length>20){txt(g,x,ly,line.trim(),{});ly+=14;line=w}else line+=" "+w});txt(g,x,ly,line.trim(),{});
+  act(g,`${n}: ${c} triggered`,"rule-"+id)});})();
+
+/* playbook */
+(()=>{const box=document.getElementById("play");let k=0;PLAY.forEach(([h,sub,steps])=>{const c=document.createElement("div");c.className="pcol";c.innerHTML=`<h3>${h}</h3><p>${sub}</p>`;
+ steps.forEach(([id,t,m])=>{k++;const b=document.createElement("button");b.className="step";b.innerHTML=`<b>${k}</b><span class="st">${t}<small>${m}</small></span>`;b.onclick=()=>open(id);c.appendChild(b)});box.appendChild(c)});})();
+
+/* ---------- drawer ---------- */
+const dr=document.getElementById("dr"),db=document.getElementById("db"),scrim=document.getElementById("scrim"),backB=document.getElementById("back");
+let stack=[],lastFocus=null;
+function render(id){const d=D[id];if(!d)return;const [kl,kc]=KIND[d.k];
+ let h=`<div><div class="kind"><i style="background:${kc}"></i>${kl}</div><h3 id="dtitle">${esc(d.t)}</h3>${d.ar?`<span class="ar">${esc(d.ar)}</span>`:""}</div>`;
+ if(d.stat)h+=`<div class="stat"><b>${esc(d.stat[0])}</b><span>${esc(d.stat[1])}</span></div>`;
+ if(d.says)h+=`<div class="sec"><h4>What the data shows</h4><p>${esc(d.says)}</p></div>`;
+ if(d.means)h+=`<div class="sec"><h4>What it means</h4><p>${esc(d.means)}</p></div>`;
+ if(d.html)h+=d.html;
+ if(d.dec&&d.dec.length)h+=`<div class="sec"><h4>${esc(d.decTitle||"Strategic decisions")} <span class="flag">· recommendation</span></h4><ol class="dec">${d.dec.map(x=>`<li><span>${esc(x)}</span></li>`).join("")}</ol></div>`;
+ if(d.kpi&&d.kpi.length)h+=`<div class="sec"><h4>KPIs to track</h4><div class="kpis">${d.kpi.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div>`;
+ const rel=(d.rel||[]).filter(r=>D[r]&&r!==id);
+ if(rel.length)h+=`<div class="sec"><h4>Related</h4><div class="rel">${rel.map(r=>`<button data-go="${r}">${esc(D[r].t)}</button>`).join("")}</div></div>`;
+ h+=`<p class="src">Source: Finance Ops Agent test ledger (fictional data). Recommendations are analyst suggestions.</p>`;
+ db.innerHTML=h;db.scrollTop=0;backB.hidden=stack.length<2;}
+function open(id){if(!D[id])return;if(dr.hidden){lastFocus=document.activeElement;stack=[]}stack.push(id);render(id);scrim.hidden=false;dr.hidden=false;requestAnimationFrame(()=>db.focus())}
+function close(){dr.hidden=true;scrim.hidden=true;stack=[];if(lastFocus&&lastFocus.focus)lastFocus.focus()}
+db.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b&&D[b.dataset.go]){stack.push(b.dataset.go);render(b.dataset.go)}});
+backB.onclick=()=>{stack.pop();render(stack[stack.length-1])};
+document.getElementById("close").onclick=close;scrim.onclick=close;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dr.hidden)close()});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)open(b.dataset.open)});
+</script>
+
+</body>
+</html>
