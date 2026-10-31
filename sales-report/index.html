@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive sales recovery review: lost and declining customers, discounts, receivables and strategy decisions (test data).">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Sales Recovery Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: analyst's ledger notebook — unboxed chart panels on warm paper, a decision queue up top, one slide-in dossier for every detail */
+:root{
+  --paper:#eeebe4; --sheet:#f7f5f0; --ink:#2b2d33; --muted:#6c6b66; --rule:#cfcabf; --grid:#dcd7cc;
+  --steel:#4c7aa8; --steel-2:#9bb6d2; --violet:#8b6bc0; --moss:#4f9a55; --brick:#c2504a; --amber:#d9862b; --teal:#3f9a96; --rose:#c46b97; --sand:#b39a5f;
+  --hm0:#e3ded3; --hm1:#c9d8e6; --hm2:#93b3d1; --hm3:#5c8bb8; --hm4:#335f8c; --scrim:rgba(30,30,34,.28);
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,-apple-system,Segoe UI,sans-serif;
+  --f-ar:"IBM Plex Sans Arabic","IBM Plex Sans",Tahoma,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:grid;gap:10px;border-bottom:1px solid var(--rule);padding-bottom:22px;margin-bottom:24px}
+.eyebrow{font-family:var(--f-data);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(38px,6vw,64px);line-height:.98;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{max-width:70ch;color:var(--muted);margin:0}
+.banner{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--amber);padding:10px 14px;border-radius:4px;font-size:13px;max-width:900px}
+.banner b{color:var(--amber);font-family:var(--f-data);font-size:11px;letter-spacing:.06em;white-space:nowrap;padding-top:2px}
+.hint{display:inline-flex;gap:8px;align-items:center;font-size:13px}
+.hint i{width:8px;height:8px;border-radius:50%;background:var(--brick);display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:44px 40px}
+.panel{min-width:0;display:grid;gap:8px;align-content:start}
+.s5{grid-column:span 5}.s7{grid-column:span 7}.s12{grid-column:span 12}.s4{grid-column:span 4}.s8{grid-column:span 8}.s6{grid-column:span 6}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2{font-family:var(--f-body);font-weight:600;font-size:15px;margin:0}
+h2 .n{font-family:var(--f-data);font-weight:500;color:var(--muted);font-size:12px;margin-right:6px}
+.more{font:500 12px var(--f-data);color:var(--steel);background:none;border:1px solid var(--rule);border-radius:999px;padding:3px 10px;cursor:pointer}
+.more:hover{border-color:var(--steel)}
+.note{font-size:13px;color:var(--muted);margin:0;max-width:70ch}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--f-data);font-size:11px;fill:var(--muted)}
+svg .lbl{fill:var(--ink);font-family:var(--f-body);font-size:12px}
+svg .val{fill:var(--ink);font-weight:500}
+svg .ax{stroke:var(--rule);stroke-width:1}
+svg .gl{stroke:var(--grid);stroke-width:1}
+.hit{cursor:pointer;outline:none;transition:opacity .15s}
+.hit:hover,.hit:focus-visible{opacity:.7}
+.hit:focus-visible{stroke:var(--ink);stroke-width:2}
+.takeaways{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-block:1px solid var(--rule)}
+.tk{all:unset;box-sizing:border-box;padding:16px 16px 16px 0;display:grid;gap:4px;align-content:start;cursor:pointer;min-width:0}
+.tk+.tk{padding-left:16px;border-left:1px solid var(--rule)}
+.tk:hover b,.tk:focus-visible b{color:var(--steel)}
+.tk:focus-visible{outline:2px solid var(--steel);outline-offset:-2px}
+.tk b{font-family:var(--f-display);font-size:36px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;transition:color .15s}
+.tk b small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
+.tk span{font-size:13px;color:var(--muted)}
+.tk em{font:500 11px var(--f-data);font-style:normal;color:var(--steel)}
+const SHORT={"P-0018":"3.2× supplier average","P-0024":"Probable duplicate of approved L-0021","P-0025":"Weekend · no tax number · new supplier","P-0022":"Exact duplicate of L-0020"};
+/* queue */
+.queue{display:grid;gap:0;border-top:1px solid var(--rule)}
+.q{all:unset;box-sizing:border-box;display:grid;grid-template-columns:6px 92px minmax(0,1.6fr) minmax(0,1fr) 150px 170px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.q:hover .qs,.q:focus-visible .qs{text-decoration:underline}
+.q:focus-visible{outline:2px solid var(--steel)}
+.stripe{align-self:stretch;border-radius:3px}
+.qid{font:500 13px var(--f-data)}
+.qs{font-weight:600;min-width:0}
+.qs small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.qf{font-size:12.5px;color:var(--muted);min-width:0}
+.qa{font:500 14px var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
+.pill{font:600 11px var(--f-data);letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:999px;justify-self:start;border:1px solid}
+.p-hold{color:var(--brick);border-color:var(--brick)}
+.p-verify{color:var(--amber);border-color:var(--amber)}
+.p-ok{color:var(--moss);border-color:var(--moss)}
+.p-done{color:var(--muted);border-color:var(--rule)}
+/* projection */
+.proj{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:start}
+.checks{display:grid;gap:8px}
+.chk{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--steel)}
+.chk span:last-child{font:13px var(--f-data);color:var(--muted)}
+.projout{font:600 44px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.projout small{font-size:18px;color:var(--muted)}
+.delta{font:500 13px var(--f-data)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend i.sq{border-radius:2px}
+.scroll{overflow-x:auto}
+.play{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--rule)}
+.pcol{padding:14px 18px 6px 0;display:grid;gap:8px;align-content:start;min-width:0}
+.pcol+.pcol{padding-left:18px;border-left:1px solid var(--rule)}
+.pcol h3{font:600 22px var(--f-display);margin:0}
+.pcol p{margin:0;font-size:12.5px;color:var(--muted)}
+.step{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px 1fr;gap:8px;padding:9px 0;border-top:1px dashed var(--rule);cursor:pointer}
+.step b{font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center}
+.step:hover .st,.step:focus-visible .st{color:var(--steel);text-decoration:underline}
+.step:focus-visible{outline:2px solid var(--steel)}
+.st{font-size:14px}
+.st small{display:block;font:12px var(--f-data);color:var(--muted)}
+footer{margin-top:44px;border-top:1px solid var(--rule);padding-top:14px;font-size:12px;color:var(--muted);display:grid;gap:4px}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--f-data);font-size:12px;padding:6px 9px;border-radius:3px;opacity:0;transition:opacity .12s;z-index:5;max-width:260px}
+#scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+#dr{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--sheet);border-left:1px solid var(--rule);z-index:21;display:grid;grid-template-rows:auto 1fr;box-shadow:-12px 0 40px rgba(0,0,0,.12);transition:transform .22s ease}
+#dr[hidden]{display:grid!important;transform:translateX(105%);visibility:hidden}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 12px 20px;border-bottom:1px solid var(--rule)}
+.dh button{font:500 12px var(--f-data);background:none;border:1px solid var(--rule);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.dh button:hover{border-color:var(--ink)}
+.db{overflow-y:auto;padding:20px calc(20px + env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) 22px;display:grid;gap:18px;align-content:start}
+.kind{font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--muted)}
+.kind i{width:9px;height:9px;border-radius:50%}
+.db h3{font:700 30px/1.05 var(--f-display);margin:6px 0 0;text-wrap:balance}
+.ar{font-family:var(--f-ar);direction:rtl;unicode-bidi:isolate;color:var(--muted);font-size:14px;margin-top:4px;display:block;text-align:left}
+.stat{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.stat b{font:600 46px/1 var(--f-display);color:var(--steel);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted);max-width:32ch}
+.sec{display:grid;gap:6px}
+.sec h4{margin:0;font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:5px}
+.sec p{margin:0}
+.sec ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.dec{list-style:none;padding:0!important}
+.dec li{display:grid;grid-template-columns:24px 1fr;gap:6px;counter-increment:d}
+.dec{counter-reset:d}
+.dec li::before{content:counter(d);font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px}
+.kv dt{color:var(--muted);font-family:var(--f-data);font-size:12px;padding-top:1px}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th{font:500 11px var(--f-data);color:var(--muted);text-align:left;border-bottom:1px solid var(--rule);padding:4px 6px 4px 0}
+.tbl td{border-bottom:1px solid var(--grid);padding:5px 6px 5px 0;vertical-align:top}
+.tbl td.num{text-align:right;font-family:var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl td.arc{font-family:var(--f-ar);direction:rtl;text-align:right}
+.tbl tr.go{cursor:pointer}.tbl tr.go:hover td{background:var(--paper)}
+.kpis{display:flex;flex-wrap:wrap;gap:6px}
+.kpis span{font:12px var(--f-data);border:1px solid var(--rule);padding:3px 8px;border-radius:3px}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.rel button{font:13px var(--f-body);background:none;color:var(--steel);border:1px solid var(--steel-2);border-radius:999px;padding:3px 11px;cursor:pointer}
+.rel button:hover{background:var(--steel);color:var(--paper)}
+.src{font-size:12px;color:var(--muted);font-style:italic}
+.flag{font:500 11px var(--f-data);color:var(--brick)}
+.fl{display:grid;gap:6px}
+.fl div{border-left:3px solid var(--amber);padding:4px 10px;font-size:13.5px;background:var(--paper)}
+.fl div.hi{border-color:var(--brick)}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}.s5,.s7,.s4,.s8,.s6,.s12{grid-column:auto}.takeaways{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tk:nth-child(odd){padding-left:0;border-left:0}.tk:nth-child(even){padding-left:16px;border-left:1px solid var(--rule)}.tk:nth-child(n+3){border-top:1px solid var(--rule)}
+ .q{grid-template-columns:6px minmax(0,1fr) auto;row-gap:4px}.q .qid{grid-column:2}.q .qs{grid-column:2/4}.q .qf{grid-column:2/4}.q .qa{grid-column:2;text-align:left}.q .pill{grid-column:3;grid-row:1;justify-self:end}.stripe{grid-row:1/5}
+ .proj{grid-template-columns:1fr}
+ .play{grid-template-columns:1fr}.pcol+.pcol{padding-left:0;border-left:0;border-top:1px solid var(--rule)}
+ #dr{top:auto;left:0;width:100%;max-height:86vh;border-left:0;border-top:1px solid var(--rule);border-radius:12px 12px 0 0}
+ #dr[hidden]{transform:translateY(105%)}
+ .dh{padding-left:max(16px,env(safe-area-inset-left,0px));padding-top:12px}
+ .db{padding-left:max(18px,env(safe-area-inset-left,0px))}}
+@media (prefers-reduced-motion:reduce){#tip,#dr,.hit{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Sales Ops · Sales recovery review · November 2025 – October 2026 · All amounts in IQD</div>
+    <h1>Sales Recovery Review</h1>
+    <p class="lede">Where the sales come from, which customers stopped buying and how much they were worth, where discounts leak, and the decisions to win the money back. Click any bar, dot, cell, row or figure for its details.</p>
+    <div class="banner"><b>TEST DATA</b><span>Built for a fictional Baghdad distribution company: 60 customers, 20 products, 4 sales reps, 1,958 invoices. Every figure is calculated in the workbook <a href="Sales_Recovery_Review_Data.xlsx" download style="color:var(--steel);font-weight:600">Sales_Recovery_Review_Data.xlsx</a> (download) (start with its “Report Map” sheet).</span></div>
+    <span class="hint"><i></i>Everything is clickable. Press Esc to close the details panel.</span>
+  </header>
+
+  <section class="takeaways" aria-label="Key figures" id="tiles"></section>
+
+  <div class="grid" style="margin-top:38px">
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">1</span>Customers to call this week</h2><button class="more" data-open="ov-queue">How this list is built</button></div>
+      <p class="note">Lost and declining customers, sorted by yearly sales at risk. Each row opens the customer’s history and a recovery plan.</p>
+      <div class="queue" id="queue"></div>
+    </div>
+
+    <div class="panel s7">
+      <div class="ph"><h2><span class="n">2</span>Monthly net sales</h2><button class="more" data-open="ov-trend">About this</button></div>
+      <p class="note">Net sales after discounts, million IQD. Click a month.</p>
+      <svg id="trend" viewBox="0 0 640 300" role="group" aria-label="Monthly net sales"></svg>
+    </div>
+    <div class="panel s5">
+      <div class="ph"><h2><span class="n">3</span>Where the drop came from</h2></div>
+      <p class="note">Average monthly sales, Nov–Apr vs Aug–Oct. Click a bar.</p>
+      <svg id="water" viewBox="0 0 460 300" role="group" aria-label="Sales drop breakdown"></svg>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">4</span>Customer health map</h2><button class="more" data-open="ov-map">How to read it</button></div>
+      <p class="note">One dot per customer. Right = longer since the last order. Higher = bigger 12-month sales. Click a dot.</p>
+      <div class="legend"><span><i style="background:var(--steel)"></i>Active</span><span><i style="background:var(--amber)"></i>Declining (last 3 months under half of before)</span><span><i style="background:var(--brick)"></i>Lost (no order for 90+ days)</span></div>
+      <div class="scroll"><svg id="scatter" viewBox="0 0 1100 340" style="min-width:720px" role="group" aria-label="Customer health scatter"></svg></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">5</span>Customer concentration</h2></div>
+      <p class="note">Every customer ranked by 12-month net sales; the line is the cumulative share. The dark bars are the top 12 customers (20%).</p>
+      <div class="scroll"><svg id="pareto" viewBox="0 0 1100 260" style="min-width:720px" role="group" aria-label="Pareto chart of customers"></svg></div>
+    </div>
+
+    <div class="panel s6">
+      <div class="ph"><h2><span class="n">6</span>Sales reps: discount given</h2><button class="more" data-open="ov-disc">Discount policy</button></div>
+      <p class="note">Average discount as % of list value. Dashed line = 5% policy. Click a rep.</p>
+      <svg id="reps" viewBox="0 0 520 280" role="group" aria-label="Discount by sales rep"></svg>
+    </div>
+    <div class="panel s6">
+      <div class="ph"><h2><span class="n">7</span>Unpaid invoices by age</h2></div>
+      <p class="note">Open receivables on 31 Oct 2026, by days past the due date. Click a bar.</p>
+      <svg id="aging" viewBox="0 0 520 280" role="group" aria-label="Receivables aging"></svg>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">8</span>Product × month</h2></div>
+      <p class="note">Net sales per product per month. Each row is shaded against that product’s own best month, so falling products stand out. Click a product name or a cell.</p>
+      <div class="scroll"><svg id="heat" viewBox="0 0 1100 560" style="min-width:820px" role="group" aria-label="Product by month heatmap"></svg></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">9</span>Strategy decisions</h2><span class="note">Analyst recommendations</span></div>
+      <div class="play" id="play"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Source: fictional sales ledger (invoices, invoice lines, customers, products, payments) in Sales_Recovery_Review_Data.xlsx. Lost = no order for more than 90 days after at least 4 orders. Declining = average of the last 3 months below half of the 6 months before.</span>
+    <span>“At risk” = the customer’s average monthly sales × 12 (lost) or the monthly drop × 12 (declining). Strategy decisions and KPIs are analyst recommendations.</span>
+  </footer>
+</div>
+<div id="tip" aria-hidden="true"></div>
+<div id="scrim" hidden></div>
+<aside id="dr" hidden role="dialog" aria-modal="true" aria-labelledby="dtitle">
+  <div class="dh"><button id="back" hidden>← Back</button><span></span><button id="close">Close ✕</button></div>
+  <div class="db" id="db" tabindex="-1"></div>
+</aside>
+
+<script>
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const txt=(p,x,y,s,a={})=>{const t=el("text",{x,y,...a},p);t.textContent=s;return t};
+const IQD=v=>Math.round(v).toLocaleString("en-US")+" IQD";
+const M=v=>{const a=Math.abs(v);return (v<0?"−":"")+(a>=1e9?(a/1e9).toFixed(2)+"B":a>=1e6?(a/1e6).toFixed(a>=1e8?0:1)+"M":a>=1e3?(a/1e3).toFixed(0)+"K":Math.round(a))};
+const P=(v,d=1)=>(v*100).toFixed(d)+"%";
+const tip=document.getElementById("tip");
+const act=(n,s,id)=>{n.classList.add("hit");n.setAttribute("tabindex","0");n.setAttribute("role","button");n.setAttribute("aria-label",s);
+ n.addEventListener("mousemove",e=>{tip.textContent=s+"  ·  click for details";tip.style.opacity=1;tip.style.left=Math.min(e.clientX+12,innerWidth-270)+"px";tip.style.top=(e.clientY+12)+"px"});
+ n.addEventListener("mouseleave",()=>tip.style.opacity=0);
+ n.addEventListener("click",e=>{e.stopPropagation();tip.style.opacity=0;open(id)});
+ n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open(id)}});};
+function spark(a,labels){const w=400,h=84,max=Math.max(...a,1),sx=j=>14+j/(a.length-1)*(w-28),sy=v=>h-20-v/max*(h-34);
+ return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="M${a.map((v,j)=>sx(j)+","+sy(v)).join("L")}L${sx(a.length-1)},${h-20}L${sx(0)},${h-20}Z" fill="var(--steel)" opacity=".14"/><path d="M${a.map((v,j)=>sx(j)+","+sy(v)).join("L")}" fill="none" stroke="var(--steel)" stroke-width="2"/>${a.map((v,j)=>`<circle cx="${sx(j)}" cy="${sy(v)}" r="2.6" fill="var(--steel)"/>`).join("")}${labels.map((l,j)=>j%2===0?`<text x="${sx(j)}" y="${h-4}" text-anchor="middle" style="font-size:10px">${l}</text>`:"").join("")}<text x="${w-14}" y="11" text-anchor="end" style="font-size:10px">max ${M(max)}</text></svg>`}
+const dr=document.getElementById("dr"),db=document.getElementById("db"),scrim=document.getElementById("scrim"),backB=document.getElementById("back");
+let stack=[],lastFocus=null;
+function render(id){const d=D[id];if(!d)return;const [kl,kc]=KIND[d.k];
+ let h=`<div><div class="kind"><i style="background:${kc}"></i>${kl}</div><h3 id="dtitle">${esc(d.t)}</h3>${d.ar?`<span class="ar">${esc(d.ar)}</span>`:""}</div>`;
+ if(d.stat)h+=`<div class="stat"><b>${esc(d.stat[0])}</b><span>${esc(d.stat[1])}</span></div>`;
+ if(d.spark)h+=d.spark;
+ if(d.says)h+=`<div class="sec"><h4>What the data shows</h4><p>${esc(d.says)}</p></div>`;
+ if(d.means)h+=`<div class="sec"><h4>What it means</h4><p>${esc(d.means)}</p></div>`;
+ if(d.html)h+=d.html;
+ if(d.dec&&d.dec.length)h+=`<div class="sec"><h4>${esc(d.decTitle||"Strategic decisions")} <span class="flag">· recommendation</span></h4><ol class="dec">${d.dec.map(x=>`<li><span>${esc(x)}</span></li>`).join("")}</ol></div>`;
+ if(d.kpi&&d.kpi.length)h+=`<div class="sec"><h4>KPIs to track</h4><div class="kpis">${d.kpi.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div>`;
+ const rel=(d.rel||[]).filter(r=>D[r]&&r!==id);
+ if(rel.length)h+=`<div class="sec"><h4>Related</h4><div class="rel">${rel.map(r=>`<button data-go="${r}">${esc(D[r].t)}</button>`).join("")}</div></div>`;
+ h+=`<p class="src">${SRCNOTE}</p>`;
+ db.innerHTML=h;db.scrollTop=0;backB.hidden=stack.length<2;}
+function open(id){if(!D[id])return;if(dr.hidden){lastFocus=document.activeElement;stack=[]}stack.push(id);render(id);scrim.hidden=false;dr.hidden=false;requestAnimationFrame(()=>db.focus())}
+function close(){dr.hidden=true;scrim.hidden=true;stack=[];if(lastFocus&&lastFocus.focus)lastFocus.focus()}
+db.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b&&D[b.dataset.go]){stack.push(b.dataset.go);render(b.dataset.go)}});
+backB.onclick=()=>{stack.pop();render(stack[stack.length-1])};
+document.getElementById("close").onclick=close;scrim.onclick=close;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dr.hidden)close()});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)open(b.dataset.open)});
+
+const S={"tot":{"net":860194750,"gross":916821500,"disc":56626750,"cost":763933440,"gm":0.11190641421608305,"inv":1958},"month":[{"m":"2025-11","net":73301750,"gm":8385850},{"m":"2025-12","net":78394250,"gm":8837740},{"m":"2026-01","net":66627250,"gm":7499800},{"m":"2026-02","net":86200750,"gm":9467165},{"m":"2026-03","net":110580000,"gm":11714805},{"m":"2026-04","net":73235000,"gm":8627135},{"m":"2026-05","net":86997000,"gm":9176170},{"m":"2026-06","net":69289250,"gm":7770505},{"m":"2026-07","net":64692750,"gm":6934440},{"m":"2026-08","net":59794500,"gm":6854560},{"m":"2026-09","net":45757500,"gm":5503510},{"m":"2026-10","net":45324750,"gm":5489630}],"cust":[{"id":"C031","en":"Al-Sadeer Supermarket","arn":"أسواق السدير","type":"Supermarket","area":"Karrada","rep":"R3","net":57773500,"gm":4329200,"n":53,"last":"2026-10-25","days":6,"status":"active","monthly":[4474000,3567000,5188500,6233500,8119750,2378500,7729500,4153500,4798250,4825500,4430750,1874750],"avg_m":4814458,"prev6":5568833,"last3":3710333,"risk":0,"ar":2791750,"top":[["Basmati rice 10kg",10652881],["Tomato paste carton",9932855],["Pasta carton",6661154]],"areaAr":"الكرادة"},{"id":"C046","en":"Al-Wadi Supermarket","arn":"أسواق الوادي","type":"Supermarket","area":"Adhamiya","rep":"R2","net":47661000,"gm":5906315,"n":49,"last":"2026-10-15","days":16,"status":"active","monthly":[2835500,3422250,4621000,3767750,11674750,918000,3993500,4006250,2057500,4398500,3806250,2159750],"avg_m":3971750,"prev6":4402958,"last3":3454833,"risk":0,"ar":3308000,"top":[["Basmati rice 10kg",13850337],["Juice carton",4715352],["Toilet paper 24",4441607]],"areaAr":"الأعظمية"},{"id":"C002","en":"Al-Amal Supermarket","arn":"أسواق الأمل","type":"Supermarket","area":"Baghdad Al-Jadida","rep":"R2","net":46765750,"gm":4967975,"n":49,"last":"2026-10-23","days":8,"status":"active","monthly":[2276250,5762250,2643250,6992250,2216000,1478000,4828500,4663500,6630000,5418250,985000,2872500],"avg_m":3897146,"prev6":4468042,"last3":3091917,"risk":0,"ar":7849000,"top":[["Basmati rice 10kg",18535263],["Tomato paste carton",4875500],["Soft drink 24-can",4094211]],"areaAr":"بغداد الجديدة"},{"id":"C029","en":"Al-Jana'in Wholesale","arn":"مخازن الجنائن","type":"Wholesale","area":"Kadhimiya","rep":"R1","net":33311500,"gm":4297750,"n":54,"last":"2026-10-25","days":6,"status":"declining","monthly":[2800500,1392250,1262500,3689000,3529000,3445750,4686250,2488500,4645250,1019500,1172250,3180750],"avg_m":2775958,"prev6":3747292,"last3":1790833,"risk":23477500,"ar":4092750,"top":[["Tomato paste carton",7872435],["Pasta carton",5809341],["Basmati rice 10kg",3804466]],"areaAr":"الكاظمية"},{"id":"C020","en":"Al-Fajr Restaurant","arn":"مطعم الفجر","type":"Restaurant","area":"Baghdad Al-Jadida","rep":"R4","net":30317000,"gm":3949070,"n":49,"last":"2026-10-19","days":12,"status":"active","monthly":[2321750,4243750,1124250,2502500,1183500,4157250,3262000,2530750,1751250,3220500,1076000,2943500],"avg_m":2526417,"prev6":2564542,"last3":2413333,"risk":0,"ar":3212750,"top":[["Basmati rice 10kg",6569954],["Juice carton",3460113],["Tomato paste carton",2839750]],"areaAr":"بغداد الجديدة"},{"id":"C059","en":"Al-Mizan Supermarket","arn":"أسواق الميزان","type":"Supermarket","area":"Dora","rep":"R3","net":29889500,"gm":2233045,"n":45,"last":"2026-10-27","days":4,"status":"declining","monthly":[1222250,2548250,3063250,2794750,5952750,1610500,5720250,1612500,1963500,1553250,941500,906750],"avg_m":2490792,"prev6":3275708,"last3":1133833,"risk":25702500,"ar":1362750,"top":[["Basmati rice 10kg",7015064],["Toilet paper 24",3765156],["Tomato paste carton",3054370]],"areaAr":"الدورة"},{"id":"C039","en":"Al-Sabah Wholesale","arn":"مخازن الصباح","type":"Wholesale","area":"Jadriya","rep":"R3","net":25147750,"gm":1782655,"n":46,"last":"2026-10-18","days":13,"status":"declining","monthly":[3002250,1578000,2724000,3026000,2432000,1796250,2907500,3421250,2825000,702500,291250,441750],"avg_m":2095646,"prev6":2734667,"last3":478500,"risk":27074000,"ar":622500,"top":[["Tomato paste carton",4533049],["Basmati rice 10kg",4323694],["Soft drink 24-can",2710019]],"areaAr":"الجادرية"},{"id":"C006","en":"Al-Salam Grocery","arn":"محلات السلام","type":"Grocery","area":"Adhamiya","rep":"R2","net":24538750,"gm":2916280,"n":45,"last":"2026-10-27","days":4,"status":"active","monthly":[2597250,3056250,825750,2470500,2431750,2162500,2383000,831500,2464500,3444500,549500,1321750],"avg_m":2044896,"prev6":2123958,"last3":1771917,"risk":0,"ar":5209750,"top":[["Basmati rice 10kg",6480818],["Tomato paste carton",3496614],["Soft drink 24-can",2124828]],"areaAr":"الأعظمية"},{"id":"C003","en":"Al-Rafidain Grocery","arn":"محلات الرافدين","type":"Grocery","area":"Mansour","rep":"R3","net":23553500,"gm":1948210,"n":43,"last":"2026-10-27","days":4,"status":"active","monthly":[2863500,2032250,1394000,1118000,2724250,980500,2723750,3249000,1866250,1500750,1784500,1316750],"avg_m":1962792,"prev6":2110292,"last3":1534000,"risk":0,"ar":2039500,"top":[["Basmati rice 10kg",7383625],["Tomato paste carton",3093342],["Pasta carton",2213875]],"areaAr":"المنصور"},{"id":"C033","en":"Ishtar Grocery","arn":"محلات عشتار","type":"Grocery","area":"Karrada","rep":"R1","net":23094500,"gm":3070715,"n":44,"last":"2026-10-23","days":8,"status":"active","monthly":[4256750,2684500,1750750,1643000,1171750,1260500,2639500,1344250,2521750,1813500,1078000,930250],"avg_m":1924542,"prev6":1763458,"last3":1273917,"risk":0,"ar":1065500,"top":[["Basmati rice 10kg",3749589],["Soft drink 24-can",2325153],["Tomato paste carton",2086948]],"areaAr":"الكرادة"},{"id":"C001","en":"Al-Noor Grocery","arn":"محلات النور","type":"Grocery","area":"Mansour","rep":"R1","net":19910750,"gm":2321510,"n":45,"last":"2026-10-24","days":7,"status":"declining","monthly":[941250,2245000,1835500,2076000,2662500,1129000,3496250,2451500,2164000,215500,244750,449500],"avg_m":1659229,"prev6":2329875,"last3":303250,"risk":24319500,"ar":449500,"top":[["Basmati rice 10kg",6147840],["Tomato paste carton",2650760],["Paper cups 1000",1871235]],"areaAr":"المنصور"},{"id":"C050","en":"Al-Najaf Hotel","arn":"فندق النجف","type":"Hotel","area":"Dora","rep":"R2","net":19444250,"gm":2565230,"n":49,"last":"2026-10-24","days":7,"status":"declining","monthly":[1268750,2027500,1303250,1583500,1167500,2812750,3450000,1912500,1504750,669250,1275750,468750],"avg_m":1620354,"prev6":2071833,"last3":804583,"risk":15207000,"ar":931500,"top":[["Tomato paste carton",2688854],["Basmati rice 10kg",2295493],["Juice carton",2008731]],"areaAr":"الدورة"},{"id":"C034","en":"Al-Waha Hotel","arn":"فندق الواحة","type":"Hotel","area":"Jadriya","rep":"R2","net":19138250,"gm":2689095,"n":46,"last":"2026-10-26","days":5,"status":"active","monthly":[1867500,593750,1195750,1583750,2693750,1593750,1522500,1962000,1036750,1808500,1009500,2270750],"avg_m":1594854,"prev6":1732083,"last3":1696250,"risk":0,"ar":2934500,"top":[["Basmati rice 10kg",2124058],["Laundry powder 3kg",2102315],["Soft drink 24-can",2102309]],"areaAr":"الجادرية"},{"id":"C040","en":"Al-Diyar Supermarket","arn":"أسواق الديار","type":"Supermarket","area":"Dora","rep":"R4","net":18855500,"gm":2562310,"n":44,"last":"2026-10-16","days":15,"status":"active","monthly":[861750,2590250,1000500,923500,3348750,498750,2456000,1432250,2180750,664750,1461500,1436750],"avg_m":1571292,"prev6":1806667,"last3":1187667,"risk":0,"ar":2506500,"top":[["Basmati rice 10kg",2458517],["Pasta carton",2079974],["Soft drink 24-can",1922043]],"areaAr":"الدورة"},{"id":"C012","en":"Al-Yasmeen Supermarket","arn":"أسواق الياسمين","type":"Supermarket","area":"Kadhimiya","rep":"R4","net":17568000,"gm":2421410,"n":22,"last":"2026-03-22","days":223,"status":"lost","monthly":[2521750,1462000,2894000,6712750,3977500,0,0,0,0,0,0,0],"avg_m":3513600,"prev6":1781708,"last3":0,"risk":42163200,"ar":3132500,"top":[["Basmati rice 10kg",3715316],["Tomato paste carton",2098931],["Soft drink 24-can",1947457]],"areaAr":"الكاظمية"},{"id":"C021","en":"Al-Safa Wholesale","arn":"مخازن الصفا","type":"Wholesale","area":"Dora","rep":"R1","net":16901750,"gm":2056790,"n":34,"last":"2026-10-16","days":15,"status":"active","monthly":[1622750,769250,950500,934250,654500,1869750,1542000,2987500,2648250,1058250,941500,923250],"avg_m":1408479,"prev6":1772708,"last3":974333,"risk":0,"ar":3759250,"top":[["Basmati rice 10kg",3373896],["Soft drink 24-can",2064782],["Pasta carton",1941356]],"areaAr":"الدورة"},{"id":"C022","en":"Al-Marwa Grocery","arn":"محلات المروة","type":"Grocery","area":"Kadhimiya","rep":"R2","net":16627000,"gm":2105195,"n":40,"last":"2026-10-26","days":5,"status":"active","monthly":[1605750,1599500,1512000,1069750,1962500,1406500,1204500,819500,698750,1924250,1776750,1047250],"avg_m":1385583,"prev6":1193583,"last3":1582750,"risk":0,"ar":1675250,"top":[["Tomato paste carton",4155812],["Basmati rice 10kg",2481072],["Pasta carton",1357824]],"areaAr":"الكاظمية"},{"id":"C028","en":"Al-Hadhar Supermarket","arn":"أسواق الحضر","type":"Supermarket","area":"Adhamiya","rep":"R4","net":16592500,"gm":2178180,"n":28,"last":"2026-04-21","days":193,"status":"lost","monthly":[1469250,3552500,905750,4481500,5153500,1030000,0,0,0,0,0,0],"avg_m":2765417,"prev6":1777500,"last3":0,"risk":33185000,"ar":4953750,"top":[["Tomato paste carton",3841682],["Basmati rice 10kg",3187291],["Soft drink 24-can",1187696]],"areaAr":"الأعظمية"},{"id":"C017","en":"Al-Nakhla Grocery","arn":"محلات النخلة","type":"Grocery","area":"Dora","rep":"R1","net":16419000,"gm":2115695,"n":36,"last":"2026-10-25","days":6,"status":"active","monthly":[635500,2103500,1229750,1894750,1355750,1937500,778500,691250,1005250,2719750,788500,1279000],"avg_m":1368250,"prev6":1277167,"last3":1595750,"risk":0,"ar":1279000,"top":[["Tomato paste carton",3340802],["Basmati rice 10kg",2596939],["Soft drink 24-can",1575589]],"areaAr":"الدورة"},{"id":"C019","en":"Al-Rayyan Supermarket","arn":"أسواق الريان","type":"Supermarket","area":"Mansour","rep":"R3","net":15848750,"gm":1116635,"n":41,"last":"2026-10-21","days":10,"status":"active","monthly":[1322250,468750,1476000,1028500,2629750,783500,1451500,1042250,2339250,1757000,951750,598250],"avg_m":1320729,"prev6":1545792,"last3":1102333,"risk":0,"ar":4394000,"top":[["Basmati rice 10kg",3217064],["Tomato paste carton",1809376],["Toilet paper 24",1665900]],"areaAr":"المنصور"},{"id":"C005","en":"Dijla Supermarket","arn":"أسواق دجلة","type":"Supermarket","area":"Karrada","rep":"R1","net":15504250,"gm":1961880,"n":28,"last":"2026-05-25","days":159,"status":"lost","monthly":[1308000,4460500,2546250,1707500,1842500,2329750,1309750,0,0,0,0,0],"avg_m":2214893,"prev6":1198250,"last3":0,"risk":26578714,"ar":6282750,"top":[["Basmati rice 10kg",2716051],["Toilet paper 24",1657878],["Soft drink 24-can",1628200]],"areaAr":"الكرادة"},{"id":"C030","en":"Al-Kawthar Grocery","arn":"محلات الكوثر","type":"Grocery","area":"Baghdad Al-Jadida","rep":"R2","net":15135750,"gm":2022620,"n":40,"last":"2026-10-23","days":8,"status":"active","monthly":[567750,1415750,762750,474000,1871500,1458000,724000,1562750,1484500,2388500,1311500,1114750],"avg_m":1261312,"prev6":1262458,"last3":1604917,"risk":0,"ar":1530000,"top":[["Basmati rice 10kg",2624949],["Tomato paste carton",2059454],["Laundry powder 3kg",1594508]],"areaAr":"بغداد الجديدة"},{"id":"C057","en":"Al-Saqr Restaurant","arn":"مطعم الصقر","type":"Restaurant","area":"Kadhimiya","rep":"R1","net":14394250,"gm":1747755,"n":36,"last":"2026-10-19","days":12,"status":"active","monthly":[1029000,923000,853500,513750,4040750,477000,606000,1313000,654750,893500,375250,2714750],"avg_m":1199521,"prev6":1267542,"last3":1327833,"risk":0,"ar":4527500,"top":[["Basmati rice 10kg",4754619],["Tomato paste carton",1804500],["Soft drink 24-can",1337482]],"areaAr":"الكاظمية"},{"id":"C024","en":"Al-Iraq Hotel","arn":"فندق العراق","type":"Hotel","area":"Jadriya","rep":"R4","net":14293250,"gm":1897390,"n":38,"last":"2026-10-21","days":10,"status":"active","monthly":[2535250,1251250,279250,1082000,2318500,1792000,1103500,626250,587000,1814000,649750,254500],"avg_m":1191104,"prev6":1251542,"last3":906083,"risk":0,"ar":1679250,"top":[["Basmati rice 10kg",2464445],["Tomato paste carton",2438633],["Pasta carton",1669701]],"areaAr":"الجادرية"},{"id":"C047","en":"Nineveh Wholesale","arn":"مخازن نينوى","type":"Wholesale","area":"Sadr City","rep":"R3","net":13159250,"gm":1014555,"n":30,"last":"2026-06-22","days":131,"status":"lost","monthly":[3081000,1637750,520750,927500,2862000,1676250,1593500,860500,0,0,0,0],"avg_m":1644906,"prev6":1319958,"last3":0,"risk":19738875,"ar":4402750,"top":[["Basmati rice 10kg",2754197],["Soft drink 24-can",1754591],["Tomato paste carton",1319250]],"areaAr":"مدينة الصدر"},{"id":"C037","en":"Al-Bayan Wholesale","arn":"مخازن البيان","type":"Wholesale","area":"Zayouna","rep":"R1","net":13052500,"gm":1547305,"n":37,"last":"2026-10-12","days":19,"status":"active","monthly":[1110750,781750,1570750,1479250,634750,1672500,1375000,868750,557000,985750,790750,1225500],"avg_m":1087708,"prev6":1097875,"last3":1000667,"risk":0,"ar":1356750,"top":[["Basmati rice 10kg",2682175],["Tomato paste carton",2154484],["Soft drink 24-can",1809091]],"areaAr":"زيونة"},{"id":"C045","en":"Al-Sharq Grocery","arn":"محلات الشرق","type":"Grocery","area":"Sadr City","rep":"R1","net":12544500,"gm":1520820,"n":34,"last":"2026-10-14","days":17,"status":"declining","monthly":[393000,381000,389750,803750,2416250,1967500,1213750,1858250,869250,635500,1150250,466250],"avg_m":1045375,"prev6":1521458,"last3":750667,"risk":9249500,"ar":466250,"top":[["Basmati rice 10kg",5568452],["Juice carton",1179546],["Tomato paste carton",1076762]],"areaAr":"مدينة الصدر"},{"id":"C052","en":"Al-Majd Grocery","arn":"محلات المجد","type":"Grocery","area":"Baghdad Al-Jadida","rep":"R4","net":12534000,"gm":1878225,"n":39,"last":"2026-10-25","days":6,"status":"declining","monthly":[410000,1064250,2307750,1832750,1183000,2060000,1746250,547250,553500,55750,454500,319000],"avg_m":1044500,"prev6":1320458,"last3":276417,"risk":12528500,"ar":319000,"top":[["Laundry powder 3kg",1569283],["Sunflower oil 1.8L",1455865],["Paper cups 1000",1453190]],"areaAr":"بغداد الجديدة"},{"id":"C014","en":"Al-Mustaqbal Supermarket","arn":"أسواق المستقبل","type":"Supermarket","area":"Mansour","rep":"R2","net":12087250,"gm":1404155,"n":34,"last":"2026-10-23","days":8,"status":"active","monthly":[639750,1051000,467500,1557000,1629000,849000,354000,1189000,1274250,612750,684500,1779500],"avg_m":1007271,"prev6":1142042,"last3":1025583,"risk":0,"ar":1907500,"top":[["Basmati rice 10kg",3699066],["Soft drink 24-can",1554152],["Toilet paper 24",1035546]],"areaAr":"المنصور"},{"id":"C051","en":"Al-Taj Grocery","arn":"محلات التاج","type":"Grocery","area":"Adhamiya","rep":"R3","net":12066500,"gm":880610,"n":32,"last":"2026-10-26","days":5,"status":"declining","monthly":[1743500,925000,649500,1211500,919500,1875500,625500,2040000,355250,942500,334750,444000],"avg_m":1005542,"prev6":1171208,"last3":573750,"risk":7169500,"ar":656250,"top":[["Pasta carton",2372566],["Basmati rice 10kg",2237867],["Tomato paste carton",1374938]],"areaAr":"الأعظمية"},{"id":"C026","en":"Sumer Supermarket","arn":"أسواق سومر","type":"Supermarket","area":"Palestine St","rep":"R2","net":11733750,"gm":1525000,"n":32,"last":"2026-10-15","days":16,"status":"active","monthly":[2002000,81750,937000,1049750,1346250,1466500,527750,648000,1231750,1290750,337000,815250],"avg_m":977812,"prev6":1045000,"last3":814333,"risk":0,"ar":1112000,"top":[["Tomato paste carton",2905276],["Basmati rice 10kg",2709954],["Laundry powder 3kg",1430481]],"areaAr":"شارع فلسطين"},{"id":"C055","en":"Al-Afaq Wholesale","arn":"مخازن الآفاق","type":"Wholesale","area":"Dora","rep":"R3","net":11247250,"gm":955770,"n":36,"last":"2026-10-23","days":8,"status":"declining","monthly":[480750,893500,381750,840750,1274000,1816000,188000,2213750,1454250,526000,439500,739000],"avg_m":937271,"prev6":1297792,"last3":568167,"risk":8755500,"ar":3262500,"top":[["Tomato paste carton",2611240],["Laundry powder 3kg",1368103],["Pasta carton",1089387]],"areaAr":"الدورة"},{"id":"C007","en":"Al-Khair Wholesale","arn":"مخازن الخير","type":"Wholesale","area":"Mansour","rep":"R3","net":10692000,"gm":808245,"n":25,"last":"2026-05-17","days":167,"status":"lost","monthly":[1556000,1847250,1811750,1530750,1313000,1677250,956000,0,0,0,0,0],"avg_m":1527429,"prev6":912833,"last3":0,"risk":18329143,"ar":3325250,"top":[["Basmati rice 10kg",2206811],["Juice carton",1219386],["Tomato paste carton",1214570]],"areaAr":"المنصور"},{"id":"C010","en":"Al-Zahraa Restaurant","arn":"مطعم الزهراء","type":"Restaurant","area":"Jadriya","rep":"R2","net":10290500,"gm":1286340,"n":37,"last":"2026-10-13","days":18,"status":"declining","monthly":[506000,1897250,606000,988000,1893750,1656250,776250,764250,231500,383250,285000,303000],"avg_m":857542,"prev6":1051667,"last3":323750,"risk":8735000,"ar":324750,"top":[["Tomato paste carton",2698907],["Laundry powder 3kg",1412925],["Basmati rice 10kg",1362500]],"areaAr":"الجادرية"},{"id":"C036","en":"Al-Manar Hotel","arn":"فندق المنار","type":"Hotel","area":"Baghdad Al-Jadida","rep":"R4","net":10231250,"gm":1409570,"n":29,"last":"2026-10-21","days":10,"status":"active","monthly":[1019750,1085500,38250,832500,1709250,1268500,748750,1006750,307000,608500,1196000,410500],"avg_m":852604,"prev6":978792,"last3":738333,"risk":0,"ar":2009250,"top":[["Tomato paste carton",3139483],["Pasta carton",1531438],["Toilet paper 24",675492]],"areaAr":"بغداد الجديدة"},{"id":"C049","en":"Karbala Grocery","arn":"محلات كربلاء","type":"Grocery","area":"Dora","rep":"R1","net":9681000,"gm":1319355,"n":33,"last":"2026-10-08","days":23,"status":"active","monthly":[896750,790000,432000,612500,843750,753250,1031750,614750,748250,1030500,1703750,223750],"avg_m":806750,"prev6":767375,"last3":986000,"risk":0,"ar":886500,"top":[["Basmati rice 10kg",1701995],["Soft drink 24-can",1594560],["Tomato paste carton",1075344]],"areaAr":"الدورة"},{"id":"C035","en":"Al-Andalus Grocery","arn":"محلات الأندلس","type":"Grocery","area":"Kadhimiya","rep":"R3","net":9364000,"gm":736495,"n":31,"last":"2026-10-17","days":14,"status":"declining","monthly":[985000,1114250,633000,457250,1306750,750000,2090500,621750,244250,300750,742000,118500],"avg_m":780333,"prev6":911750,"last3":387083,"risk":6296000,"ar":118500,"top":[["Basmati rice 10kg",2119345],["Tissue box 10-pack",1268577],["Pasta carton",1181679]],"areaAr":"الكاظمية"},{"id":"C015","en":"Al-Shams Grocery","arn":"محلات الشمس","type":"Grocery","area":"Jadriya","rep":"R3","net":9294000,"gm":710890,"n":31,"last":"2026-10-02","days":29,"status":"active","monthly":[981250,1171000,449000,394250,1387000,1092750,1380500,225750,171750,930750,1018250,91750],"avg_m":774500,"prev6":775333,"last3":680250,"risk":0,"ar":195750,"top":[["Tomato paste carton",2895320],["Soft drink 24-can",1132723],["Basmati rice 10kg",1005113]],"areaAr":"الجادرية"},{"id":"C058","en":"Al-Asala Grocery","arn":"محلات الأصالة","type":"Grocery","area":"Jadriya","rep":"R2","net":8726250,"gm":988480,"n":20,"last":"2026-06-26","days":127,"status":"lost","monthly":[1468500,88750,865000,331750,2318500,892500,1282000,1479250,0,0,0,0],"avg_m":1090781,"prev6":1050667,"last3":0,"risk":13089375,"ar":4249500,"top":[["Basmati rice 10kg",2405435],["Tomato paste carton",1700407],["Soft drink 24-can",1021886]],"areaAr":"الجادرية"},{"id":"C043","en":"Al-Muntazar Hotel","arn":"فندق المنتظر","type":"Hotel","area":"Mansour","rep":"R3","net":8577500,"gm":660165,"n":28,"last":"2026-10-27","days":4,"status":"active","monthly":[404000,881000,611250,257000,894250,1869000,1094250,630750,331000,670750,439750,494500],"avg_m":714792,"prev6":846042,"last3":535000,"risk":0,"ar":614500,"top":[["Tomato paste carton",2263110],["Basmati rice 10kg",1248362],["Juice carton",805516]],"areaAr":"المنصور"},{"id":"C054","en":"Al-Thuraya Supermarket","arn":"أسواق الثريا","type":"Supermarket","area":"Palestine St","rep":"R2","net":8565000,"gm":1025320,"n":32,"last":"2026-10-27","days":4,"status":"active","monthly":[433250,844000,1334750,787250,416750,913000,791500,524750,732750,737750,817500,231750],"avg_m":713750,"prev6":694333,"last3":595667,"risk":0,"ar":786000,"top":[["Basmati rice 10kg",2076233],["Tomato paste carton",1406546],["Juice carton",1054445]],"areaAr":"شارع فلسطين"},{"id":"C056","en":"Al-Nabaa Hotel","arn":"فندق النبع","type":"Hotel","area":"Palestine St","rep":"R4","net":8273000,"gm":1232860,"n":29,"last":"2026-10-15","days":16,"status":"active","monthly":[618500,574500,604500,1226250,103500,1822250,794250,631000,0,560750,992750,344750],"avg_m":689417,"prev6":762875,"last3":632750,"risk":0,"ar":587500,"top":[["Tomato paste carton",1215874],["Pasta carton",1192867],["Tissue box 10-pack",1052445]],"areaAr":"شارع فلسطين"},{"id":"C004","en":"Al-Furat Grocery","arn":"محلات الفرات","type":"Grocery","area":"Karrada","rep":"R4","net":8259750,"gm":1137715,"n":32,"last":"2026-10-25","days":6,"status":"active","monthly":[391000,495000,1790000,645000,716000,149500,425500,264500,1374750,357250,979250,672000],"avg_m":688312,"prev6":595875,"last3":669500,"risk":0,"ar":672000,"top":[["Basmati rice 10kg",1347254],["Sugar 5kg",909848],["Black tea 500g",872420]],"areaAr":"الكرادة"},{"id":"C009","en":"Al-Wafaa Grocery","arn":"محلات الوفاء","type":"Grocery","area":"Mansour","rep":"R1","net":8162250,"gm":1062935,"n":29,"last":"2026-10-20","days":11,"status":"active","monthly":[288250,597000,1169250,1204750,461250,426250,1198250,1098500,340500,152250,711000,515000],"avg_m":680188,"prev6":788250,"last3":459417,"risk":0,"ar":1103250,"top":[["Basmati rice 10kg",2038500],["Tomato paste carton",1125246],["Laundry powder 3kg",810706]],"areaAr":"المنصور"},{"id":"C023","en":"Al-Rahma Grocery","arn":"محلات الرحمة","type":"Grocery","area":"Adhamiya","rep":"R3","net":7678500,"gm":498255,"n":26,"last":"2026-10-23","days":8,"status":"active","monthly":[791750,477500,261500,190500,635000,495000,697000,952250,1347500,595500,1100500,134500],"avg_m":639875,"prev6":719542,"last3":610167,"risk":0,"ar":181250,"top":[["Tomato paste carton",2749438],["Soft drink 24-can",1267753],["Sunflower oil 1.8L",617367]],"areaAr":"الأعظمية"},{"id":"C013","en":"Al-Huda Supermarket","arn":"أسواق الهدى","type":"Supermarket","area":"Dora","rep":"R1","net":7470500,"gm":959905,"n":28,"last":"2026-10-02","days":29,"status":"active","monthly":[497000,85000,287750,533750,747500,1070000,1011000,491000,223750,917500,839000,767250],"avg_m":622542,"prev6":679500,"last3":841250,"risk":0,"ar":1583250,"top":[["Soft drink 24-can",1444486],["Pasta carton",1356785],["Tomato paste carton",953238]],"areaAr":"الدورة"},{"id":"C008","en":"Al-Baraka Grocery","arn":"محلات البركة","type":"Grocery","area":"Kadhimiya","rep":"R4","net":7326250,"gm":792350,"n":17,"last":"2026-04-22","days":192,"status":"lost","monthly":[1039750,756000,1526750,1790000,1202250,1011500,0,0,0,0,0,0],"avg_m":1221042,"prev6":667292,"last3":0,"risk":14652500,"ar":1447750,"top":[["Basmati rice 10kg",2393494],["Sugar 5kg",839634],["Sunflower oil 1.8L",589870]],"areaAr":"الكاظمية"},{"id":"C041","en":"Al-Ghadeer Grocery","arn":"محلات الغدير","type":"Grocery","area":"Adhamiya","rep":"R1","net":6604000,"gm":835545,"n":28,"last":"2026-10-27","days":4,"status":"active","monthly":[177000,37250,1274250,590250,254250,158000,319500,648750,890500,875000,972500,406750],"avg_m":550333,"prev6":476875,"last3":751417,"risk":0,"ar":496750,"top":[["Basmati rice 10kg",2356009],["Pasta carton",674701],["Laundry powder 3kg",640284]],"areaAr":"الأعظمية"},{"id":"C011","en":"Al-Rabee Grocery","arn":"محلات الربيع","type":"Grocery","area":"Jadriya","rep":"R3","net":6471250,"gm":436070,"n":28,"last":"2026-10-12","days":19,"status":"active","monthly":[106000,1026000,149000,735000,371500,131750,977250,941500,765750,127250,0,1140250],"avg_m":539271,"prev6":653792,"last3":422500,"risk":0,"ar":1140250,"top":[["Basmati rice 10kg",2181281],["Tomato paste carton",580354],["Laundry powder 3kg",565808]],"areaAr":"الجادرية"},{"id":"C048","en":"Al-Basra Restaurant","arn":"مطعم البصرة","type":"Restaurant","area":"Karrada","rep":"R4","net":5759000,"gm":704000,"n":18,"last":"2026-10-18","days":13,"status":"active","monthly":[0,0,192750,397000,853500,1757250,716000,312250,403500,297250,406250,423250],"avg_m":575900,"prev6":739917,"last3":375583,"risk":0,"ar":610000,"top":[["Basmati rice 10kg",1997193],["Tomato paste carton",1150175],["Toilet paper 24",841368]],"areaAr":"الكرادة"},{"id":"C038","en":"Al-Hikma Restaurant","arn":"مطعم الحكمة","type":"Restaurant","area":"Jadriya","rep":"R2","net":5743500,"gm":688965,"n":23,"last":"2026-10-17","days":14,"status":"active","monthly":[121500,563250,3500,597500,159000,779000,369250,1165500,736000,508750,74000,666250],"avg_m":478625,"prev6":634375,"last3":416333,"risk":0,"ar":1653250,"top":[["Basmati rice 10kg",1543623],["Soft drink 24-can",834122],["Pasta carton",720928]],"areaAr":"الجادرية"},{"id":"C027","en":"Akkad Restaurant","arn":"مطعم أكد","type":"Restaurant","area":"Mansour","rep":"R3","net":4850750,"gm":279250,"n":20,"last":"2026-09-17","days":44,"status":"active","monthly":[201250,102500,195000,118500,1006500,898500,276500,159250,864250,421750,606750,0],"avg_m":440977,"prev6":553917,"last3":342833,"risk":0,"ar":243750,"top":[["Basmati rice 10kg",1570979],["Tomato paste carton",857291],["Pasta carton",517613]],"areaAr":"المنصور"},{"id":"C042","en":"Al-Iman Grocery","arn":"محلات الإيمان","type":"Grocery","area":"Kadhimiya","rep":"R2","net":4606750,"gm":529080,"n":22,"last":"2026-10-25","days":6,"status":"active","monthly":[753000,190000,462250,562500,403250,191500,337750,392250,96750,827500,201500,188500],"avg_m":383896,"prev6":330667,"last3":405833,"risk":0,"ar":262000,"top":[["Tomato paste carton",1428413],["Basmati rice 10kg",1131640],["Soft drink 24-can",285261]],"areaAr":"الكاظمية"},{"id":"C032","en":"Al-Mada Wholesale","arn":"مخازن المدى","type":"Wholesale","area":"Sadr City","rep":"R4","net":3488000,"gm":479840,"n":23,"last":"2026-10-27","days":4,"status":"active","monthly":[394250,46500,208750,233750,380000,294250,765750,0,187250,53500,542750,381250],"avg_m":290667,"prev6":310167,"last3":325833,"risk":0,"ar":381250,"top":[["Basmati rice 10kg",736783],["Laundry powder 3kg",473080],["Sunflower oil 1.8L",350974]],"areaAr":"مدينة الصدر"},{"id":"C018","en":"Al-Jawhara Grocery","arn":"محلات الجوهرة","type":"Grocery","area":"Jadriya","rep":"R2","net":3023250,"gm":374275,"n":20,"last":"2026-10-12","days":19,"status":"active","monthly":[353000,191000,115000,505750,120000,192500,81750,318500,230750,128500,188250,598250],"avg_m":251938,"prev6":241542,"last3":305000,"risk":0,"ar":1145750,"top":[["Basmati rice 10kg",515752],["Tomato paste carton",448011],["Pasta carton",384123]],"areaAr":"الجادرية"},{"id":"C044","en":"Al-Riyadh Supermarket","arn":"أسواق الرياض","type":"Supermarket","area":"Dora","rep":"R4","net":2950500,"gm":437370,"n":10,"last":"2026-03-13","days":232,"status":"lost","monthly":[570250,735750,327750,245000,1071750,0,0,0,0,0,0,0],"avg_m":590100,"prev6":219458,"last3":0,"risk":7081200,"ar":1527250,"top":[["Toilet paper 24",901665],["Paper cups 1000",570482],["Laundry powder 3kg",275293]],"areaAr":"الدورة"},{"id":"C016","en":"Al-Qamar Hotel","arn":"فندق القمر","type":"Hotel","area":"Mansour","rep":"R4","net":2541000,"gm":338265,"n":20,"last":"2026-10-22","days":9,"status":"active","monthly":[423000,101500,249500,106500,179250,0,67750,90500,16500,238750,459250,608500],"avg_m":211750,"prev6":76750,"last3":435500,"risk":0,"ar":608500,"top":[["Basmati rice 10kg",400011],["Soft drink 24-can",328750],["Tomato paste carton",293748]],"areaAr":"المنصور"},{"id":"C053","en":"Al-Ezz Grocery","arn":"محلات العز","type":"Grocery","area":"Mansour","rep":"R1","net":1970250,"gm":295295,"n":14,"last":"2026-10-19","days":12,"status":"declining","monthly":[165000,84250,0,141750,165500,0,302500,512500,264250,0,67250,267250],"avg_m":164188,"prev6":231083,"last3":111500,"risk":1435000,"ar":267250,"top":[["Basmati rice 10kg",551732],["Juice carton",383727],["Laundry powder 3kg",210875]],"areaAr":"المنصور"},{"id":"C025","en":"Babel Grocery","arn":"محلات بابل","type":"Grocery","area":"Palestine St","rep":"R1","net":1327250,"gm":200370,"n":15,"last":"2026-10-06","days":25,"status":"active","monthly":[21500,20500,39250,118500,178250,208000,342750,0,61750,0,294000,42750],"avg_m":110604,"prev6":151542,"last3":112250,"risk":0,"ar":232750,"top":[["Tomato paste carton",328074],["Toilet paper 24",254204],["Laundry powder 3kg",156472]],"areaAr":"شارع فلسطين"},{"id":"C060","en":"Al-Rawda Grocery","arn":"محلات الروضة","type":"Grocery","area":"Karrada","rep":"R4","net":1156500,"gm":144755,"n":12,"last":"2026-09-24","days":37,"status":"active","monthly":[72000,26500,422750,62250,109250,88000,20750,115750,0,211750,27500,0],"avg_m":105136,"prev6":66000,"last3":79750,"risk":0,"ar":27500,"top":[["Basmati rice 10kg",398681],["Pasta carton",128770],["Laundry powder 3kg",115583]],"areaAr":"الكرادة"}],"pareto":{"top12":381407750,"share":0.44339697492922386},"lostsum":{"n":8,"risk":174818007},"decsum":{"n":12,"risk":169949500},"reps":[{"id":"R1","en":"Ali Hassan","arn":"علي حسن","gross":209935500,"disc":9587250,"dp":0.04566759790507084,"net":200348250,"gm":0.12634812133372764,"inv":495,"cust":15,"excess":1077650,"ar":27849000,"lost":5},{"id":"R2","en":"Hussein Kareem","arn":"حسين كريم","gross":267754000,"disc":13667000,"dp":0.05104312167138493,"net":254087000,"gm":0.12198311995497606,"inv":538,"cust":15,"excess":2095075,"ar":34878750,"lost":3},{"id":"R3","en":"Mustafa Jabbar","arn":"مصطفى جبار","gross":272262500,"disc":26648500,"dp":0.09787796703548965,"net":245614000,"gm":0.0748737856962551,"inv":515,"cust":15,"excess":13048650,"ar":25351250,"lost":7},{"id":"R4","en":"Zainab Adel","arn":"زينب عادل","gross":166869500,"disc":6724000,"dp":0.04029496103242354,"net":160145500,"gm":0.1346482417551539,"inv":410,"cust":15,"excess":483325,"ar":23674750,"lost":5}],"excess":16704700,"prods":[{"id":"P01","en":"Basmati rice 10kg","arn":"رز بسمتي ١٠ كغم","cat":"Food staples","net":182176202,"gm":0.06370646589723064,"qty":4615,"h1":102951351,"h2":79224851,"monthly":[13317509,16017776,11547530,23859787,32917201,5291548,24560601,13300717,12814536,15842852,5363588,7342557]},{"id":"P04","en":"Tomato paste carton","arn":"معجون طماطة كارتون","cat":"Food staples","net":120574221,"gm":0.09378804943720101,"qty":4591,"h1":69700188,"h2":50874033,"monthly":[12955692,11462932,6564980,8818023,17497755,12400806,13923075,5831211,13170087,5805948,6159911,5983801]},{"id":"P07","en":"Soft drink 24-can","arn":"مشروبات غازية ٢٤ علبة","cat":"Beverages","net":71907361,"gm":0.08238184405070852,"qty":5115,"h1":42909404,"h2":28997957,"monthly":[6888960,5121333,6694121,6010836,11479424,6714730,6047003,5079016,5087435,4596631,4479109,3708763]},{"id":"P05","en":"Pasta carton","arn":"معكرونة كارتون","cat":"Food staples","net":62016581,"gm":0.11482753297864001,"qty":3481,"h1":29662474,"h2":32354107,"monthly":[4871234,3412022,4523031,5180558,8176957,3498672,4383960,9289447,5582513,4635224,5734302,2728661]},{"id":"P18","en":"Toilet paper 24","arn":"ورق صحي ٢٤","cat":"Paper goods","net":50012768,"gm":0.13792653907898078,"qty":3802,"h1":29386182,"h2":20626586,"monthly":[2365838,4480821,3735480,4353424,7379944,7070675,3802528,3713148,3395987,2962290,3523983,3228650]},{"id":"P09","en":"Juice carton","arn":"عصير كارتون","cat":"Beverages","net":48471658,"gm":0.12781341211806702,"qty":3819,"h1":27062283,"h2":21409375,"monthly":[5728345,4533833,4816768,4443861,3155696,4383780,4156653,5000493,1798809,4666078,2322601,3464741]},{"id":"P10","en":"Laundry powder 3kg","arn":"مسحوق غسيل ٣ كغم","cat":"Cleaning","net":47817015,"gm":0.18842445518608805,"qty":4642,"h1":23800264,"h2":24016751,"monthly":[2895882,4459104,3549050,4551861,5457719,2886648,6710795,3929142,3517041,4109968,2977831,2771974]},{"id":"P02","en":"Sunflower oil 1.8L","arn":"زيت دوار الشمس ١.٨ لتر","cat":"Food staples","net":41657711,"gm":0.04044055613137265,"qty":6833,"h1":23349166,"h2":18308545,"monthly":[3598172,3795541,3994712,4657806,3785262,3517673,2703858,3969493,4112917,2724927,2791151,2006199]},{"id":"P03","en":"Sugar 5kg","arn":"سكر ٥ كغم","cat":"Food staples","net":40441401,"gm":0.014856087700819268,"qty":5774,"h1":23405561,"h2":17035840,"monthly":[2009905,4523946,4137229,4065653,2848044,5820784,4283960,3425976,2069698,2722070,1790335,2743801]},{"id":"P08","en":"Black tea 500g","arn":"شاي أسود ٥٠٠ غم","cat":"Beverages","net":32919589,"gm":0.16990093649103577,"qty":5839,"h1":17896160,"h2":15023429,"monthly":[3036002,3277750,2025234,3409894,3641285,2505995,3224067,2422353,2974632,2317978,1843588,2240811]},{"id":"P17","en":"Tissue box 10-pack","arn":"مناديل ١٠ علب","cat":"Paper goods","net":31969294,"gm":0.15843496575182422,"qty":3784,"h1":16554665,"h2":15414629,"monthly":[2651452,3286712,1814468,2792279,2927732,3082022,3592428,3584964,2308566,2254764,2110173,1563734]},{"id":"P20","en":"Paper cups 1000","arn":"أكواب ورقية ١٠٠٠","cat":"Paper goods","net":26823752,"gm":0.10600426070148576,"qty":1586,"h1":24038397,"h2":2785355,"monthly":[3564475,3723006,4026213,4492342,1338930,6893431,326508,480845,702185,209022,164897,901898]},{"id":"P06","en":"Mineral water 12-pack","arn":"ماء معدني ١٢ قنينة","cat":"Beverages","net":19550952,"gm":0.14729471997066945,"qty":5954,"h1":10898938,"h2":8652014,"monthly":[1309484,1780089,1839110,2403902,2210959,1355394,1868961,1561640,1444682,1181662,1238611,1356458]},{"id":"P14","en":"Shampoo 400ml","arn":"شامبو ٤٠٠ مل","cat":"Personal care","net":16071006,"gm":0.2778784352392128,"qty":3103,"h1":9319716,"h2":6751290,"monthly":[2393564,1421472,1508891,1701468,926647,1367674,1177910,1184310,835461,1323853,1066595,1163161]},{"id":"P19","en":"Kitchen towel 6","arn":"مناشف مطبخ ٦","cat":"Paper goods","net":15532689,"gm":0.1462650156711436,"qty":2368,"h1":7027279,"h2":8505410,"monthly":[967970,2295743,1019874,479673,1573994,690025,1582144,2310186,1369301,629176,1522585,1092018]},{"id":"P15","en":"Soap bar 6-pack","arn":"صابون ٦ قطع","cat":"Personal care","net":14954093,"gm":0.25621366671987394,"qty":3531,"h1":8870653,"h2":6083440,"monthly":[1524378,1561994,1380706,1440432,1106640,1856503,1091992,1222397,1429538,965591,579385,794537]},{"id":"P13","en":"Floor cleaner 2L","arn":"منظف أرضيات ٢ لتر","cat":"Cleaning","net":10838550,"gm":0.2173676368148876,"qty":3320,"h1":6181772,"h2":4656778,"monthly":[804203,908758,975034,1048198,1153029,1292550,1048144,681091,830977,617295,698269,781002]},{"id":"P11","en":"Dish soap 1L","arn":"سائل صحون ١ لتر","cat":"Cleaning","net":9809192,"gm":0.2501675979020494,"qty":4203,"h1":5677159,"h2":4132033,"monthly":[798742,677374,1164710,1086350,1285737,664246,978614,798568,456558,793016,502735,602542]},{"id":"P12","en":"Bleach 2L","arn":"قاصر ٢ لتر","cat":"Cleaning","net":9673421,"gm":0.2256224555924941,"qty":3468,"h1":4951270,"h2":4722151,"monthly":[1030750,888203,632584,599980,813179,986574,1151257,1033303,547321,1025674,486954,477642]},{"id":"P16","en":"Toothpaste","arn":"معجون أسنان","cat":"Personal care","net":6977294,"gm":0.28239945170720915,"qty":2491,"h1":4696118,"h2":2281176,"monthly":[589193,765841,677525,804423,903866,955270,382542,470950,244506,410481,400897,371800]}],"cats":[{"cat":"Food staples","net":446866116,"gm":0.0723279184586911,"monthly":[36752512,39212217,30767482,46581827,65225219,30529483,49855454,35816844,37749751,31731021,21839287,20805019]},{"cat":"Beverages","net":172849560,"gm":0.11913255665794001,"monthly":[16962791,14713005,15375233,16268493,20487364,14959899,15296684,14063502,11305558,12762349,9883909,10770773]},{"cat":"Cleaning","net":78138178,"gm":0.2047952538642506,"monthly":[5529577,6933439,6321378,7286389,8709664,5830018,9888810,6442104,5351897,6545953,4665789,4633160]},{"cat":"Personal care","net":38002393,"gm":0.2701833276657078,"monthly":[4507135,3749307,3567122,3946323,2937153,4179447,2652444,2877657,2509505,2699925,2046877,2329498]},{"cat":"Paper goods","net":124338503,"gm":0.13735458114691956,"monthly":[9549735,13786282,10596035,12117718,13220600,17736153,9303608,10089143,7776039,6055252,7321638,6786300]}],"aging":[{"b":"Not yet due","amt":45324750,"n":150},{"b":"1-30 days late","amt":18337750,"n":68},{"b":"31-60 days late","amt":8160750,"n":16},{"b":"61-90 days late","amt":8010000,"n":14},{"b":"90+ days late","amt":31920500,"n":69}],"ar_total":111753750,"drop":{"before":81389833.33333333,"after":50292250.0,"lost":14173000.0,"declining":10913000.0,"active":6011583.333333334}};
+const SRCNOTE="Source: fictional distribution company sales ledger (test data). Recommendations are analyst suggestions.";
+const MON=["Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct"];
+const MONL=["Nov 2025","Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026","Jun 2026","Jul 2026","Aug 2026","Sep 2026","Oct 2026"];
+const KIND={cust:["Customer","var(--violet)"],rep:["Sales rep","var(--teal)"],prod:["Product","var(--steel)"],mon:["Month","var(--steel)"],ag:["Receivables","var(--amber)"],kpi:["Key figure","var(--steel)"],ov:["Overview","var(--muted)"],play:["Strategy decision","var(--brick)"],drop:["Sales drop","var(--brick)"],cat:["Category","var(--teal)"]};
+const ST={active:["Active","var(--steel)"],declining:["Declining","var(--amber)"],lost:["Lost","var(--brick)"]};
+const REP=Object.fromEntries(S.reps.map(r=>[r.id,r]));
+const tot=S.tot.net,lost=S.cust.filter(c=>c.status==="lost"),dec=S.cust.filter(c=>c.status==="declining"),risk=S.lostsum.risk+S.decsum.risk;
+const late90=S.aging[4].amt,overdue=S.aging.slice(1).reduce((s,a)=>s+a.amt,0);
+const D={};
+const CUPS=S.prods.find(p=>p.id==="P20");
+
+/* customers */
+S.cust.forEach((c,rank)=>{const st=ST[c.status][0];
+ const dec_=c.status==="lost"?[`Call this week: ${REP[c.rep].en} and the sales manager visit together. Last order was ${c.days} days ago.`,"Ask one direct question: why did you stop? (price, delivery, product range, or a competitor).",`Offer a time-limited return deal on their top product (${c.top[0][0]}). Keep the discount inside the 5% policy.`,c.ar>0?`Settle the ${IQD(c.ar)} open balance first, or agree a payment plan. It may be the reason they stopped.`:"Put them on a weekly follow-up for 8 weeks after they return."]
+ :c.status==="declining"?[`Compare their last 3 months (${IQD(c.last3)} per month) with before (${IQD(c.prev6)}). Ask which products they now buy elsewhere.`,`Check stock-outs and delivery delays on ${c.top.map(t=>t[0]).join(", ")}.`,"Agree a monthly order plan with a small volume reward instead of a flat discount.",c.ar>0?`Open balance of ${IQD(c.ar)}: confirm it is not a dispute.`:"Assign a fixed weekly visit day."]
+ :["Keep the relationship: monthly visit and quarterly price review.",rank<12?"Top-20% customer: assign a backup contact at the company so the account doesn’t depend on one rep.":"Look for products they don’t buy yet from your range."];
+ D["c-"+c.id]={k:"cust",t:c.en,ar:c.arn,stat:[c.status==="active"?IQD(c.net):IQD(c.risk),c.status==="active"?`12-month net sales · rank ${rank+1} of 60`:`yearly sales at risk · ${st}`],spark:spark(c.monthly,MON),
+  html:`<div class="sec"><h4>Profile</h4><dl class="kv"><dt>Status</dt><dd><b style="color:${ST[c.status][1]}">${st}</b></dd><dt>12-month sales</dt><dd>${IQD(c.net)} · ${c.n} invoices</dd><dt>Gross margin</dt><dd>${P(c.gm/c.net)}</dd><dt>Last order</dt><dd>${c.last} (${c.days} days ago)</dd>${c.status==="lost"?`<dt>Avg per month while buying</dt><dd>${IQD(c.avg_m)} (× 12 = ${M(c.risk)} at risk)</dd>`:`<dt>Avg before (6 months)</dt><dd>${IQD(c.prev6)} / month</dd><dt>Avg last 3 months</dt><dd>${IQD(c.last3)} / month</dd>`}<dt>Unpaid balance</dt><dd>${c.ar?IQD(c.ar):"none"}</dd><dt>Type · area</dt><dd>${c.type} · ${c.area}</dd><dt>Sales rep</dt><dd>${REP[c.rep].en}</dd></dl></div>
+  <div class="sec"><h4>Top products</h4><div class="tbl"><table>${c.top.map(t=>`<tr><td>${esc(t[0])}</td><td class="num">${IQD(t[1])}</td></tr>`).join("")}</table></div></div>`,
+  dec:dec_,decTitle:c.status==="active"?"Keep and grow":"Recovery plan",kpi:c.status==="active"?[]:["Days since last order","Monthly sales vs before","Balance collected"],rel:["r-"+c.rep]};});
+
+/* reps */
+S.reps.forEach(r=>{const cs=S.cust.filter(c=>c.rep===r.id);const over=r.dp>0.05;
+ D["r-"+r.id]={k:"rep",t:r.en,ar:r.arn,stat:[P(r.dp),`average discount · policy is 5.0%${over?" · "+IQD(r.excess)+" above policy":""}`],
+  says:`${r.cust} customers, ${r.inv} invoices, ${IQD(r.net)} net sales, gross margin ${P(r.gm)}. ${r.lost} of the rep’s customers are lost or declining. Unpaid: ${IQD(r.ar)}.`,
+  means:over&&r.dp>0.08?`Discounts at almost double the policy cost ${IQD(r.excess)} in 12 months, and the rep still has the most lost or declining customers. Bigger discounts did not keep customers.`:over?"Slightly above policy; watch the trend.":"Within policy.",
+  html:`<div class="sec"><h4>Customers</h4><div class="tbl"><table><tr><th>Customer</th><th>Status</th><th style="text-align:right">12-month sales</th></tr>${cs.map(c=>`<tr class="go" data-go="c-${c.id}"><td>${esc(c.en)}</td><td style="color:${ST[c.status][1]}">${ST[c.status][0]}</td><td class="num">${M(c.net)}</td></tr>`).join("")}</table></div></div>`,
+  dec:r.dp>0.08?["Set a hard limit: discounts above 5% need the sales manager’s approval in writing.","Review this rep’s 10 largest discounts with them; find which were needed.","Replace flat discounts with volume rewards paid at quarter end.","Tie part of the commission to gross margin, not only to sales."]:["Keep the current discount practice.",`Focus on the ${r.lost} lost or declining customers in this portfolio.`],
+  kpi:["Average discount %","Gross margin %","Lost customers","Overdue balance"],rel:cs.filter(c=>c.status!=="active").slice(0,4).map(c=>"c-"+c.id)};});
+
+/* products & categories */
+S.prods.forEach(p=>{const ch=p.h1?p.h2/p.h1-1:0;
+ D["p-"+p.id]={k:"prod",t:p.en,ar:p.arn,stat:[IQD(p.net),`12-month net sales · margin ${P(p.gm)} · ${p.cat}`],spark:spark(p.monthly,MON),
+  says:`Nov–Apr: ${IQD(p.h1)}. May–Oct: ${IQD(p.h2)} (${ch>=0?"+":""}${P(ch)}). ${p.qty.toLocaleString()} units sold.`,
+  means:ch<-0.5?"Sales of this product have collapsed. Check whether customers moved to another supplier or a cheaper alternative, and how much stock is left.":p.gm>0.25?"High-margin product: every extra sale adds more profit than the average item.":p.gm<0.12?"Low margin: discounts on this product can wipe out the profit.":"Stable product.",
+  dec:ch<-0.5?["Count the stock on hand and stop reordering until it moves.","Ask the 5 biggest past buyers why they stopped.","Clear old stock with a bundle, not a deep discount."]:p.gm>0.25?["Push it in every visit: add it to the standard order list.","Bundle it with top-selling staples."]:p.gm<0.12?["Exclude it from discounts.","Review the purchase price with the supplier."]:[],rel:[]};});
+const MAXP=Math.max(...S.prods.flatMap(p=>p.monthly));
+
+/* months */
+S.month.forEach((m,i)=>{const cs=[...S.cust].map(c=>[c,c.monthly[i]]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);const prev=i?S.month[i-1].net:0;
+ D["m-"+i]={k:"mon",t:MONL[i],stat:[IQD(m.net),`net sales${i?` · ${m.net>=prev?"+":""}${P(m.net/prev-1)} vs ${MON[i-1]}`:""} · margin ${P(m.gm/m.net)}`],
+  says:`${cs.length} customers bought this month.`,
+  html:`<div class="sec"><h4>Top customers this month</h4><div class="tbl"><table>${cs.slice(0,8).map(([c,v])=>`<tr class="go" data-go="c-${c.id}"><td>${esc(c.en)}</td><td class="num">${IQD(v)}</td></tr>`).join("")}</table></div></div>`};});
+
+/* drop */
+const dr_=S.drop;
+D["drop-before"]={k:"drop",t:"Average month, Nov–Apr",stat:[IQD(dr_.before),"average monthly net sales"],says:"The baseline before sales started falling."};
+D["drop-lost"]={k:"drop",t:"Drop from lost customers",stat:[IQD(-dr_.lost),"per month"],says:`${lost.length} customers who used to buy regularly have not ordered for more than 90 days.`,means:`This is ${P(dr_.lost/(dr_.before-dr_.after),0)} of the drop. Lost customers are the fastest money to win back: they already know your products.`,html:`<div class="tbl"><table>${lost.map(c=>`<tr class="go" data-go="c-${c.id}"><td>${esc(c.en)}</td><td class="num">${c.days} days</td><td class="num">${M(c.risk)}/yr</td></tr>`).join("")}</table></div>`,dec:["Call all lost customers within 2 weeks, biggest first.","Track each call: reason for leaving and next step."]};
+D["drop-declining"]={k:"drop",t:"Drop from declining customers",stat:[IQD(-dr_.declining),"per month"],says:`${dec.length} customers still buy, but less than half of what they used to.`,means:"They are one step from being lost. Stopping the decline now is cheaper than winning them back later.",html:`<div class="tbl"><table>${dec.map(c=>`<tr class="go" data-go="c-${c.id}"><td>${esc(c.en)}</td><td class="num">${M(c.last3)} vs ${M(c.prev6)}</td></tr>`).join("")}</table></div>`,dec:["Visit each declining customer this month.","Ask which products they now buy elsewhere and why."]};
+D["drop-active"]={k:"drop",t:"Drop from other customers",stat:[IQD(-dr_.active),"per month"],says:"Smaller decreases spread across active customers, partly seasonal (March and June were strong months)."};
+D["drop-after"]={k:"drop",t:"Average month, Aug–Oct",stat:[IQD(dr_.after),`average monthly net sales · ${P(dr_.after/dr_.before-1)} vs Nov–Apr`],says:"Where monthly sales stand now."};
+
+/* aging */
+S.aging.forEach((a,i)=>{const tips=["Normal: collect on the due date.","Send a reminder on WhatsApp the day after the due date.","Phone call from the rep and a written reminder.","Stop new credit until the balance is paid.","Escalate: owner-to-owner call, payment plan, or legal notice."];
+ D["ag-"+i]={k:"ag",t:a.b,stat:[IQD(a.amt),`${a.n} unpaid invoices`],says:i===4?`${P(a.amt/S.ar_total,0)} of all unpaid money is more than 90 days late. The longer it waits, the less likely it is to be collected.`:`${P(a.amt/S.ar_total,0)} of the open balance.`,dec:[tips[i]],rel:i>=3?S.cust.filter(c=>c.ar>0&&c.status==="lost").slice(0,4).map(c=>"c-"+c.id):[]};});
+
+/* overviews & kpis */
+Object.assign(D,{
+"k-sales":{k:"kpi",t:"12-month net sales",stat:[IQD(tot),`${S.tot.inv.toLocaleString()} invoices · gross margin ${P(S.tot.gm)}`],says:`List value ${IQD(S.tot.gross)}, discounts ${IQD(S.tot.disc)} (${P(S.tot.disc/S.tot.gross)}).`,rel:["ov-trend","k-drop"]},
+"k-drop":{k:"kpi",t:"Monthly sales are down",stat:[P(dr_.after/dr_.before-1,0),`from ${M(dr_.before)} to ${M(dr_.after)} IQD per month`],says:"Average month Nov–Apr compared with Aug–Oct.",means:`Lost customers explain ${M(dr_.lost)} per month and declining customers ${M(dr_.declining)}. Together that is ${P((dr_.lost+dr_.declining)/(dr_.before-dr_.after),0)} of the fall.`,rel:["drop-lost","drop-declining","drop-active"]},
+"k-risk":{k:"kpi",t:"Yearly sales at risk",stat:[IQD(risk),`${lost.length} lost + ${dec.length} declining customers`],says:`Lost: ${IQD(S.lostsum.risk)} per year. Declining: ${IQD(S.decsum.risk)} per year.`,means:`Equal to ${P(risk/tot,0)} of last year’s sales. Winning back even a third of it is worth more than most new-customer campaigns.`,rel:["ov-queue","play-call"]},
+"k-disc":{k:"kpi",t:"Discount above policy",stat:[IQD(S.excess),"given above the 5% discount policy in 12 months"],says:`${REP.R3.en} gave ${P(REP.R3.dp)} on average, almost double the policy, and accounts for ${P(REP.R3.excess/S.excess,0)} of the excess.`,rel:["r-R3","ov-disc"]},
+"k-late":{k:"kpi",t:"Unpaid 90+ days",stat:[IQD(late90),`of ${IQD(S.ar_total)} unpaid in total`],says:`${IQD(overdue)} is past its due date. ${IQD(late90)} is more than 90 days late.`,rel:["ag-4","ag-3"]},
+"ov-queue":{k:"ov",t:"How the call list is built",says:"Lost = at least 4 orders, then no order for more than 90 days. Declining = average of the last 3 months below half of the 6 months before. Sorted by yearly sales at risk.",means:"The top of this list is where one phone call is worth the most money.",dec:["Give each rep their part of the list today.","Review calls every Sunday in a 20-minute sales meeting."]},
+"ov-trend":{k:"ov",t:"Monthly net sales",says:`Sales peaked in March (${M(S.month[4].net)}) and fell to ${M(S.month[11].net)} in October.`,means:"The fall is not seasonal: it follows the months when large customers stopped ordering.",rel:["k-drop","drop-lost"]},
+"ov-map":{k:"ov",t:"Reading the health map",says:"Each customer is placed by days since their last order (left to right) and 12-month sales (bottom to top, log scale).",means:"Top-right is the danger zone: big customers who have gone quiet. The dashed line marks 90 days.",rel:["ov-queue"]},
+"ov-disc":{k:"ov",t:"Discount policy",says:"The company policy assumed here is a maximum 5% discount on list value without manager approval.",means:"Discount is money given away from margin. With a gross margin around 11%, every extra 1% discount removes about a tenth of the profit.",dec:["Write the 5% rule down and share it with all reps.","Show each rep their discount % every month."]}});
+
+/* playbook */
+const PLAY=[["This week","Win back customers",[["play-call",`Call the ${lost.length} lost customers, biggest first`,`${M(S.lostsum.risk)} IQD/year at risk`],["play-visit",`Visit the ${dec.length} declining customers`,`${M(S.decsum.risk)} IQD/year at risk`],["play-collect","Collect the 90+ day balances",`${M(late90)} IQD`]]],
+ ["This month","Stop the leaks",[["play-disc","Enforce the 5% discount rule",`${M(S.excess)} IQD given above policy`],["play-credit","Stop credit to customers 90+ days late","Protects cash"],["play-stock","Stop reordering paper cups",`Sales down ${P(-(1-CUPS.h2/CUPS.h1),0)} in May–Oct`]]],
+ ["This quarter","Build the system",[["play-crm","Weekly customer follow-up sheet","No customer goes quiet unnoticed"],["play-comm","Pay commission on margin, not only sales","Rewards profitable selling"],["play-report","Monthly sales recovery report","Same view, updated every month"]]]];
+const PT={"play-call":["Lost customer calls",`${lost.length} customers worth ${IQD(S.lostsum.risk)} per year have not ordered for 90+ days.`,["Split the list by rep; the manager joins calls for the top 3.","Record the reason for leaving in one word: price, delivery, range, competitor, debt.","Target: win back 3 of 8 within 60 days."],lost.slice(0,3).map(c=>"c-"+c.id)],
+ "play-visit":["Declining customer visits",`${dec.length} customers dropped below half their usual monthly orders.`,["Visit in person this month.","Bring their purchase history and ask what changed."],dec.slice(0,3).map(c=>"c-"+c.id)],
+ "play-collect":["Collect old balances",`${IQD(late90)} has been unpaid for more than 90 days.`,["Owner-to-owner calls for the 5 biggest balances.","Offer a payment plan rather than waiting."],["ag-4"]],
+ "play-disc":["Discount rule",`${IQD(S.excess)} was given above the 5% policy, mostly by one rep.`,["Manager approval for anything above 5%.","Monthly discount report per rep."],["r-R3","k-disc"]],
+ "play-credit":["Credit control","Customers with invoices over 90 days late keep receiving new goods on credit.",["Block new credit orders above the overdue amount.","Cash-on-delivery until the balance is cleared."],["ag-4"]],
+ "play-stock":["Paper cups","Paper cups sales fell sharply in the second half of the year.",["Count stock, pause purchasing.","Clear the stock in bundles with tissue boxes."],["p-P20"]],
+ "play-crm":["Customer follow-up sheet","Customers went quiet for months before anyone noticed.",["One shared sheet: customer, rep, last order date, next visit.","Automatic flag at 30 days without an order."],["ov-queue"]],
+ "play-comm":["Margin-based commission","The rep with the biggest discounts also lost the most customers.",["Pay part of the commission on gross margin.","Add a bonus for won-back customers."],["r-R3"]],
+ "play-report":["Monthly recovery report","This report, rebuilt each month with real data.",["Same sections, updated monthly.","20-minute review meeting with each rep."],["k-risk"]]};
+Object.entries(PT).forEach(([id,[t,says,dec_,rel]])=>D[id]={k:"play",t,says,dec:dec_,rel});
+
+/* ---------- render sections ---------- */
+document.getElementById("tiles").innerHTML=[["k-sales",M(tot),"IQD","net sales in 12 months"],["k-drop",P(dr_.after/dr_.before-1,0),"","monthly sales, Aug–Oct vs Nov–Apr"],["k-risk",M(risk),"IQD","yearly sales at risk from 20 customers"],["k-disc",M(S.excess),"IQD","discount given above the 5% policy"],["k-late",M(late90),"IQD","unpaid for more than 90 days"]].map(([id,v,u,s])=>`<button class="tk" data-open="${id}"><b>${v}<small>${u}</small></b><span>${s}</span><em>Open details →</em></button>`).join("");
+
+(()=>{const rows=[...lost,...dec].sort((a,b)=>b.risk-a.risk).slice(0,10);
+ document.getElementById("queue").innerHTML=rows.map(c=>`<button class="q" data-open="c-${c.id}"><span class="stripe" style="background:${ST[c.status][1]}"></span><span class="qid">${c.id}</span><span class="qs">${esc(c.en)}<small>${esc(c.arn)} · ${REP[c.rep].en}</small></span><span class="qf">${c.status==="lost"?`No order for ${c.days} days`:`${M(c.last3)}/mo now vs ${M(c.prev6)}/mo before`}${c.ar?` · ${M(c.ar)} unpaid`:""}</span><span class="qa">${IQD(c.risk)}/yr</span><span class="pill ${c.status==="lost"?"p-hold":"p-verify"}">${c.status==="lost"?"Call · win back":"Visit · stop decline"}</span></button>`).join("");})();
+
+(()=>{const s=document.getElementById("trend"),x0=46,y0=260,h=230,max=120e6,bw=38,gap=10.5,sy=v=>v/max*h;
+ [0,30e6,60e6,90e6,120e6].forEach(v=>{el("line",{x1:x0,x2:630,y1:y0-sy(v),y2:y0-sy(v),class:v?"gl":"ax"},s);txt(s,x0-8,y0-sy(v)+4,v/1e6+"M",{"text-anchor":"end"})});
+ S.month.forEach((m,i)=>{const x=x0+8+i*(bw+gap),g=el("g",{},s);el("rect",{x:x-4,y:20,width:bw+8,height:262,fill:"transparent"},g);
+  el("rect",{x,y:y0-sy(m.net),width:bw,height:sy(m.net),fill:i>=9?"var(--brick)":"var(--steel)","fill-opacity":i>=9?.85:1},g);
+  txt(g,x+bw/2,y0-sy(m.net)-6,M(m.net),{"text-anchor":"middle",class:"val",style:"font-size:10px"});
+  txt(g,x+bw/2,y0+16,MON[i],{"text-anchor":"middle",class:"lbl"});act(g,`${MONL[i]}: ${IQD(m.net)}`,"m-"+i)});
+ const a=y0-sy(dr_.before);el("line",{x1:x0+8,x2:x0+8+6*(bw+gap)-gap,y1:a,y2:a,stroke:"var(--ink)","stroke-dasharray":"4 3"},s);txt(s,x0+10,14,"- - Nov–Apr average "+M(dr_.before),{style:"fill:var(--ink)"});
+ const b=y0-sy(dr_.after);el("line",{x1:x0+8+9*(bw+gap),x2:x0+8+12*(bw+gap)-gap,y1:b,y2:b,stroke:"var(--brick)","stroke-dasharray":"4 3"},s);txt(s,630,14,"Aug–Oct average "+M(dr_.after)+" - -",{"text-anchor":"end",style:"fill:var(--brick)"});})();
+
+(()=>{const s=document.getElementById("water"),x0=40,y0=250,h=220,max=90e6,sy=v=>v/max*h,bw=62,gap=20;
+ [0,30e6,60e6,90e6].forEach(v=>{el("line",{x1:x0,x2:455,y1:y0-sy(v),y2:y0-sy(v),class:v?"gl":"ax"},s);txt(s,x0-6,y0-sy(v)+4,v/1e6+"M",{"text-anchor":"end"})});
+ let lvl=dr_.before;const bars=[["drop-before","Nov–Apr",0,dr_.before,"var(--steel)"],["drop-lost","Lost",dr_.before-dr_.lost,dr_.before,"var(--brick)"],["drop-declining","Declining",dr_.before-dr_.lost-dr_.declining,dr_.before-dr_.lost,"var(--amber)"],["drop-active","Others",dr_.after,dr_.after+dr_.active,"var(--sand)"],["drop-after","Aug–Oct",0,dr_.after,"var(--steel)"]];
+ bars.forEach(([id,l,lo,hi,col],i)=>{const x=x0+10+i*(bw+gap),g=el("g",{},s);el("rect",{x:x-4,y:10,width:bw+8,height:270,fill:"transparent"},g);
+  el("rect",{x,y:y0-sy(hi),width:bw,height:sy(hi-lo),fill:col},g);
+  txt(g,x+bw/2,y0-sy(hi)-6,(i&&i<4?"−":"")+M(hi-lo),{"text-anchor":"middle",class:"val"});txt(g,x+bw/2,y0+16,l,{"text-anchor":"middle",class:"lbl"});act(g,`${l}: ${(i&&i<4?"−":"")+IQD(hi-lo)} per month`,id)});})();
+
+(()=>{const s=document.getElementById("scatter"),x0=70,x1=1080,y0=300,y1=20,maxd=240,sx=d=>x0+Math.min(d,maxd)/maxd*(x1-x0),lmin=Math.log10(1e6),lmax=Math.log10(1e8),sy=v=>y0-(Math.log10(Math.max(v,1e6))-lmin)/(lmax-lmin)*(y0-y1);
+ [1e6,3e6,1e7,3e7,1e8].forEach(v=>{el("line",{x1:x0,x2:x1,y1:sy(v),y2:sy(v),class:"gl"},s);txt(s,x0-8,sy(v)+4,M(v),{"text-anchor":"end"})});
+ [0,30,60,90,120,180,240].forEach(d=>{el("line",{x1:sx(d),x2:sx(d),y1:y1,y2:y0,class:d===90?"ax":"gl","stroke-dasharray":d===90?"5 4":""},s);txt(s,sx(d),y0+18,d+(d===240?"+":""),{"text-anchor":"middle"})});
+ txt(s,sx(90)+6,y1+12,"90 days: lost",{style:"fill:var(--brick)"});txt(s,x0,y0+36,"Days since last order →");
+ S.cust.forEach(c=>{const g=el("circle",{cx:sx(c.days)+(c.id.charCodeAt(3)%5-2)*2,cy:sy(c.net),r:c.status==="active"?5:7,fill:ST[c.status][1],"fill-opacity":.8,stroke:"var(--paper)","stroke-width":1},s);act(g,`${c.en}: ${M(c.net)} in 12 months, last order ${c.days} days ago`,"c-"+c.id)});
+ txt(s,sx(150),y1+12,"Click a red dot to see who it is",{style:"fill:var(--muted)"});})();
+
+(()=>{const s=document.getElementById("pareto"),x0=50,x1=1060,y0=220,h=200,n=S.cust.length,bw=(x1-x0)/n,max=S.cust[0].net,sy=v=>v/max*h;let cum=0;const pts=[];
+ [0,.25,.5,.75,1].forEach(v=>{el("line",{x1:x0,x2:x1,y1:y0-v*h,y2:y0-v*h,class:v?"gl":"ax"},s);txt(s,x1+6,y0-v*h+4,P(v,0))});
+ txt(s,x0-6,y0-h+4,M(max),{"text-anchor":"end"});txt(s,x0-6,y0+4,"0",{"text-anchor":"end"});
+ S.cust.forEach((c,i)=>{cum+=c.net;const r=el("rect",{x:x0+i*bw+1,y:y0-sy(c.net),width:bw-2,height:sy(c.net),fill:i<12?"var(--steel)":"var(--steel-2)"},s);act(r,`#${i+1} ${c.en}: ${M(c.net)} · cumulative ${P(cum/tot,0)}`,"c-"+c.id);pts.push([x0+i*bw+bw/2,y0-cum/tot*h])});
+ el("path",{d:"M"+pts.map(p=>p.join(",")).join("L"),fill:"none",stroke:"var(--brick)","stroke-width":2},s);
+ const p12=pts[11];el("circle",{cx:p12[0],cy:p12[1],r:4,fill:"var(--brick)"},s);txt(s,p12[0]+8,p12[1]+16,`Top 12 = ${P(S.pareto.share,0)} of sales`,{style:"fill:var(--ink)"});
+ txt(s,x0,y0+20,"Customers ranked by 12-month net sales →");})();
+
+(()=>{const s=document.getElementById("reps"),x0=120,w=330,max=.12,sc=v=>v/max*w;
+ [0,.04,.08,.12].forEach(v=>{el("line",{x1:x0+sc(v),x2:x0+sc(v),y1:0,y2:228,class:"gl"},s);txt(s,x0+sc(v),246,P(v,0),{"text-anchor":"middle"})});
+ S.reps.forEach((r,i)=>{const y=12+i*54,g=el("g",{},s);el("rect",{x:0,y:y-8,width:520,height:48,fill:"transparent"},g);
+  txt(g,x0-10,y+14,r.en,{"text-anchor":"end",class:"lbl"});txt(g,x0-10,y+30,`${r.cust} customers · ${M(r.net)}`,{"text-anchor":"end",style:"font-size:10px"});
+  el("rect",{x:x0,y,width:sc(r.dp),height:22,fill:r.dp>.08?"var(--brick)":r.dp>.05?"var(--amber)":"var(--steel)"},g);
+  txt(g,x0+sc(r.dp)+6,y+16,P(r.dp)+(r.excess>1e6?`  · ${M(r.excess)} over`:""),{class:"val"});act(g,`${r.en}: ${P(r.dp)} average discount`,"r-"+r.id)});
+ el("line",{x1:x0+sc(.05),x2:x0+sc(.05),y1:0,y2:228,stroke:"var(--ink)","stroke-dasharray":"5 4"},s);txt(s,x0+sc(.05)+4,266,"5% policy",{style:"fill:var(--ink)"});})();
+
+(()=>{const s=document.getElementById("aging"),x0=130,w=310,max=Math.max(...S.aging.map(a=>a.amt))*1.15,sc=v=>v/max*w;const cols=["var(--steel-2)","var(--steel)","var(--amber)","var(--amber)","var(--brick)"];
+ S.aging.forEach((a,i)=>{const y=10+i*50,g=el("g",{},s);el("rect",{x:0,y:y-8,width:520,height:44,fill:"transparent"},g);
+  txt(g,x0-10,y+16,a.b,{"text-anchor":"end",class:"lbl"});el("rect",{x:x0,y,width:sc(a.amt),height:24,fill:cols[i]},g);
+  txt(g,x0+sc(a.amt)+6,y+16,`${M(a.amt)} · ${a.n} inv.`,{class:"val"});act(g,`${a.b}: ${IQD(a.amt)}`,"ag-"+i)});
+ txt(s,x0,272,`Total unpaid ${IQD(S.ar_total)}`);})();
+
+(()=>{const s=document.getElementById("heat"),x0=200,cw=72,ch=24,y0=30;const col=(v,mx)=>{const t=v/mx;return !v?"var(--hm0)":t<.4?"var(--hm1)":t<.6?"var(--hm2)":t<.8?"var(--hm3)":"var(--hm4)"};
+ MON.forEach((m,j)=>{const t=txt(s,x0+j*cw+cw/2,y0-10,m,{"text-anchor":"middle",class:"lbl"});act(t,MONL[j],"m-"+j)});
+ txt(s,x0+12*cw+10,y0-10,"12-mo",{class:"lbl"});
+ S.prods.forEach((p,i)=>{const y=y0+i*(ch+2);const t=txt(s,x0-10,y+16,p.en,{"text-anchor":"end",class:"lbl"});act(t,p.en,"p-"+p.id);
+  p.monthly.forEach((v,j)=>{const r=el("rect",{x:x0+j*cw+1,y,width:cw-2,height:ch,fill:col(v,Math.max(...p.monthly))},s);
+   const id=`pm-${p.id}-${j}`;D[id]={k:"prod",t:`${p.en} · ${MONL[j]}`,ar:p.arn,stat:[IQD(v),"net sales"],says:`${P(v/p.net)} of this product’s 12-month sales.`,rel:["p-"+p.id,"m-"+j]};act(r,`${p.en} · ${MON[j]}: ${M(v)}`,id)});
+  txt(s,x0+12*cw+10,y+16,M(p.net),{class:"val"})});})();
+
+(()=>{const box=document.getElementById("play");let k=0;PLAY.forEach(([h,sub,steps])=>{const c=document.createElement("div");c.className="pcol";c.innerHTML=`<h3>${h}</h3><p>${sub}</p>`;
+ steps.forEach(([id,t,m])=>{k++;const b=document.createElement("button");b.className="step";b.innerHTML=`<b>${k}</b><span class="st">${esc(t)}<small>${esc(m)}</small></span>`;b.onclick=()=>open(id);c.appendChild(b)});box.appendChild(c)});})();
+
+</script>
+
+</body>
+</html>

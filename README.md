@@ -26,6 +26,8 @@ browser — including offline — and it runs.
 ## Other pages
 
 - **Finance Ops Ledger Review** (sample report, fictional test data): https://yousif99u1234-hue.github.io/yousif-ahmed/finance-ops-report/
+- **Sales Recovery Review** (sample report, fictional test data): https://yousif99u1234-hue.github.io/yousif-ahmed/sales-report/
+- **Single Source Data Review** (sample report, fictional test data): https://yousif99u1234-hue.github.io/yousif-ahmed/data-report/
 
 ## Contact
 

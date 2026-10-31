@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive data review: data health, duplicates, mismatched numbers between departments and the roadmap to one source of truth (test data).">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Single Source Data Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: analyst's ledger notebook — unboxed chart panels on warm paper, a decision queue up top, one slide-in dossier for every detail */
+:root{
+  --paper:#eeebe4; --sheet:#f7f5f0; --ink:#2b2d33; --muted:#6c6b66; --rule:#cfcabf; --grid:#dcd7cc;
+  --steel:#4c7aa8; --steel-2:#9bb6d2; --violet:#8b6bc0; --moss:#4f9a55; --brick:#c2504a; --amber:#d9862b; --teal:#3f9a96; --rose:#c46b97; --sand:#b39a5f;
+  --hm0:#e3ded3; --hm1:#c9d8e6; --hm2:#93b3d1; --hm3:#5c8bb8; --hm4:#335f8c; --scrim:rgba(30,30,34,.28);
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,-apple-system,Segoe UI,sans-serif;
+  --f-ar:"IBM Plex Sans Arabic","IBM Plex Sans",Tahoma,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:grid;gap:10px;border-bottom:1px solid var(--rule);padding-bottom:22px;margin-bottom:24px}
+.eyebrow{font-family:var(--f-data);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(38px,6vw,64px);line-height:.98;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{max-width:70ch;color:var(--muted);margin:0}
+.banner{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--amber);padding:10px 14px;border-radius:4px;font-size:13px;max-width:900px}
+.banner b{color:var(--amber);font-family:var(--f-data);font-size:11px;letter-spacing:.06em;white-space:nowrap;padding-top:2px}
+.hint{display:inline-flex;gap:8px;align-items:center;font-size:13px}
+.hint i{width:8px;height:8px;border-radius:50%;background:var(--brick);display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:44px 40px}
+.panel{min-width:0;display:grid;gap:8px;align-content:start}
+.s5{grid-column:span 5}.s7{grid-column:span 7}.s12{grid-column:span 12}.s4{grid-column:span 4}.s8{grid-column:span 8}.s6{grid-column:span 6}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2{font-family:var(--f-body);font-weight:600;font-size:15px;margin:0}
+h2 .n{font-family:var(--f-data);font-weight:500;color:var(--muted);font-size:12px;margin-right:6px}
+.more{font:500 12px var(--f-data);color:var(--steel);background:none;border:1px solid var(--rule);border-radius:999px;padding:3px 10px;cursor:pointer}
+.more:hover{border-color:var(--steel)}
+.note{font-size:13px;color:var(--muted);margin:0;max-width:70ch}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--f-data);font-size:11px;fill:var(--muted)}
+svg .lbl{fill:var(--ink);font-family:var(--f-body);font-size:12px}
+svg .val{fill:var(--ink);font-weight:500}
+svg .ax{stroke:var(--rule);stroke-width:1}
+svg .gl{stroke:var(--grid);stroke-width:1}
+.hit{cursor:pointer;outline:none;transition:opacity .15s}
+.hit:hover,.hit:focus-visible{opacity:.7}
+.hit:focus-visible{stroke:var(--ink);stroke-width:2}
+.takeaways{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-block:1px solid var(--rule)}
+.tk{all:unset;box-sizing:border-box;padding:16px 16px 16px 0;display:grid;gap:4px;align-content:start;cursor:pointer;min-width:0}
+.tk+.tk{padding-left:16px;border-left:1px solid var(--rule)}
+.tk:hover b,.tk:focus-visible b{color:var(--steel)}
+.tk:focus-visible{outline:2px solid var(--steel);outline-offset:-2px}
+.tk b{font-family:var(--f-display);font-size:36px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;transition:color .15s}
+.tk b small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
+.tk span{font-size:13px;color:var(--muted)}
+.tk em{font:500 11px var(--f-data);font-style:normal;color:var(--steel)}
+const SHORT={"P-0018":"3.2× supplier average","P-0024":"Probable duplicate of approved L-0021","P-0025":"Weekend · no tax number · new supplier","P-0022":"Exact duplicate of L-0020"};
+/* queue */
+.queue{display:grid;gap:0;border-top:1px solid var(--rule)}
+.q{all:unset;box-sizing:border-box;display:grid;grid-template-columns:6px 92px minmax(0,1.6fr) minmax(0,1fr) 150px 170px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.q:hover .qs,.q:focus-visible .qs{text-decoration:underline}
+.q:focus-visible{outline:2px solid var(--steel)}
+.stripe{align-self:stretch;border-radius:3px}
+.qid{font:500 13px var(--f-data)}
+.qs{font-weight:600;min-width:0}
+.qs small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.qf{font-size:12.5px;color:var(--muted);min-width:0}
+.qa{font:500 14px var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
+.pill{font:600 11px var(--f-data);letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:999px;justify-self:start;border:1px solid}
+.p-hold{color:var(--brick);border-color:var(--brick)}
+.p-verify{color:var(--amber);border-color:var(--amber)}
+.p-ok{color:var(--moss);border-color:var(--moss)}
+.p-done{color:var(--muted);border-color:var(--rule)}
+/* projection */
+.proj{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:start}
+.checks{display:grid;gap:8px}
+.chk{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--steel)}
+.chk span:last-child{font:13px var(--f-data);color:var(--muted)}
+.projout{font:600 44px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.projout small{font-size:18px;color:var(--muted)}
+.delta{font:500 13px var(--f-data)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend i.sq{border-radius:2px}
+.scroll{overflow-x:auto}
+.play{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--rule)}
+.pcol{padding:14px 18px 6px 0;display:grid;gap:8px;align-content:start;min-width:0}
+.pcol+.pcol{padding-left:18px;border-left:1px solid var(--rule)}
+.pcol h3{font:600 22px var(--f-display);margin:0}
+.pcol p{margin:0;font-size:12.5px;color:var(--muted)}
+.step{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px 1fr;gap:8px;padding:9px 0;border-top:1px dashed var(--rule);cursor:pointer}
+.step b{font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center}
+.step:hover .st,.step:focus-visible .st{color:var(--steel);text-decoration:underline}
+.step:focus-visible{outline:2px solid var(--steel)}
+.st{font-size:14px}
+.st small{display:block;font:12px var(--f-data);color:var(--muted)}
+footer{margin-top:44px;border-top:1px solid var(--rule);padding-top:14px;font-size:12px;color:var(--muted);display:grid;gap:4px}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--f-data);font-size:12px;padding:6px 9px;border-radius:3px;opacity:0;transition:opacity .12s;z-index:5;max-width:260px}
+#scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+#dr{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--sheet);border-left:1px solid var(--rule);z-index:21;display:grid;grid-template-rows:auto 1fr;box-shadow:-12px 0 40px rgba(0,0,0,.12);transition:transform .22s ease}
+#dr[hidden]{display:grid!important;transform:translateX(105%);visibility:hidden}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 12px 20px;border-bottom:1px solid var(--rule)}
+.dh button{font:500 12px var(--f-data);background:none;border:1px solid var(--rule);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.dh button:hover{border-color:var(--ink)}
+.db{overflow-y:auto;padding:20px calc(20px + env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) 22px;display:grid;gap:18px;align-content:start}
+.kind{font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--muted)}
+.kind i{width:9px;height:9px;border-radius:50%}
+.db h3{font:700 30px/1.05 var(--f-display);margin:6px 0 0;text-wrap:balance}
+.ar{font-family:var(--f-ar);direction:rtl;unicode-bidi:isolate;color:var(--muted);font-size:14px;margin-top:4px;display:block;text-align:left}
+.stat{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.stat b{font:600 46px/1 var(--f-display);color:var(--steel);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted);max-width:32ch}
+.sec{display:grid;gap:6px}
+.sec h4{margin:0;font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:5px}
+.sec p{margin:0}
+.sec ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.dec{list-style:none;padding:0!important}
+.dec li{display:grid;grid-template-columns:24px 1fr;gap:6px;counter-increment:d}
+.dec{counter-reset:d}
+.dec li::before{content:counter(d);font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px}
+.kv dt{color:var(--muted);font-family:var(--f-data);font-size:12px;padding-top:1px}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th{font:500 11px var(--f-data);color:var(--muted);text-align:left;border-bottom:1px solid var(--rule);padding:4px 6px 4px 0}
+.tbl td{border-bottom:1px solid var(--grid);padding:5px 6px 5px 0;vertical-align:top}
+.tbl td.num{text-align:right;font-family:var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl td.arc{font-family:var(--f-ar);direction:rtl;text-align:right}
+.tbl tr.go{cursor:pointer}.tbl tr.go:hover td{background:var(--paper)}
+.kpis{display:flex;flex-wrap:wrap;gap:6px}
+.kpis span{font:12px var(--f-data);border:1px solid var(--rule);padding:3px 8px;border-radius:3px}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.rel button{font:13px var(--f-body);background:none;color:var(--steel);border:1px solid var(--steel-2);border-radius:999px;padding:3px 11px;cursor:pointer}
+.rel button:hover{background:var(--steel);color:var(--paper)}
+.src{font-size:12px;color:var(--muted);font-style:italic}
+.flag{font:500 11px var(--f-data);color:var(--brick)}
+.fl{display:grid;gap:6px}
+.fl div{border-left:3px solid var(--amber);padding:4px 10px;font-size:13.5px;background:var(--paper)}
+.fl div.hi{border-color:var(--brick)}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}.s5,.s7,.s4,.s8,.s6,.s12{grid-column:auto}.takeaways{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tk:nth-child(odd){padding-left:0;border-left:0}.tk:nth-child(even){padding-left:16px;border-left:1px solid var(--rule)}.tk:nth-child(n+3){border-top:1px solid var(--rule)}
+ .q{grid-template-columns:6px minmax(0,1fr) auto;row-gap:4px}.q .qid{grid-column:2}.q .qs{grid-column:2/4}.q .qf{grid-column:2/4}.q .qa{grid-column:2;text-align:left}.q .pill{grid-column:3;grid-row:1;justify-self:end}.stripe{grid-row:1/5}
+ .proj{grid-template-columns:1fr}
+ .play{grid-template-columns:1fr}.pcol+.pcol{padding-left:0;border-left:0;border-top:1px solid var(--rule)}
+ #dr{top:auto;left:0;width:100%;max-height:86vh;border-left:0;border-top:1px solid var(--rule);border-radius:12px 12px 0 0}
+ #dr[hidden]{transform:translateY(105%)}
+ .dh{padding-left:max(16px,env(safe-area-inset-left,0px));padding-top:12px}
+ .db{padding-left:max(18px,env(safe-area-inset-left,0px))}}
+@media (prefers-reduced-motion:reduce){#tip,#dr,.hit{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Data Ops · Data health review · Sales system, Accounting Excel and Warehouse book · November 2025 – October 2026</div>
+    <h1>Single Source Data Review</h1>
+    <p class="lede">Why each department reports a different number, how many versions of each customer exist, how many hours the monthly report costs, and the plan to get one trusted number. Click any bar, dot, cell, row or figure for its details.</p>
+    <div class="banner"><b>TEST DATA</b><span>Built for the same fictional Baghdad distribution company as the Sales Recovery Review: 60 real customers, 199 customer records across 3 sources. Every figure is calculated in the workbook <a href="Data_Health_Review_Data.xlsx" download style="color:var(--steel);font-weight:600">Data_Health_Review_Data.xlsx</a> (download) (start with its “Report Map” sheet).</span></div>
+    <span class="hint"><i></i>Everything is clickable. Press Esc to close the details panel.</span>
+  </header>
+
+  <section class="takeaways" aria-label="Key figures" id="tiles"></section>
+
+  <div class="grid" style="margin-top:38px">
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">1</span>Three departments, three numbers</h2><button class="more" data-open="ov-recon">Why they differ</button></div>
+      <p class="note">Monthly sales as recorded by each source, million IQD. The warehouse records list value before discounts. Click a month.</p>
+      <div class="legend"><span><i style="background:var(--steel)"></i>Sales system (net)</span><span><i style="background:var(--amber)"></i>Accounting Excel</span><span><i style="background:var(--violet)"></i>Warehouse book (list value)</span></div>
+      <div class="scroll"><svg id="lines" viewBox="0 0 1100 320" style="min-width:760px" role="group" aria-label="Monthly sales by source"></svg></div>
+    </div>
+
+    <div class="panel s7">
+      <div class="ph"><h2><span class="n">2</span>Data quality by source</h2><button class="more" data-open="ov-score">How the score works</button></div>
+      <p class="note">Share of customer records with each field filled in correctly. Click a cell or a source.</p>
+      <div class="scroll"><svg id="heat" viewBox="0 0 640 230" style="min-width:560px" role="group" aria-label="Data completeness heatmap"></svg></div>
+    </div>
+    <div class="panel s5">
+      <div class="ph"><h2><span class="n">3</span>Data health score</h2></div>
+      <p class="note">0–100 per source. Click a bar.</p>
+      <svg id="score" viewBox="0 0 460 230" role="group" aria-label="Data health score by source"></svg>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">4</span>One customer, many names</h2><button class="more" data-open="ov-names">Why this matters</button></div>
+      <p class="note">Each row is one real customer. Each dot is one record of that customer in a source; the label shows how many different spellings exist. Click a row.</p>
+      <div class="scroll"><svg id="net" viewBox="0 0 1100 470" style="min-width:760px" role="group" aria-label="Customer records across sources"></svg></div>
+    </div>
+
+    <div class="panel s7">
+      <div class="ph"><h2><span class="n">5</span>Hours to produce the monthly report</h2></div>
+      <p class="note">Today (manual) vs with a single source of truth (automated). Click a step.</p>
+      <svg id="hours" viewBox="0 0 600 300" role="group" aria-label="Hours per report step"></svg>
+    </div>
+    <div class="panel s5">
+      <div class="ph"><h2><span class="n">6</span>Target setup</h2></div>
+      <p class="note">How the data should flow. Click a box.</p>
+      <svg id="flow" viewBox="0 0 460 300" role="group" aria-label="Target data flow"></svg>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">7</span>Roadmap</h2><span class="note">Analyst recommendations</span></div>
+      <div class="play" id="play"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Source: fictional customer records from three sources (sales system, accounting Excel, warehouse book) and monthly totals, in Data_Health_Review_Data.xlsx. “Official name” = the record uses exactly the customer’s official name.</span>
+    <span>Health score = average of six field-completeness rates and the share of records that are not duplicates. Roadmap and KPIs are analyst recommendations.</span>
+  </footer>
+</div>
+<div id="tip" aria-hidden="true"></div>
+<div id="scrim" hidden></div>
+<aside id="dr" hidden role="dialog" aria-modal="true" aria-labelledby="dtitle">
+  <div class="dh"><button id="back" hidden>← Back</button><span></span><button id="close">Close ✕</button></div>
+  <div class="db" id="db" tabindex="-1"></div>
+</aside>
+
+<script>
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const txt=(p,x,y,s,a={})=>{const t=el("text",{x,y,...a},p);t.textContent=s;return t};
+const IQD=v=>Math.round(v).toLocaleString("en-US")+" IQD";
+const M=v=>{const a=Math.abs(v);return (v<0?"−":"")+(a>=1e9?(a/1e9).toFixed(2)+"B":a>=1e6?(a/1e6).toFixed(a>=1e8?0:1)+"M":a>=1e3?(a/1e3).toFixed(0)+"K":Math.round(a))};
+const P=(v,d=1)=>(v*100).toFixed(d)+"%";
+const tip=document.getElementById("tip");
+const act=(n,s,id)=>{n.classList.add("hit");n.setAttribute("tabindex","0");n.setAttribute("role","button");n.setAttribute("aria-label",s);
+ n.addEventListener("mousemove",e=>{tip.textContent=s+"  ·  click for details";tip.style.opacity=1;tip.style.left=Math.min(e.clientX+12,innerWidth-270)+"px";tip.style.top=(e.clientY+12)+"px"});
+ n.addEventListener("mouseleave",()=>tip.style.opacity=0);
+ n.addEventListener("click",e=>{e.stopPropagation();tip.style.opacity=0;open(id)});
+ n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open(id)}});};
+function spark(a,labels){const w=400,h=84,max=Math.max(...a,1),sx=j=>14+j/(a.length-1)*(w-28),sy=v=>h-20-v/max*(h-34);
+ return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="M${a.map((v,j)=>sx(j)+","+sy(v)).join("L")}L${sx(a.length-1)},${h-20}L${sx(0)},${h-20}Z" fill="var(--steel)" opacity=".14"/><path d="M${a.map((v,j)=>sx(j)+","+sy(v)).join("L")}" fill="none" stroke="var(--steel)" stroke-width="2"/>${a.map((v,j)=>`<circle cx="${sx(j)}" cy="${sy(v)}" r="2.6" fill="var(--steel)"/>`).join("")}${labels.map((l,j)=>j%2===0?`<text x="${sx(j)}" y="${h-4}" text-anchor="middle" style="font-size:10px">${l}</text>`:"").join("")}<text x="${w-14}" y="11" text-anchor="end" style="font-size:10px">max ${M(max)}</text></svg>`}
+const dr=document.getElementById("dr"),db=document.getElementById("db"),scrim=document.getElementById("scrim"),backB=document.getElementById("back");
+let stack=[],lastFocus=null;
+function render(id){const d=D[id];if(!d)return;const [kl,kc]=KIND[d.k];
+ let h=`<div><div class="kind"><i style="background:${kc}"></i>${kl}</div><h3 id="dtitle">${esc(d.t)}</h3>${d.ar?`<span class="ar">${esc(d.ar)}</span>`:""}</div>`;
+ if(d.stat)h+=`<div class="stat"><b>${esc(d.stat[0])}</b><span>${esc(d.stat[1])}</span></div>`;
+ if(d.spark)h+=d.spark;
+ if(d.says)h+=`<div class="sec"><h4>What the data shows</h4><p>${esc(d.says)}</p></div>`;
+ if(d.means)h+=`<div class="sec"><h4>What it means</h4><p>${esc(d.means)}</p></div>`;
+ if(d.html)h+=d.html;
+ if(d.dec&&d.dec.length)h+=`<div class="sec"><h4>${esc(d.decTitle||"Strategic decisions")} <span class="flag">· recommendation</span></h4><ol class="dec">${d.dec.map(x=>`<li><span>${esc(x)}</span></li>`).join("")}</ol></div>`;
+ if(d.kpi&&d.kpi.length)h+=`<div class="sec"><h4>KPIs to track</h4><div class="kpis">${d.kpi.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div>`;
+ const rel=(d.rel||[]).filter(r=>D[r]&&r!==id);
+ if(rel.length)h+=`<div class="sec"><h4>Related</h4><div class="rel">${rel.map(r=>`<button data-go="${r}">${esc(D[r].t)}</button>`).join("")}</div></div>`;
+ h+=`<p class="src">${SRCNOTE}</p>`;
+ db.innerHTML=h;db.scrollTop=0;backB.hidden=stack.length<2;}
+function open(id){if(!D[id])return;if(dr.hidden){lastFocus=document.activeElement;stack=[]}stack.push(id);render(id);scrim.hidden=false;dr.hidden=false;requestAnimationFrame(()=>db.focus())}
+function close(){dr.hidden=true;scrim.hidden=true;stack=[];if(lastFocus&&lastFocus.focus)lastFocus.focus()}
+db.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b&&D[b.dataset.go]){stack.push(b.dataset.go);render(b.dataset.go)}});
+backB.onclick=()=>{stack.pop();render(stack[stack.length-1])};
+document.getElementById("close").onclick=close;scrim.onclick=close;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dr.hidden)close()});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)open(b.dataset.open)});
+
+const S={"comp":{"Sales system":{"name":{"ok":60,"n":60,"pct":1.0},"code":{"ok":60,"n":60,"pct":1.0},"phone":{"ok":55,"n":60,"pct":0.9166666666666666},"area":{"ok":60,"n":60,"pct":1.0},"tax":{"ok":25,"n":60,"pct":0.4166666666666667},"credit":{"ok":60,"n":60,"pct":1.0}},"Accounting Excel":{"name":{"ok":46,"n":75,"pct":0.6133333333333333},"code":{"ok":0,"n":75,"pct":0.0},"phone":{"ok":56,"n":75,"pct":0.7466666666666667},"area":{"ok":58,"n":75,"pct":0.7733333333333333},"tax":{"ok":58,"n":75,"pct":0.7733333333333333},"credit":{"ok":46,"n":75,"pct":0.6133333333333333}},"Warehouse book":{"name":{"ok":42,"n":64,"pct":0.65625},"code":{"ok":40,"n":64,"pct":0.625},"phone":{"ok":38,"n":64,"pct":0.59375},"area":{"ok":64,"n":64,"pct":1.0},"tax":{"ok":0,"n":64,"pct":0.0},"credit":{"ok":0,"n":64,"pct":0.0}}},"dups":{"Sales system":0,"Accounting Excel":15,"Warehouse book":4},"score":{"Sales system":90,"Accounting Excel":62,"Warehouse book":54},"overall":69,"nrec":199,"ncust":60,"dist":{"3":41,"4":19},"multi":[{"id":"C012","ar":"أسواق الياسمين","en":"Al-Yasmeen Supermarket","names":["أسواق ال ياسمين","أسواق الياسمين","أسواق الياسمين للتجارة","اسواق الياسمين"],"recs":[{"rid":"R0036","src":"Sales system","master":"C012","name":"أسواق الياسمين","code":"C012","phone":"07802631874","area":"الكاظمية","tax":"","credit":5000000,"note":""},{"rid":"R0037","src":"Accounting Excel","master":"C012","name":"أسواق ال ياسمين","code":"","phone":"","area":"الكاظمية","tax":"300497595","credit":15000000,"note":""},{"rid":"R0038","src":"Accounting Excel","master":"C012","name":"أسواق الياسمين للتجارة","code":"","phone":"07802631874","area":"","tax":"300497595","credit":5000000,"note":"duplicate entry"},{"rid":"R0039","src":"Warehouse book","master":"C012","name":"اسواق الياسمين","code":"W-012","phone":"","area":"الكاظمية","tax":"","credit":"","note":""}]},{"id":"C053","ar":"محلات العز","en":"Al-Ezz Grocery","names":["محل العز","محلات ال عز","محلات العز","محلات العز للتجارة"],"recs":[{"rid":"R0174","src":"Sales system","master":"C053","name":"محلات العز","code":"C053","phone":"07824329883","area":"المنصور","tax":"300721532","credit":5000000,"note":""},{"rid":"R0175","src":"Accounting Excel","master":"C053","name":"محلات العز للتجارة","code":"","phone":"","area":"المنصور","tax":"","credit":5000000,"note":""},{"rid":"R0176","src":"Accounting Excel","master":"C053","name":"محل العز","code":"","phone":"","area":"","tax":"300721532","credit":"","note":"duplicate entry"},{"rid":"R0177","src":"Warehouse book","master":"C053","name":"محلات ال عز","code":"","phone":"07824329883","area":"المنصور","tax":"","credit":"","note":""}]},{"id":"C002","ar":"أسواق الأمل","en":"Al-Amal Supermarket","names":["أسواق الأمل","أسواق الأمل للتجارة","اسواق الامل"],"recs":[{"rid":"R0004","src":"Sales system","master":"C002","name":"أسواق الأمل","code":"C002","phone":"07821599882","area":"بغداد الجديدة","tax":"","credit":25000000,"note":""},{"rid":"R0005","src":"Accounting Excel","master":"C002","name":"أسواق الأمل","code":"","phone":"07821599882","area":"بغداد الجديدة","tax":"300785687","credit":"","note":""},{"rid":"R0006","src":"Accounting Excel","master":"C002","name":"أسواق الأمل للتجارة","code":"","phone":"07821599882","area":"بغداد الجديدة","tax":"300785687","credit":"","note":"duplicate entry"},{"rid":"R0007","src":"Warehouse book","master":"C002","name":"اسواق الامل","code":"W-002","phone":"07821599882","area":"بغداد الجديدة","tax":"","credit":"","note":""}]},{"id":"C017","ar":"محلات النخلة","en":"Al-Nakhla Grocery","names":["محلات ال نخلة","محلات النخلة","محلات النخلة للتجارة"],"recs":[{"rid":"R0053","src":"Sales system","master":"C017","name":"محلات النخلة","code":"C017","phone":"07747965683","area":"الدورة","tax":"300848917","credit":5000000,"note":""},{"rid":"R0054","src":"Accounting Excel","master":"C017","name":"محلات ال نخلة","code":"","phone":"07747965683","area":"","tax":"300848917","credit":5000000,"note":""},{"rid":"R0055","src":"Accounting Excel","master":"C017","name":"محلات النخلة للتجارة","code":"","phone":"","area":"الدورة","tax":"300848917","credit":"","note":"duplicate entry"},{"rid":"R0056","src":"Warehouse book","master":"C017","name":"محلات ال نخلة","code":"W-017","phone":"","area":"الدورة","tax":"","credit":"","note":""}]},{"id":"C027","ar":"مطعم أكد","en":"Akkad Restaurant","names":["مطعم أكد","مطعم أكد للتجارة","مطعم اكد"],"recs":[{"rid":"R0088","src":"Sales system","master":"C027","name":"مطعم أكد","code":"C027","phone":"07775992586","area":"المنصور","tax":"300805626","credit":20000000,"note":""},{"rid":"R0089","src":"Accounting Excel","master":"C027","name":"مطعم أكد للتجارة","code":"","phone":"07775992586","area":"المنصور","tax":"300805626","credit":5000000,"note":""},{"rid":"R0090","src":"Accounting Excel","master":"C027","name":"مطعم اكد","code":"","phone":"","area":"المنصور","tax":"300805626","credit":10000000,"note":"duplicate entry"},{"rid":"R0091","src":"Warehouse book","master":"C027","name":"مطعم أكد","code":"W-027","phone":"","area":"المنصور","tax":"","credit":"","note":""}]},{"id":"C040","ar":"أسواق الديار","en":"Al-Diyar Supermarket","names":["أسواق ال ديار","أسواق الديار","اسواق الديار"],"recs":[{"rid":"R0132","src":"Sales system","master":"C040","name":"أسواق الديار","code":"C040","phone":"07774947722","area":"الدورة","tax":"","credit":20000000,"note":""},{"rid":"R0133","src":"Accounting Excel","master":"C040","name":"اسواق الديار","code":"","phone":"07774947722","area":"","tax":"300559268","credit":15000000,"note":""},{"rid":"R0134","src":"Warehouse book","master":"C040","name":"أسواق ال ديار","code":"","phone":"07774947722","area":"الدورة","tax":"","credit":"","note":""}]},{"id":"C044","ar":"أسواق الرياض","en":"Al-Riyadh Supermarket","names":["أسواق الرياض","أسواق الرياض للتجارة","اسواق الرياض"],"recs":[{"rid":"R0146","src":"Sales system","master":"C044","name":"أسواق الرياض","code":"C044","phone":"07739242428","area":"الدورة","tax":"","credit":20000000,"note":""},{"rid":"R0147","src":"Accounting Excel","master":"C044","name":"أسواق الرياض للتجارة","code":"","phone":"07739242428","area":"الدورة","tax":"","credit":"","note":""},{"rid":"R0148","src":"Warehouse book","master":"C044","name":"اسواق الرياض","code":"","phone":"07739242428","area":"الدورة","tax":"","credit":"","note":""}]},{"id":"C054","ar":"أسواق الثريا","en":"Al-Thuraya Supermarket","names":["أسواق ال ثريا","أسواق الثريا","أسواق الثريا للتجارة"],"recs":[{"rid":"R0178","src":"Sales system","master":"C054","name":"أسواق الثريا","code":"C054","phone":"","area":"شارع فلسطين","tax":"300792300","credit":15000000,"note":""},{"rid":"R0179","src":"Accounting Excel","master":"C054","name":"أسواق الثريا للتجارة","code":"","phone":"07765780466","area":"شارع فلسطين","tax":"300792300","credit":5000000,"note":""},{"rid":"R0180","src":"Warehouse book","master":"C054","name":"أسواق ال ثريا","code":"W-054","phone":"07765780466","area":"شارع فلسطين","tax":"","credit":"","note":""}]},{"id":"C060","ar":"محلات الروضة","en":"Al-Rawda Grocery","names":["محلات الروضة","محلات الروضة للتجارة","محلات الروضه"],"recs":[{"rid":"R0197","src":"Sales system","master":"C060","name":"محلات الروضة","code":"C060","phone":"07840928924","area":"الكرادة","tax":"","credit":15000000,"note":""},{"rid":"R0198","src":"Accounting Excel","master":"C060","name":"محلات الروضة للتجارة","code":"","phone":"","area":"الكرادة","tax":"","credit":"","note":""},{"rid":"R0199","src":"Warehouse book","master":"C060","name":"محلات الروضه","code":"","phone":"07840928924","area":"الكرادة","tax":"","credit":"","note":""}]},{"id":"C023","ar":"محلات الرحمة","en":"Al-Rahma Grocery","names":["محلات ال رحمة","محلات الرحمة"],"recs":[{"rid":"R0074","src":"Sales system","master":"C023","name":"محلات الرحمة","code":"C023","phone":"07785151659","area":"الأعظمية","tax":"","credit":15000000,"note":""},{"rid":"R0075","src":"Accounting Excel","master":"C023","name":"محلات الرحمة","code":"","phone":"07785151659","area":"الأعظمية","tax":"300213889","credit":10000000,"note":""},{"rid":"R0076","src":"Accounting Excel","master":"C023","name":"محلات ال رحمة","code":"","phone":"07785151659","area":"الأعظمية","tax":"300213889","credit":15000000,"note":"duplicate entry"},{"rid":"R0077","src":"Warehouse book","master":"C023","name":"محلات الرحمة","code":"","phone":"","area":"الأعظمية","tax":"","credit":"","note":""}]}],"namesvar":37,"gaps":[{"m":"2025-11","sales":73301750,"acc":75805000,"wh":76454000,"gross":78169000,"gap":2503250,"gp":0.03414993502883628},{"m":"2025-12","sales":78394250,"acc":76802000,"wh":80115000,"gross":83529000,"gap":-1592250,"gp":-0.020310800855930122},{"m":"2026-01","sales":66627250,"acc":68250000,"wh":72133000,"gross":71051500,"gap":1622750,"gp":0.024355650278227},{"m":"2026-02","sales":86200750,"acc":83186000,"wh":91576000,"gross":91716500,"gap":-3014750,"gp":-0.03497359361722491},{"m":"2026-03","sales":110580000,"acc":102839000,"wh":114615000,"gross":117709000,"gap":-7741000,"gp":-0.0700036172906493},{"m":"2026-04","sales":73235000,"acc":72439000,"wh":77920000,"gross":77941500,"gap":-796000,"gp":-0.010869119956305046},{"m":"2026-05","sales":86997000,"acc":84213000,"wh":88210000,"gross":93060000,"gap":-2784000,"gp":-0.032001103486327113},{"m":"2026-06","sales":69289250,"acc":68746000,"wh":72799000,"gross":74057500,"gap":-543250,"gp":-0.007840321550601284},{"m":"2026-07","sales":64692750,"acc":60164000,"wh":66368000,"gross":69168500,"gap":-4528750,"gp":-0.07000398035328534},{"m":"2026-08","sales":59794500,"acc":60078000,"wh":60650000,"gross":63590000,"gap":283500,"gp":0.004741238742693726},{"m":"2026-09","sales":45757500,"acc":47210000,"wh":48967000,"gross":48711500,"gap":1452500,"gp":0.03174343003879145},{"m":"2026-10","sales":45324750,"acc":45705000,"wh":47895000,"gross":48117500,"gap":380250,"gp":0.008389456091870336}],"steps":[["Collect files from sales, accounts and warehouse",6,0.5],["Clean names, codes and formats",8,0.5],["Match numbers between departments",10,1],["Build charts and tables",6,0.25],["Review and send to management",3,0.75]],"prodcodes":{"total":20,"same_all":8,"diff_wh":9,"name_only_acc":20},"absgap":27242250,"maxgap":{"m":"2026-07","sales":64692750,"acc":60164000,"wh":66368000,"gross":69168500,"gap":-4528750,"gp":-0.07000398035328534}};
+const SRCNOTE="Source: fictional distribution company records (test data). Recommendations are analyst suggestions.";
+const MON=["Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct"];
+const MONL=["Nov 2025","Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026","Jun 2026","Jul 2026","Aug 2026","Sep 2026","Oct 2026"];
+const KIND={src:["Data source","var(--violet)"],cell:["Data field","var(--teal)"],mon:["Month","var(--steel)"],cust:["Customer","var(--violet)"],step:["Report step","var(--amber)"],flow:["Target setup","var(--teal)"],kpi:["Key figure","var(--steel)"],ov:["Overview","var(--muted)"],play:["Roadmap step","var(--brick)"]};
+const SRC=["Sales system","Accounting Excel","Warehouse book"],SRCC={"Sales system":"var(--steel)","Accounting Excel":"var(--amber)","Warehouse book":"var(--violet)"};
+const SRCID={"Sales system":"s-sales","Accounting Excel":"s-acc","Warehouse book":"s-wh"};
+const F=[["name","Official name"],["code","Customer code"],["phone","Phone"],["area","Area"],["tax","Tax no."],["credit","Credit limit"]];
+const hb=S.steps.reduce((a,s)=>a+s[1],0),ha=S.steps.reduce((a,s)=>a+s[2],0);
+const nrecs=s=>S.comp[s].name.n;
+const D={};
+
+/* sources */
+const SRCTXT={"Sales system":["The cleanest source: one record per customer, with codes and areas. Weak spot: tax numbers are missing on more than half the customers.","Use it as the base for the master customer list.",["Make the sales system the owner of the customer list: new customers are created here first.","Collect missing tax numbers on the next visit to each customer."]],
+"Accounting Excel":["Customers are typed by hand. Many names are spelled differently from the official name, and some customers appear twice. There are no customer codes.","Without codes, the accountant matches payments to customers by name. Two spellings of one customer means two balances, and wrong debt reports.",["Add the customer code column and fill it from the master list.","Replace free typing with a drop-down list of customers.","Merge the duplicate entries and their balances."]],
+"Warehouse book":["Short names, its own codes for some customers, no tax numbers and no credit limits. Values are recorded at list price, before discounts.","The warehouse cannot be compared with sales or accounting without manual work every month.",["Use the same customer codes as the sales system on every dispatch note.","Record the invoice number on each dispatch so shipments and sales can be matched automatically."]]};
+SRC.forEach(s=>{const [says,means,dec]=SRCTXT[s];
+ D[SRCID[s]]={k:"src",t:s,stat:[S.score[s]+" / 100",`data health · ${nrecs(s)} customer records for ${S.ncust} customers · ${S.dups[s]} duplicates`],says,means,
+  html:`<div class="sec"><h4>Field completeness</h4><div class="tbl"><table>${F.map(([f,l])=>`<tr class="go" data-go="f-${SRCID[s]}-${f}"><td>${l}</td><td class="num">${S.comp[s][f].ok} / ${S.comp[s][f].n}</td><td class="num">${P(S.comp[s][f].pct,0)}</td></tr>`).join("")}<tr><td>Not a duplicate</td><td class="num">${nrecs(s)-S.dups[s]} / ${nrecs(s)}</td><td class="num">${P(1-S.dups[s]/nrecs(s),0)}</td></tr></table></div></div>`,
+  dec,kpi:["Health score","Duplicate records","Records without code"],rel:["ov-score"]};
+ F.forEach(([f,l])=>{const c=S.comp[s][f];const missing=c.n-c.ok;
+  D[`f-${SRCID[s]}-${f}`]={k:"cell",t:`${s} · ${l}`,stat:[P(c.pct,0),`${c.ok} of ${c.n} records`],says:c.pct===1?"Complete.":c.pct===0?`This source does not record ${l.toLowerCase()} at all.`:`${missing} records are missing or different.`,
+   means:{name:"Different spellings stop the system from knowing two records are the same customer.",code:"Without a code, matching between departments is done by eye.",phone:"Missing phones slow down collection and follow-up calls.",area:"Area drives route planning and sales by region.",tax:"Tax numbers are needed for invoices accepted by the tax authority.",credit:"Without a credit limit, nothing stops new credit to a customer who already owes a lot."}[f],rel:[SRCID[s]]};});});
+
+/* months */
+S.gaps.forEach((g,i)=>{D["m-"+i]={k:"mon",t:MONL[i],stat:[(g.gap>=0?"+":"")+P(g.gp),`accounting vs sales system · ${IQD(g.gap)}`],
+ html:`<div class="sec"><h4>The same month, three numbers</h4><div class="tbl"><table><tr><td>Sales system (net)</td><td class="num">${IQD(g.sales)}</td></tr><tr><td>Accounting Excel</td><td class="num">${IQD(g.acc)}</td></tr><tr><td>Warehouse book (list value)</td><td class="num">${IQD(g.wh)}</td></tr><tr><td>Sales system list value</td><td class="num">${IQD(g.gross)}</td></tr></table></div></div>`,
+ says:Math.abs(g.gp)>=0.05?"A large gap: invoices were entered in accounting late or not at all this month.":"A small gap, typical of timing differences and typing errors.",
+ means:"Management cannot tell which number is right without a reconciliation, which today is done by hand.",dec:Math.abs(g.gp)>=0.05?["List the invoices in the sales system that are missing from accounting.","Agree a cut-off: all invoices of the month entered by the 3rd of the next month."]:[],rel:["ov-recon"]};});
+
+/* customers */
+S.multi.forEach(c=>{D["c-"+c.id]={k:"cust",t:c.en,ar:c.ar,stat:[c.recs.length+" records",`${c.names.length} different spellings across 3 sources`],
+ html:`<div class="sec"><h4>All records of this customer</h4><div class="tbl"><table><tr><th>Source</th><th>Name as written</th><th>Code</th><th>Phone</th><th>Tax no.</th></tr>${c.recs.map(r=>`<tr><td>${r.src}${r.note?` <span class="flag">· duplicate</span>`:""}</td><td class="arc">${esc(r.name)}</td><td>${r.code||"—"}</td><td>${r.phone?"✓":"—"}</td><td>${r.tax?"✓":"—"}</td></tr>`).join("")}</table></div></div>`,
+ says:`The official name is “${c.ar}”. The other spellings make this one customer look like several.`,
+ dec:["Keep one master record with code "+c.id+".","Point every other record to that code, and merge duplicate balances."],rel:["ov-names"]};});
+
+/* steps */
+S.steps.forEach((s,i)=>{D["st-"+i]={k:"step",t:s[0],stat:[`${s[1]} h → ${s[2]} h`,"per monthly report, today vs automated"],
+ says:["Files arrive from three people on different days, in different formats.","Names, codes and dates are fixed by hand every month.","The longest step: sales, accounting and warehouse totals are compared line by line.","Charts are rebuilt from scratch in Excel or PowerPoint.","Someone checks the numbers before management sees them."][i],
+ means:["With one source, the data is already in one place.","Cleaning rules run automatically on new data.","With shared codes, matching is automatic and only the exceptions need a person.","The dashboard updates itself.","Review stays human, but on a shorter, cleaner report."][i]};});
+
+/* flow */
+Object.assign(D,{"fl-src":{k:"flow",t:"Today’s sources stay",says:"The sales system, the accounting Excel and the warehouse book keep working. Nobody has to change software on day one.",dec:["Add the shared customer and product codes to each source."]},
+"fl-rules":{k:"flow",t:"Cleaning rules",says:"Written rules applied every month: official names, codes, date format, invoice number on every dispatch.",dec:["Write the rules on one page.","Apply them automatically with a script or Power Query."]},
+"fl-master":{k:"flow",t:"Master data",says:"One customer list and one product list, each with a code. Every source points to these codes.",dec:["Start from the sales system list (score "+S.score["Sales system"]+").","Merge the "+S.dups["Accounting Excel"]+" accounting duplicates first."]},
+"fl-dash":{k:"flow",t:"Management dashboard",says:"One dashboard fed by the master data: sales, collections, stock and margin, the same number for every department.",dec:["Monthly update in hours, not days.","Same view for owner, sales and accounts."]}});
+
+/* kpis & overviews */
+const mx=S.maxgap;
+Object.assign(D,{
+"k-score":{k:"kpi",t:"Data health score",stat:[S.overall+" / 100","average of the three sources"],says:`Sales system ${S.score["Sales system"]}, Accounting Excel ${S.score["Accounting Excel"]}, Warehouse book ${S.score["Warehouse book"]}.`,means:"Below about 85, the monthly numbers can’t be trusted without manual checking.",rel:["s-sales","s-acc","s-wh","ov-score"]},
+"k-recs":{k:"kpi",t:"Customer records",stat:[S.nrec+" records","for "+S.ncust+" real customers"],says:`${S.dist["3"]||0} customers have 3 records, ${S.dist["4"]||0} have 4. Duplicates: ${S.dups["Accounting Excel"]} in accounting, ${S.dups["Warehouse book"]} in the warehouse.`,rel:["ov-names"]},
+"k-names":{k:"kpi",t:"Customers spelled differently",stat:[S.namesvar+" of "+S.ncust,"customers have more than one spelling across sources"],says:"Without a shared code, these customers cannot be matched automatically between departments.",rel:["ov-names"]},
+"k-gap":{k:"kpi",t:"Largest monthly gap",stat:[P(Math.abs(mx.gp)),`${MONL[S.gaps.indexOf(S.gaps.find(g=>g.m===mx.m))]}: accounting ${IQD(mx.acc)} vs sales ${IQD(mx.sales)}`],says:`Across 12 months the two departments differ by ${IQD(S.absgap)} in total (absolute).`,rel:["ov-recon","m-"+S.gaps.findIndex(g=>g.m===mx.m)]},
+"k-hours":{k:"kpi",t:"Hours per monthly report",stat:[`${hb} h → ${ha} h`,"manual today vs with a single source"],says:`${hb-ha} hours saved each month, about ${(hb-ha)*12} hours a year.`,means:"Time the finance team gets back for analysis instead of copying and matching.",rel:["st-2"]},
+"ov-recon":{k:"ov",t:"Why the numbers differ",says:"Accounting types invoices by hand, sometimes late, so some months are short. The warehouse records list value before discounts and has no invoice numbers.",means:"Each department is right about its own number. The problem is that nothing links them.",dec:["One invoice number on every sales record, accounting entry and dispatch note.","A monthly cut-off date for entering invoices."]},
+"ov-score":{k:"ov",t:"How the health score works",says:"For each source: the share of records with the official name, a customer code, phone, area, tax number and credit limit, plus the share of records that are not duplicates. The seven rates are averaged and shown out of 100.",means:"A simple score management can follow month by month."},
+"ov-names":{k:"ov",t:"One customer, many names",says:`${S.namesvar} of ${S.ncust} customers are written in more than one way across the three sources, for example with or without “ال”, “ة” or “ه”, or with “للتجارة” added.`,means:"Reports that group by name split one customer into several, so balances, sales and debts are wrong.",dec:["Give every customer a code and use it everywhere.","Use drop-down lists instead of typing names."]}});
+
+/* roadmap */
+const PLAY=[["Weeks 1–2","Clean the base",[["pl-master","Build the master customer and product lists",`${S.ncust} customers, 20 products`],["pl-merge","Merge duplicate records",`${S.dups["Accounting Excel"]+S.dups["Warehouse book"]} duplicates`],["pl-codes","Add codes to accounting and warehouse","Links all three sources"]]],
+ ["Weeks 3–4","Connect the sources",[["pl-inv","Invoice number on every dispatch note","Warehouse ↔ sales matching"],["pl-cutoff","Monthly cut-off for accounting entries",`Largest gap ${P(Math.abs(mx.gp))}`],["pl-rules","Write and automate the cleaning rules","One page of rules"]]],
+ ["Month 2","One number for everyone",[["pl-dash","Launch the management dashboard",`${hb} h → ${ha} h per month`],["pl-train","Train one person per department","The system keeps working without you"],["pl-score","Track the health score monthly",`Target 90+ from ${S.overall}`]]]];
+const PT={"pl-master":["Master lists","Start from the sales system (the cleanest source) and fix names, areas and tax numbers.",["Official name, code, area, phone, tax number, credit limit for each customer.","Same for the 20 products."],["fl-master","s-sales"]],
+"pl-merge":["Merge duplicates","Duplicate records split balances and sales between two names.",["Merge each duplicate into its master code.","Move balances to the merged record and keep a log."],["s-acc","s-wh"]],
+"pl-codes":["Codes everywhere","Accounting has no customer codes; the warehouse uses its own for some customers.",["Add a code column to the accounting Excel.","Replace warehouse codes with the master codes."],["s-acc","s-wh"]],
+"pl-inv":["Invoice number on dispatch notes","The warehouse cannot be matched to sales today.",["Print the invoice number on every dispatch note.","Record it in the warehouse book."],["s-wh"]],
+"pl-cutoff":["Monthly cut-off","Accounting was short by up to "+P(Math.abs(mx.gp))+" in some months because invoices were entered late.",["All invoices of a month entered by the 3rd of the next month.","Automatic list of invoices missing in accounting."],["ov-recon"]],
+"pl-rules":["Cleaning rules","Today the same fixes are made by hand every month.",["Write the rules once.","Run them automatically on each month’s data."],["fl-rules"]],
+"pl-dash":["Management dashboard","The monthly report takes "+hb+" hours to build by hand.",["One dashboard: sales, collections, stock, margin.","Updated monthly from the master data."],["fl-dash","k-hours"]],
+"pl-train":["Training","Systems fail when only one outside person knows them.",["One trained person in sales, accounts and warehouse.","A short written guide in Arabic."],[]],
+"pl-score":["Health score","What gets measured gets fixed.",["Recalculate the score every month.","Share it with the department heads."],["k-score"]]};
+Object.entries(PT).forEach(([id,[t,says,dec,rel]])=>D[id]={k:"play",t,says,dec,rel});
+
+/* ---------- render ---------- */
+document.getElementById("tiles").innerHTML=[["k-score",S.overall,"/100","data health score across the 3 sources"],["k-recs",S.nrec,"records","for only "+S.ncust+" real customers"],["k-names",S.namesvar,"of "+S.ncust,"customers spelled differently across sources"],["k-gap",P(Math.abs(mx.gp)),"","largest monthly gap, accounting vs sales"],["k-hours",hb+"→"+ha,"hours","to build the monthly report"]].map(([id,v,u,s])=>`<button class="tk" data-open="${id}"><b>${v}<small>${u}</small></b><span>${s}</span><em>Open details →</em></button>`).join("");
+
+(()=>{const s=document.getElementById("lines"),x0=60,x1=1080,y0=270,h=240,max=120e6,sx=i=>x0+20+i/11*(x1-x0-40),sy=v=>y0-v/max*h;
+ [0,30e6,60e6,90e6,120e6].forEach(v=>{el("line",{x1:x0,x2:x1,y1:sy(v),y2:sy(v),class:v?"gl":"ax"},s);txt(s,x0-8,sy(v)+4,v/1e6+"M",{"text-anchor":"end"})});
+ S.gaps.forEach((g,i)=>{const gg=el("g",{},s);el("rect",{x:sx(i)-38,y:20,width:76,height:270,fill:"transparent"},gg);txt(gg,sx(i),y0+20,MON[i],{"text-anchor":"middle",class:"lbl"});
+  if(Math.abs(g.gp)>=0.05){el("line",{x1:sx(i),x2:sx(i),y1:sy(g.sales),y2:sy(g.acc),stroke:"var(--brick)","stroke-width":3},gg);txt(gg,sx(i)+8,sy((g.sales+g.acc)/2)+4,P(g.gp),{style:"fill:var(--brick);font-weight:600"})}
+  act(gg,`${MONL[i]}: sales ${M(g.sales)} · accounting ${M(g.acc)} · warehouse ${M(g.wh)}`,"m-"+i)});
+ [["sales","var(--steel)"],["acc","var(--amber)"],["wh","var(--violet)"]].forEach(([k,c])=>{el("path",{d:"M"+S.gaps.map((g,i)=>sx(i)+","+sy(g[k])).join("L"),fill:"none",stroke:c,"stroke-width":2.2,style:"pointer-events:none"},s);S.gaps.forEach((g,i)=>el("circle",{cx:sx(i),cy:sy(g[k]),r:3.5,fill:c,style:"pointer-events:none"},s))});})();
+
+(()=>{const s=document.getElementById("heat"),x0=150,cw=78,ch=46,y0=56;const col=p=>p>=.95?"var(--hm4)":p>=.8?"var(--hm3)":p>=.6?"var(--hm2)":p>0?"var(--hm1)":"var(--hm0)";
+ F.forEach(([f,l],j)=>{const w=l.split(" ");txt(s,x0+j*cw+cw/2,y0-(w.length>1?24:10),w[0],{"text-anchor":"middle",style:"font-size:10.5px"});if(w.length>1)txt(s,x0+j*cw+cw/2,y0-10,w.slice(1).join(" "),{"text-anchor":"middle",style:"font-size:10.5px"})});
+ SRC.forEach((sr,i)=>{const y=y0+i*(ch+6);const t=txt(s,x0-10,y+27,sr,{"text-anchor":"end",class:"lbl"});act(t,sr,SRCID[sr]);
+  F.forEach(([f,l],j)=>{const p=S.comp[sr][f].pct;const g=el("g",{},s);el("rect",{x:x0+j*cw+2,y,width:cw-4,height:ch,fill:col(p)},g);txt(g,x0+j*cw+cw/2,y+28,P(p,0),{"text-anchor":"middle",style:`fill:${p>=.8?"var(--paper)":"var(--ink)"};font-weight:600;pointer-events:none`});act(g,`${sr} · ${l}: ${P(p,0)}`,`f-${SRCID[sr]}-${f}`)})});})();
+
+(()=>{const s=document.getElementById("score"),x0=130,w=280,sc=v=>v/100*w;
+ [0,50,85,100].forEach(v=>{el("line",{x1:x0+sc(v),x2:x0+sc(v),y1:10,y2:190,class:v===85?"ax":"gl","stroke-dasharray":v===85?"5 4":""},s);txt(s,x0+sc(v),208,v,{"text-anchor":"middle"})});
+ txt(s,x0+sc(85),224,"85 = trustworthy",{"text-anchor":"middle",style:"fill:var(--ink)"});
+ SRC.forEach((sr,i)=>{const y=24+i*56,g=el("g",{},s);el("rect",{x:0,y:y-10,width:460,height:46,fill:"transparent"},g);txt(g,x0-10,y+18,sr,{"text-anchor":"end",class:"lbl"});
+  el("rect",{x:x0,y,width:sc(S.score[sr]),height:26,fill:S.score[sr]>=85?"var(--moss)":S.score[sr]>=65?"var(--amber)":"var(--brick)"},g);txt(g,x0+sc(S.score[sr])+6,y+18,S.score[sr],{class:"val",style:"font-size:14px"});act(g,`${sr}: ${S.score[sr]} / 100`,SRCID[sr])});})();
+
+(()=>{const s=document.getElementById("net"),x0=250,cols=[x0+60,x0+330,x0+600],y0=40,rh=38;
+ SRC.forEach((sr,j)=>{txt(s,cols[j],18,sr,{"text-anchor":"middle",class:"lbl",style:"font-weight:600"})});
+ S.multi.forEach((c,i)=>{const y=y0+i*rh+12,g=el("g",{},s);el("rect",{x:0,y:y-rh/2,width:1100,height:rh,fill:"transparent"},g);
+  el("line",{x1:x0-10,x2:cols[2]+60,y1:y,y2:y,stroke:"var(--grid)","stroke-dasharray":"2 4"},g);
+  txt(g,x0-20,y+4,c.en,{"text-anchor":"end",class:"lbl"});
+  const nm=c.names.length;SRC.forEach((sr,j)=>{const rs=c.recs.filter(r=>r.src===sr);rs.forEach((r,k)=>{const cx=cols[j]+(k-(rs.length-1)/2)*24;const ok=r.name===c.ar;
+   el("line",{x1:x0-10,x2:cx,y1:y,y2:y,stroke:SRCC[sr],"stroke-opacity":.25},g);el("circle",{cx,cy:y,r:ok?8:10,fill:ok?SRCC[sr]:"var(--paper)",stroke:SRCC[sr],"stroke-width":ok?0:2.5},g)})});
+  txt(g,cols[2]+80,y+4,`${c.recs.length} records · ${nm} spellings`,{style:"fill:var(--ink)"});act(g,`${c.en}: ${c.recs.length} records, ${nm} spellings`,"c-"+c.id)});
+ const ly=y0+S.multi.length*rh+16;el("circle",{cx:x0,cy:ly,r:7,fill:"var(--steel)"},s);txt(s,x0+14,ly+4,"filled = official name");el("circle",{cx:x0+210,cy:ly,r:8,fill:"var(--paper)",stroke:"var(--steel)","stroke-width":2.5},s);txt(s,x0+226,ly+4,"ring = different spelling");})();
+
+(()=>{const s=document.getElementById("hours"),x0=230,w=320,max=10,sc=v=>v/max*w;
+ [0,2,4,6,8,10].forEach(v=>{el("line",{x1:x0+sc(v),x2:x0+sc(v),y1:4,y2:256,class:v?"gl":"ax"},s);txt(s,x0+sc(v),272,v+"h",{"text-anchor":"middle"})});
+ S.steps.forEach((st,i)=>{const y=8+i*50,g=el("g",{},s);el("rect",{x:0,y:y-4,width:600,height:46,fill:"transparent"},g);
+  const words=st[0].split(" ");let l1="",l2="";words.forEach(w=>{(l1+" "+w).trim().length<=30&&!l2?l1=(l1+" "+w).trim():l2=(l2+" "+w).trim()});
+  txt(g,x0-10,y+14,l1,{"text-anchor":"end",class:"lbl"});if(l2)txt(g,x0-10,y+29,l2,{"text-anchor":"end",class:"lbl"});
+  el("rect",{x:x0,y,width:sc(st[1]),height:16,fill:"var(--brick)"},g);txt(g,x0+sc(st[1])+5,y+12,st[1]+"h",{class:"val"});
+  el("rect",{x:x0,y:y+19,width:Math.max(2,sc(st[2])),height:16,fill:"var(--steel)"},g);txt(g,x0+Math.max(2,sc(st[2]))+5,y+31,st[2]+"h",{class:"val"});
+  act(g,`${st[0]}: ${st[1]}h → ${st[2]}h`,"st-"+i)});
+ txt(s,x0,292,`Total: ${hb} hours today → ${ha} hours`,{style:"fill:var(--ink);font-weight:600"});})();
+
+(()=>{const s=document.getElementById("flow");const box=(x,y,w,h,t1,t2,id,col)=>{const g=el("g",{},s);el("rect",{x,y,width:w,height:h,rx:6,fill:"var(--sheet)",stroke:col,"stroke-width":2},g);txt(g,x+w/2,y+h/2-(t2?3:-4),t1,{"text-anchor":"middle",class:"lbl",style:"font-weight:600"});if(t2)txt(g,x+w/2,y+h/2+13,t2,{"text-anchor":"middle",style:"font-size:10px"});act(g,t1,id);return g};
+ const arr=(x1,y1,x2,y2)=>{el("line",{x1,y1,x2,y2,stroke:"var(--muted)","stroke-width":1.5},s);el("path",{d:`M${x2},${y2} l-7,-4 l0,8 z`,fill:"var(--muted)",transform:`rotate(${Math.atan2(y2-y1,x2-x1)*180/Math.PI} ${x2} ${y2})`},s)};
+ SRC.forEach((sr,i)=>{const y=20+i*92;box(4,y,124,52,sr.split(" ")[0],sr.split(" ").slice(1).join(" "),"fl-src",SRCC[sr]);arr(128,y+26,168,150)});
+ box(170,120,120,60,"Cleaning","rules","fl-rules","var(--teal)");arr(290,150,318,150);
+ box(320,60,132,72,"Master data","1 customer list","fl-master","var(--moss)");box(320,172,132,72,"Dashboard","1 number for all","fl-dash","var(--steel)");
+ arr(386,132,386,170);})();
+
+(()=>{const box=document.getElementById("play");let k=0;PLAY.forEach(([h,sub,steps])=>{const c=document.createElement("div");c.className="pcol";c.innerHTML=`<h3>${h}</h3><p>${sub}</p>`;
+ steps.forEach(([id,t,m])=>{k++;const b=document.createElement("button");b.className="step";b.innerHTML=`<b>${k}</b><span class="st">${esc(t)}<small>${esc(m)}</small></span>`;b.onclick=()=>open(id);c.appendChild(b)});box.appendChild(c)});})();
+
+</script>
+
+</body>
+</html>
