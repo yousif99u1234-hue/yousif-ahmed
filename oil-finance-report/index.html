@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive finance review for an oil field: lifting cost per barrel, deferred production in dollars, workover AFEs and invoice controls (test data).">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Field Finance Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: analyst's ledger notebook — unboxed chart panels on warm paper, a decision queue up top, one slide-in dossier for every detail */
+:root{
+  --paper:#eeebe4; --sheet:#f7f5f0; --ink:#2b2d33; --muted:#6c6b66; --rule:#cfcabf; --grid:#dcd7cc;
+  --steel:#4c7aa8; --steel-2:#9bb6d2; --violet:#8b6bc0; --moss:#4f9a55; --brick:#c2504a; --amber:#d9862b; --teal:#3f9a96; --rose:#c46b97; --sand:#b39a5f;
+  --hm0:#e3ded3; --hm1:#c9d8e6; --hm2:#93b3d1; --hm3:#5c8bb8; --hm4:#335f8c; --scrim:rgba(30,30,34,.28);
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,-apple-system,Segoe UI,sans-serif;
+  --f-ar:"IBM Plex Sans Arabic","IBM Plex Sans",Tahoma,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:grid;gap:10px;border-bottom:1px solid var(--rule);padding-bottom:22px;margin-bottom:24px}
+.eyebrow{font-family:var(--f-data);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(38px,6vw,64px);line-height:.98;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{max-width:70ch;color:var(--muted);margin:0}
+.banner{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--amber);padding:10px 14px;border-radius:4px;font-size:13px;max-width:900px}
+.banner b{color:var(--amber);font-family:var(--f-data);font-size:11px;letter-spacing:.06em;white-space:nowrap;padding-top:2px}
+.hint{display:inline-flex;gap:8px;align-items:center;font-size:13px}
+.hint i{width:8px;height:8px;border-radius:50%;background:var(--brick);display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:44px 40px}
+.panel{min-width:0;display:grid;gap:8px;align-content:start}
+.s5{grid-column:span 5}.s7{grid-column:span 7}.s12{grid-column:span 12}.s4{grid-column:span 4}.s8{grid-column:span 8}.s6{grid-column:span 6}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2{font-family:var(--f-body);font-weight:600;font-size:15px;margin:0}
+h2 .n{font-family:var(--f-data);font-weight:500;color:var(--muted);font-size:12px;margin-right:6px}
+.more{font:500 12px var(--f-data);color:var(--steel);background:none;border:1px solid var(--rule);border-radius:999px;padding:3px 10px;cursor:pointer}
+.more:hover{border-color:var(--steel)}
+.note{font-size:13px;color:var(--muted);margin:0;max-width:70ch}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--f-data);font-size:11px;fill:var(--muted)}
+svg .lbl{fill:var(--ink);font-family:var(--f-body);font-size:12px}
+svg .val{fill:var(--ink);font-weight:500}
+svg .ax{stroke:var(--rule);stroke-width:1}
+svg .gl{stroke:var(--grid);stroke-width:1}
+.hit{cursor:pointer;outline:none;transition:opacity .15s}
+.hit:hover,.hit:focus-visible{opacity:.7}
+.hit:focus-visible{stroke:var(--ink);stroke-width:2}
+.takeaways{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-block:1px solid var(--rule)}
+.tk{all:unset;box-sizing:border-box;padding:16px 16px 16px 0;display:grid;gap:4px;align-content:start;cursor:pointer;min-width:0}
+.tk+.tk{padding-left:16px;border-left:1px solid var(--rule)}
+.tk:hover b,.tk:focus-visible b{color:var(--steel)}
+.tk:focus-visible{outline:2px solid var(--steel);outline-offset:-2px}
+.tk b{font-family:var(--f-display);font-size:36px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;transition:color .15s}
+.tk b small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
+.tk span{font-size:13px;color:var(--muted)}
+.tk em{font:500 11px var(--f-data);font-style:normal;color:var(--steel)}
+/* queue */
+.queue{display:grid;gap:0;border-top:1px solid var(--rule)}
+.q{all:unset;box-sizing:border-box;display:grid;grid-template-columns:6px 92px minmax(0,1.6fr) minmax(0,1fr) 150px 170px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.q:hover .qs,.q:focus-visible .qs{text-decoration:underline}
+.q:focus-visible{outline:2px solid var(--steel)}
+.stripe{align-self:stretch;border-radius:3px}
+.qid{font:500 13px var(--f-data)}
+.qs{font-weight:600;min-width:0}
+.qs small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.qf{font-size:12.5px;color:var(--muted);min-width:0}
+.qa{font:500 14px var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
+.pill{font:600 11px var(--f-data);letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:999px;justify-self:start;border:1px solid}
+.p-hold{color:var(--brick);border-color:var(--brick)}
+.p-verify{color:var(--amber);border-color:var(--amber)}
+.p-ok{color:var(--moss);border-color:var(--moss)}
+.p-done{color:var(--muted);border-color:var(--rule)}
+/* projection */
+.proj{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:start}
+.checks{display:grid;gap:8px}
+.chk{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--steel)}
+.chk span:last-child{font:13px var(--f-data);color:var(--muted)}
+.projout{font:600 44px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.projout small{font-size:18px;color:var(--muted)}
+.delta{font:500 13px var(--f-data)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend i.sq{border-radius:2px}
+.scroll{overflow-x:auto}
+.play{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--rule)}
+.pcol{padding:14px 18px 6px 0;display:grid;gap:8px;align-content:start;min-width:0}
+.pcol+.pcol{padding-left:18px;border-left:1px solid var(--rule)}
+.pcol h3{font:600 22px var(--f-display);margin:0}
+.pcol p{margin:0;font-size:12.5px;color:var(--muted)}
+.step{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px 1fr;gap:8px;padding:9px 0;border-top:1px dashed var(--rule);cursor:pointer}
+.step b{font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center}
+.step:hover .st,.step:focus-visible .st{color:var(--steel);text-decoration:underline}
+.step:focus-visible{outline:2px solid var(--steel)}
+.st{font-size:14px}
+.st small{display:block;font:12px var(--f-data);color:var(--muted)}
+footer{margin-top:44px;border-top:1px solid var(--rule);padding-top:14px;font-size:12px;color:var(--muted);display:grid;gap:4px}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--f-data);font-size:12px;padding:6px 9px;border-radius:3px;opacity:0;transition:opacity .12s;z-index:5;max-width:260px}
+#scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+#dr{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--sheet);border-left:1px solid var(--rule);z-index:21;display:grid;grid-template-rows:auto 1fr;box-shadow:-12px 0 40px rgba(0,0,0,.12);transition:transform .22s ease}
+#dr[hidden]{display:grid!important;transform:translateX(105%);visibility:hidden}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 12px 20px;border-bottom:1px solid var(--rule)}
+.dh button{font:500 12px var(--f-data);background:none;border:1px solid var(--rule);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.dh button:hover{border-color:var(--ink)}
+.db{overflow-y:auto;padding:20px calc(20px + env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) 22px;display:grid;gap:18px;align-content:start}
+.kind{font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--muted)}
+.kind i{width:9px;height:9px;border-radius:50%}
+.db h3{font:700 30px/1.05 var(--f-display);margin:6px 0 0;text-wrap:balance}
+.ar{font-family:var(--f-ar);direction:rtl;unicode-bidi:isolate;color:var(--muted);font-size:14px;margin-top:4px;display:block;text-align:left}
+.stat{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.stat b{font:600 46px/1 var(--f-display);color:var(--steel);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted);max-width:32ch}
+.sec{display:grid;gap:6px}
+.sec h4{margin:0;font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:5px}
+.sec p{margin:0}
+.sec ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.dec{list-style:none;padding:0!important}
+.dec li{display:grid;grid-template-columns:24px 1fr;gap:6px;counter-increment:d}
+.dec{counter-reset:d}
+.dec li::before{content:counter(d);font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px}
+.kv dt{color:var(--muted);font-family:var(--f-data);font-size:12px;padding-top:1px}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th{font:500 11px var(--f-data);color:var(--muted);text-align:left;border-bottom:1px solid var(--rule);padding:4px 6px 4px 0}
+.tbl td{border-bottom:1px solid var(--grid);padding:5px 6px 5px 0;vertical-align:top}
+.tbl td.num{text-align:right;font-family:var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl td.arc{font-family:var(--f-ar);direction:rtl;text-align:right}
+.tbl tr.go{cursor:pointer}.tbl tr.go:hover td{background:var(--paper)}
+.kpis{display:flex;flex-wrap:wrap;gap:6px}
+.kpis span{font:12px var(--f-data);border:1px solid var(--rule);padding:3px 8px;border-radius:3px}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.rel button{font:13px var(--f-body);background:none;color:var(--steel);border:1px solid var(--steel-2);border-radius:999px;padding:3px 11px;cursor:pointer}
+.rel button:hover{background:var(--steel);color:var(--paper)}
+.src{font-size:12px;color:var(--muted);font-style:italic}
+.flag{font:500 11px var(--f-data);color:var(--brick)}
+.fl{display:grid;gap:6px}
+.fl div{border-left:3px solid var(--amber);padding:4px 10px;font-size:13.5px;background:var(--paper)}
+.fl div.hi{border-color:var(--brick)}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}.s5,.s7,.s4,.s8,.s6,.s12{grid-column:auto}.takeaways{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tk:nth-child(odd){padding-left:0;border-left:0}.tk:nth-child(even){padding-left:16px;border-left:1px solid var(--rule)}.tk:nth-child(n+3){border-top:1px solid var(--rule)}
+ .q{grid-template-columns:6px minmax(0,1fr) auto;row-gap:4px}.q .qid{grid-column:2}.q .qs{grid-column:2/4}.q .qf{grid-column:2/4}.q .qa{grid-column:2;text-align:left}.q .pill{grid-column:3;grid-row:1;justify-self:end}.stripe{grid-row:1/5}
+ .proj{grid-template-columns:1fr}
+ .play{grid-template-columns:1fr}.pcol+.pcol{padding-left:0;border-left:0;border-top:1px solid var(--rule)}
+ #dr{top:auto;left:0;width:100%;max-height:86vh;border-left:0;border-top:1px solid var(--rule);border-radius:12px 12px 0 0}
+ #dr[hidden]{transform:translateY(105%)}
+ .dh{padding-left:max(16px,env(safe-area-inset-left,0px));padding-top:12px}
+ .db{padding-left:max(18px,env(safe-area-inset-left,0px))}}
+@media (prefers-reduced-motion:reduce){#tip,#dr,.hit{transition:none}}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Oil &amp; Gas Finance Ops · Field cost &amp; controls review · October 2025 – September 2026 · USD</div>
+    <h1>Field Finance Review</h1>
+    <p class="lede">What one barrel costs to produce, how many dollars were lost to deferred production, which vendor invoices need a decision, where workovers went over budget, and the decisions to take next. Click any bar, dot, cell, row or figure for its details.</p>
+    <div class="banner"><b>TEST DATA</b><span>A fictional oil field operator: 12 months of operating cost, production, deferment, 8 workovers and 21 September vendor invoices. Vendor names are fictional. The realised price (netback) is an assumption of 52 USD/bbl. Every figure is calculated in the workbook <a href="Oil_Field_Finance_Review_Data.xlsx" download style="color:var(--steel);font-weight:600">Oil_Field_Finance_Review_Data.xlsx</a> (download) (start with its “Report Map” sheet).</span></div>
+    <span class="hint"><i></i>Everything is clickable. Press Esc to close the details panel.</span>
+  </header>
+
+  <section class="takeaways" aria-label="Key figures" id="tiles"></section>
+
+  <div class="grid" style="margin-top:38px">
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">1</span>Invoice decision queue · September</h2><button class="more" data-open="ov-queue">How to decide</button></div>
+      <p class="note">Vendor invoices that need a person, sorted by money at risk. The pill is the recommended next step.</p>
+      <div class="queue" id="queue"></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">2</span>What September looks like after these actions</h2><button class="more" data-open="ov-proj">About this</button></div>
+      <div class="proj">
+        <div class="checks" id="checks"></div>
+        <div style="display:grid;gap:6px">
+          <div class="projout" id="projout"></div>
+          <div class="delta" id="projdelta"></div>
+          <svg id="projbar" viewBox="0 0 560 96" aria-label="September lifting cost vs previous months"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">3</span>Lifting cost per barrel</h2><button class="more" data-open="ov-lift">How it is calculated</button></div>
+      <p class="note">Operating cost per month by category (thousand USD, bars) and cost per barrel produced (line). Click a month or a segment.</p>
+      <div class="legend" id="catleg"></div>
+      <div class="scroll"><svg id="stack" viewBox="0 0 1100 340" style="min-width:760px" role="group" aria-label="Monthly operating cost and lifting cost per barrel"></svg></div>
+    </div>
+
+    <div class="panel s7">
+      <div class="ph"><h2><span class="n">4</span>Deferred production, in dollars</h2><button class="more" data-open="ov-defer">Why it matters</button></div>
+      <p class="note">Barrels not produced in 12 months, by reason, valued at the netback price. Click a bar.</p>
+      <svg id="defer" viewBox="0 0 600 300" role="group" aria-label="Deferred production by reason"></svg>
+    </div>
+    <div class="panel s5">
+      <div class="ph"><h2><span class="n">5</span>Workovers: AFE vs actual</h2></div>
+      <p class="note">Approved budget (ring) vs actual cost (dot), thousand USD. Red = more than 10% over. Click a job.</p>
+      <svg id="afe" viewBox="0 0 460 300" role="group" aria-label="AFE vs actual per workover"></svg>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">6</span>Vendor × month</h2></div>
+      <p class="note">Spend per main vendor per month, thousand USD. Darker = more. Click a cell or a vendor.</p>
+      <div class="scroll"><svg id="heat" viewBox="0 0 1100 320" style="min-width:820px" role="group" aria-label="Vendor spend per month"></svg></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">7</span>Control checks: what the rules caught</h2><button class="more" data-open="ov-rules">How the checks work</button></div>
+      <p class="note">Seven checks run on every invoice before payment. Bars: invoices flagged in the last 12 months; the number on the right is September. Click a rule.</p>
+      <div class="scroll"><svg id="rules" viewBox="0 0 1100 260" style="min-width:760px" role="group" aria-label="Control rules and flags"></svg></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">8</span>Strategy decisions</h2><span class="note">Analyst recommendations</span></div>
+      <div class="play" id="play"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Source: synthetic monthly operating cost, production, deferment, workover AFEs and vendor invoices for a fictional operator, in Oil_Field_Finance_Review_Data.xlsx. Netback price 52 USD/bbl is an assumption.</span>
+    <span>“Strategy decisions”, “recommended next step” and KPIs are analyst recommendations. The checks flag invoices; a person approves or rejects.</span>
+  </footer>
+</div>
+<div id="tip" aria-hidden="true"></div>
+<div id="scrim" hidden></div>
+<aside id="dr" hidden role="dialog" aria-modal="true" aria-labelledby="dtitle">
+  <div class="dh"><button id="back" hidden>← Back</button><span></span><button id="close">Close ✕</button></div>
+  <div class="db" id="db" tabindex="-1"></div>
+</aside>
+
+<script>
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const txt=(p,x,y,s,a={})=>{const t=el("text",{x,y,...a},p);t.textContent=s;return t};
+const IQD=v=>Math.round(v).toLocaleString("en-US")+" IQD";
+const M=v=>{const a=Math.abs(v);return (v<0?"−":"")+(a>=1e9?(a/1e9).toFixed(2)+"B":a>=1e6?(a/1e6).toFixed(a>=1e8?0:1)+"M":a>=1e3?(a/1e3).toFixed(0)+"K":Math.round(a))};
+const P=(v,d=1)=>(v*100).toFixed(d)+"%";
+const tip=document.getElementById("tip");
+const act=(n,s,id)=>{n.classList.add("hit");n.setAttribute("tabindex","0");n.setAttribute("role","button");n.setAttribute("aria-label",s);
+ n.addEventListener("mousemove",e=>{tip.textContent=s+"  ·  click for details";tip.style.opacity=1;tip.style.left=Math.min(e.clientX+12,innerWidth-270)+"px";tip.style.top=(e.clientY+12)+"px"});
+ n.addEventListener("mouseleave",()=>tip.style.opacity=0);
+ n.addEventListener("click",e=>{e.stopPropagation();tip.style.opacity=0;open(id)});
+ n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open(id)}});};
+function spark(a,labels){const w=400,h=84,max=Math.max(...a,1),sx=j=>14+j/(a.length-1)*(w-28),sy=v=>h-20-v/max*(h-34);
+ return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="M${a.map((v,j)=>sx(j)+","+sy(v)).join("L")}L${sx(a.length-1)},${h-20}L${sx(0)},${h-20}Z" fill="var(--steel)" opacity=".14"/><path d="M${a.map((v,j)=>sx(j)+","+sy(v)).join("L")}" fill="none" stroke="var(--steel)" stroke-width="2"/>${a.map((v,j)=>`<circle cx="${sx(j)}" cy="${sy(v)}" r="2.6" fill="var(--steel)"/>`).join("")}${labels.map((l,j)=>j%2===0?`<text x="${sx(j)}" y="${h-4}" text-anchor="middle" style="font-size:10px">${l}</text>`:"").join("")}<text x="${w-14}" y="11" text-anchor="end" style="font-size:10px">max ${M(max)}</text></svg>`}
+const dr=document.getElementById("dr"),db=document.getElementById("db"),scrim=document.getElementById("scrim"),backB=document.getElementById("back");
+let stack=[],lastFocus=null;
+function render(id){const d=D[id];if(!d)return;const [kl,kc]=KIND[d.k];
+ let h=`<div><div class="kind"><i style="background:${kc}"></i>${kl}</div><h3 id="dtitle">${esc(d.t)}</h3>${d.ar?`<span class="ar">${esc(d.ar)}</span>`:""}</div>`;
+ if(d.stat)h+=`<div class="stat"><b>${esc(d.stat[0])}</b><span>${esc(d.stat[1])}</span></div>`;
+ if(d.spark)h+=d.spark;
+ if(d.says)h+=`<div class="sec"><h4>What the data shows</h4><p>${esc(d.says)}</p></div>`;
+ if(d.means)h+=`<div class="sec"><h4>What it means</h4><p>${esc(d.means)}</p></div>`;
+ if(d.html)h+=d.html;
+ if(d.dec&&d.dec.length)h+=`<div class="sec"><h4>${esc(d.decTitle||"Strategic decisions")} <span class="flag">· recommendation</span></h4><ol class="dec">${d.dec.map(x=>`<li><span>${esc(x)}</span></li>`).join("")}</ol></div>`;
+ if(d.kpi&&d.kpi.length)h+=`<div class="sec"><h4>KPIs to track</h4><div class="kpis">${d.kpi.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div>`;
+ const rel=(d.rel||[]).filter(r=>D[r]&&r!==id);
+ if(rel.length)h+=`<div class="sec"><h4>Related</h4><div class="rel">${rel.map(r=>`<button data-go="${r}">${esc(D[r].t)}</button>`).join("")}</div></div>`;
+ h+=`<p class="src">${SRCNOTE}</p>`;
+ db.innerHTML=h;db.scrollTop=0;backB.hidden=stack.length<2;}
+function open(id){if(!D[id])return;if(dr.hidden){lastFocus=document.activeElement;stack=[]}stack.push(id);render(id);scrim.hidden=false;dr.hidden=false;requestAnimationFrame(()=>db.focus())}
+function close(){dr.hidden=true;scrim.hidden=true;stack=[];if(lastFocus&&lastFocus.focus)lastFocus.focus()}
+db.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b&&D[b.dataset.go]){stack.push(b.dataset.go);render(b.dataset.go)}});
+backB.onclick=()=>{stack.pop();render(stack[stack.length-1])};
+document.getElementById("close").onclick=close;scrim.onclick=close;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dr.hidden)close()});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)open(b.dataset.open)});
+
+const S={"months": ["2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "prod": [790000.0, 785700.0, 773300.0, 760600.0, 757800.0, 746100.0, 748800.0, 753500.0, 730500.0, 722800.0, 726000.0, 718300.0], "cats": ["Power & fuel", "Chemicals", "Well services", "ESP & lift", "Maintenance & spares", "Trucking", "Camp & staff services"], "vendors": {"Power & fuel": "Zagros Power Services", "Chemicals": "Tigris ChemTech", "Well services": "Erbil Well Services", "ESP & lift": "Northern Lift Systems", "Maintenance & spares": "Rawand Industrial Supply", "Trucking": "Kurdistan Haulage Co.", "Camp & staff services": "Hawler Camp Services"}, "opex": {"Power & fuel": [891200.0, 774200.0, 818600.0, 854200.0, 753900.0, 797500.0, 726500.0, 756600.0, 729400.0, 905400.0, 871300.0, 833300.0], "Chemicals": [413900.0, 405400.0, 348100.0, 396700.0, 408800.0, 412800.0, 372400.0, 398200.0, 385900.0, 390100.0, 436100.0, 390100.0], "Well services": [558900.0, 589700.0, 837600.0, 556200.0, 563700.0, 562100.0, 726400.0, 562600.0, 605700.0, 508000.0, 588900.0, 902400.0], "ESP & lift": [288500.0, 336000.0, 313700.0, 529000.0, 301300.0, 310400.0, 296600.0, 312300.0, 508000.0, 312000.0, 325900.0, 287800.0], "Maintenance & spares": [334000.0, 320800.0, 332500.0, 306500.0, 318500.0, 326100.0, 347800.0, 352700.0, 303800.0, 314300.0, 342800.0, 290600.0], "Trucking": [281900.0, 288300.0, 311900.0, 302000.0, 284300.0, 283600.0, 285600.0, 316500.0, 282600.0, 284700.0, 296100.0, 287900.0], "Camp & staff services": [395300.0, 373300.0, 399700.0, 389400.0, 428000.0, 415700.0, 399400.0, 416000.0, 391800.0, 425300.0, 399900.0, 414000.0]}, "total": [3163700.0, 3087700.0, 3362100.0, 3334000.0, 3058500.0, 3108200.0, 3154700.0, 3114900.0, 3207200.0, 3139800.0, 3261000.0, 3406100.0], "lifting": [4.0, 3.93, 4.35, 4.38, 4.04, 4.17, 4.21, 4.13, 4.39, 4.34, 4.49, 4.74], "reasons": ["ESP failure", "Power outage", "Export / trucking limit", "Planned maintenance", "Well tests & other"], "defer": {"ESP failure": [8800.0, 14130.0, 7510.0, 15320.0, 12010.0, 10080.0, 13530.0, 20300.0, 21620.0, 10970.0, 13670.0, 14600.0], "Power outage": [8600.0, 8540.0, 10580.0, 10170.0, 6670.0, 8820.0, 9080.0, 6630.0, 9580.0, 12730.0, 22370.0, 9430.0], "Export / trucking limit": [7410.0, 6180.0, 7040.0, 3630.0, 5200.0, 7910.0, 3390.0, 8780.0, 4090.0, 8620.0, 5720.0, 8660.0], "Planned maintenance": [5420.0, 3230.0, 6890.0, 7140.0, 5160.0, 4890.0, 5040.0, 3970.0, 6690.0, 4540.0, 5180.0, 4210.0], "Well tests & other": [1900.0, 1530.0, 2960.0, 2160.0, 2790.0, 2260.0, 1860.0, 2070.0, 1930.0, 2250.0, 2040.0, 2080.0]}, "defer_bbl": [32130.0, 33610.0, 34980.0, 38420.0, 31830.0, 33960.0, 32900.0, 41750.0, 43910.0, 39110.0, 48980.0, 38980.0], "netback": 52.0, "queue": [{"id": "INV-0922", "vendor": "Northern Lift Systems", "amount": 94500, "risk": 94500, "pill": "hold", "rule": "dup", "why": "Probable duplicate of approved INV-0861: same amount, same pump serial ESP-4471"}, {"id": "INV-0935", "vendor": "Erbil Well Services", "amount": 186000, "risk": 36000, "pill": "hold", "rule": "afe", "why": "Workover WO-07 on WELL-10: AFE 150,000, invoice 24% over, no AFE supplement"}, {"id": "INV-0938", "vendor": "Rawand Industrial Supply", "amount": 19700, "risk": 19700, "pill": "verify", "rule": "split", "why": "Two invoices of 9,850 on the same day, both just under the 10,000 approval limit"}, {"id": "INV-0940", "vendor": "Shaqlawa Tech Repairs", "amount": 14200, "risk": 14200, "pill": "hold", "rule": "vendor", "why": "New vendor, no tax number, no PO, invoice dated on a Friday"}, {"id": "INV-0931", "vendor": "Tigris ChemTech", "amount": 48600, "risk": 10140, "pill": "hold", "rule": "rate", "why": "Demulsifier billed at 3.10 USD/L, contract rate 2.45 USD/L (+26.5%)"}, {"id": "INV-0929", "vendor": "Zagros Power Services", "amount": 132000, "risk": 9500, "pill": "verify", "rule": "qty", "why": "Diesel 118,000 L billed, generator log shows 109,500 L"}, {"id": "INV-0927", "vendor": "Kurdistan Haulage Co.", "amount": 22400, "risk": 2800, "pill": "verify", "rule": "qty", "why": "64 truckloads billed, field tickets show 56"}, {"id": "INV-0933", "vendor": "Hawler Camp Services", "amount": 41000, "risk": 0, "pill": "ok", "rule": null, "why": "Matches PO-2209 and the contract rate"}], "rules": [{"id": "dup", "t": "Duplicate invoice", "d": "Same vendor, same amount or same equipment serial within 90 days.", "sept": 1, "year": 11}, {"id": "rate", "t": "Rate above contract", "d": "Unit price higher than the contract rate by more than 2%.", "sept": 1, "year": 11}, {"id": "qty", "t": "Quantity ≠ field ticket", "d": "Billed quantity differs from field tickets or logs by more than 3%.", "sept": 2, "year": 20}, {"id": "afe", "t": "Over AFE", "d": "Job cost above the approved AFE by more than 10% without a supplement.", "sept": 1, "year": 13}, {"id": "split", "t": "Split below approval limit", "d": "Several invoices from one vendor on one day, each under the limit.", "sept": 1, "year": 8}, {"id": "vendor", "t": "New vendor without documents", "d": "No tax number, no PO, or not in the approved vendor list.", "sept": 1, "year": 9}, {"id": "ccy", "t": "Currency mismatch", "d": "Invoice in IQD for a USD contract, or the reverse.", "sept": 0, "year": 10}], "inv": [21, 17, 17, 16, 19, 17, 18, 22, 21, 21, 20, 21], "held": 186840, "afe": [{"id": "WO-01", "well": "WELL-04", "job": "ESP replacement", "afe": 120000, "actual": 112400}, {"id": "WO-02", "well": "WELL-09", "job": "Scale clean-out", "afe": 65000, "actual": 71800}, {"id": "WO-03", "well": "WELL-01", "job": "ESP replacement", "afe": 120000, "actual": 138900}, {"id": "WO-04", "well": "WELL-12", "job": "Re-perforation", "afe": 90000, "actual": 86200}, {"id": "WO-05", "well": "WELL-07", "job": "ESP replacement", "afe": 120000, "actual": 119500}, {"id": "WO-06", "well": "WELL-05", "job": "Acid stimulation", "afe": 80000, "actual": 97600}, {"id": "WO-07", "well": "WELL-10", "job": "Recompletion", "afe": 150000, "actual": 186000}, {"id": "WO-08", "well": "WELL-02", "job": "Scale clean-out", "afe": 65000, "actual": 62300}]};
+const SRCNOTE="Source: fictional oil field operator, synthetic data (test data). Recommendations are analyst suggestions.";
+const KIND={inv:["Invoice","var(--amber)"],mon:["Month","var(--steel)"],cat:["Cost category","var(--teal)"],cell:["Vendor × month","var(--teal)"],reason:["Deferment reason","var(--brick)"],job:["Workover","var(--violet)"],rule:["Control check","var(--teal)"],kpi:["Key figure","var(--steel)"],ov:["Overview","var(--muted)"],play:["Strategy decision","var(--brick)"]};
+const U=v=>Math.round(v).toLocaleString("en-US")+" USD";
+const K=v=>(v/1000).toLocaleString("en-US",{maximumFractionDigits:0})+"k";
+const MON=S.months.map(m=>new Date(m+"-01").toLocaleString("en-US",{month:"short"}));
+const MONL=S.months.map(m=>new Date(m+"-01").toLocaleString("en-US",{month:"short",year:"numeric"}));
+const n=S.months.length,L=n-1;
+const CC=["var(--amber)","var(--teal)","var(--violet)","var(--brick)","var(--sand)","var(--rose)","var(--steel-2)"];
+const CATC=Object.fromEntries(S.cats.map((c,i)=>[c,CC[i]]));
+const RL=Object.fromEntries(S.rules.map(r=>[r.id,r]));
+const PILL={hold:["p-hold","Hold"],verify:["p-verify","Verify"],ok:["p-ok","Approve"]};
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const deferBbl=sum(S.defer_bbl),deferUsd=deferBbl*S.netback;
+const afeOver=sum(S.afe.map(j=>Math.max(0,j.actual-j.afe)));
+const atRisk=sum(S.queue.map(q=>q.risk));
+const D={};
+
+/* queue */
+S.queue.forEach(q=>{D["q-"+q.id]={k:"inv",t:`${q.id} · ${q.vendor}`,stat:[U(q.amount),q.risk?`${U(q.risk)} at risk`:"no issue found"],says:q.why+".",
+ means:{hold:"Do not pay until the issue is resolved. Paying first and recovering later rarely works.",verify:"Likely payable, but the difference must be confirmed with the field or the vendor first.",ok:"All checks passed. Approve in the normal cycle."}[q.pill],
+ dec:{dup:["Compare with INV-0861 and the pump serial; reject if it is the same unit.","Ask the vendor for a credit note if already paid."],afe:["Ask the operations manager for an AFE supplement before payment.","Agree why the job ran over: extra days, extra materials, or price."],split:["Treat the two invoices as one 19,700 USD purchase and send it for manager approval.","Remind the requester of the approval limit."],vendor:["Collect tax number, bank letter and a PO before any payment.","Add the vendor to the approved list only after checks."],rate:["Pay at the contract rate: 48,600 → 38,460 USD.","Ask the vendor to re-issue the invoice."],qty:["Match the invoice line by line with field tickets or logs.","Pay the confirmed quantity; ask the vendor to justify the rest."],"null":["Approve."]}[q.rule||"null"],
+ rel:q.rule?["r-"+q.rule]:[]};});
+
+/* months & categories */
+S.months.forEach((m,i)=>{D["m-"+i]={k:"mon",t:MONL[i],stat:[S.lifting[i].toFixed(2)+" USD/bbl",`${U(S.total[i])} opex · ${Math.round(S.prod[i]).toLocaleString("en-US")} bbl`],
+ html:`<div class="sec"><h4>Cost by category</h4><div class="tbl"><table>${S.cats.map(c=>`<tr class="go" data-go="c-${S.cats.indexOf(c)}"><td>${c}</td><td class="num">${U(S.opex[c][i])}</td><td class="num">${(S.opex[c][i]/S.prod[i]).toFixed(2)} /bbl</td></tr>`).join("")}<tr><td><b>Total</b></td><td class="num"><b>${U(S.total[i])}</b></td><td class="num"><b>${S.lifting[i].toFixed(2)} /bbl</b></td></tr></table></div></div><div class="sec"><h4>Deferred this month</h4><p>${Math.round(S.defer_bbl[i]).toLocaleString("en-US")} bbl ≈ ${U(S.defer_bbl[i]*S.netback)}</p></div>`,
+ says:S.lifting[i]>sum(S.lifting)/n*1.05?"Above the 12-month average: one-off well work or a failure pushed costs up while production fell.":"Close to the 12-month average.",rel:["ov-lift"]};});
+S.cats.forEach((c,ci)=>{const a=S.opex[c];D["c-"+ci]={k:"cat",t:c,stat:[U(sum(a)),"last 12 months · main vendor "+S.vendors[c]],spark:spark(a,MON),
+ says:`${(sum(a)/sum(S.total)*100).toFixed(0)}% of operating cost. Highest month: ${MONL[a.indexOf(Math.max(...a))]}.`,
+ dec:{"Power & fuel":["Compare diesel billed with generator run-hour logs every month."],"Chemicals":["Pay chemicals only at contract rates; review dosage per barrel."],"Well services":["No job starts without an approved AFE; track cost daily on long jobs."],"ESP & lift":["Track ESP run life per pump; failures cost twice: repair and lost oil."],"Maintenance & spares":["Watch split purchases below the approval limit."],"Trucking":["Pay by matched field tickets only."],"Camp & staff services":["Annual rate review against headcount."]}[c],kpi:["USD per bbl","Share of opex"]};});
+
+/* deferment */
+S.reasons.forEach((r,i)=>{const a=S.defer[r],b=sum(a);D["df-"+i]={k:"reason",t:r,stat:[U(b*S.netback),`${Math.round(b).toLocaleString("en-US")} bbl in 12 months`],spark:spark(a,MON),
+ says:{"ESP failure":"Pumps that stop before their expected run life. Each failure means repair cost plus days of lost oil.","Power outage":"Generator trips and grid outages, worst in summer.","Export / trucking limit":"Oil that could be produced but not exported or trucked.","Planned maintenance":"Shutdowns that were planned; the target is to make them shorter, not zero.","Well tests & other":"Wells closed for tests and small interventions."}[r],
+ means:"Every deferred barrel is revenue lost, with almost the same fixed cost, so it also raises the cost per barrel.",
+ dec:{"ESP failure":["Record the cause of every ESP failure and the run life of every pump.","Start with the two months with the most failures."],"Power outage":["Track trips per generator; plan summer back-up capacity."],"Export / trucking limit":["Agree truck availability per week with the haulage contractor."],"Planned maintenance":["Combine planned jobs into fewer, shorter shutdowns."],"Well tests & other":["Schedule tests together with other planned work."]}[r],rel:["ov-defer"]};});
+
+/* afe */
+S.afe.forEach(j=>{const o=(j.actual/j.afe-1)*100;D["j-"+j.id]={k:"job",t:`${j.id} · ${j.well} · ${j.job}`,stat:[(o>0?"+":"")+o.toFixed(1)+"%",`actual ${U(j.actual)} vs AFE ${U(j.afe)}`],
+ says:o>10?"More than 10% over the approved budget.":o>0?"Slightly over budget, within tolerance.":"Under budget.",
+ means:o>10?"Overruns without an AFE supplement weaken cost control and partner reporting.":"Good cost control.",dec:o>10?["Ask for an AFE supplement with the reasons.","Review daily cost reports on jobs longer than 5 days."]:[],rel:["r-afe"]};});
+
+/* vendor cells */
+S.cats.forEach((c,ci)=>S.months.forEach((m,i)=>{D[`h-${ci}-${i}`]={k:"cell",t:`${S.vendors[c]} · ${MONL[i]}`,stat:[U(S.opex[c][i]),c],says:S.opex[c][i]>sum(S.opex[c])/n*1.3?"Much higher than this vendor’s normal month.":"A normal month for this vendor.",rel:["c-"+ci,"m-"+i]}}));
+
+/* rules */
+S.rules.forEach(r=>{D["r-"+r.id]={k:"rule",t:r.t,stat:[r.year+" flagged",`last 12 months · ${r.sept} in September`],says:r.d,
+ html:`<div class="sec"><h4>September invoices</h4>${S.queue.filter(q=>q.rule===r.id).map(q=>`<div class="fl"><div class="hi" data-go="q-${q.id}" style="cursor:pointer">${q.id} · ${esc(q.vendor)} · ${U(q.amount)}</div></div>`).join("")||"<p>None.</p>"}</div>`,
+ means:"The check runs on every invoice before payment. It never approves or rejects: it flags, and a person decides.",kpi:["Invoices flagged","USD stopped before payment"],rel:["ov-rules"]};});
+
+/* projection */
+const LEVERS=[["lv-inv","Hold the flagged invoices",()=>({cost:-atRisk,bbl:0}),`−${K(atRisk)} USD in September`],
+ ["lv-chem","Pay chemicals at contract rates",()=>({cost:-0.06*S.opex["Chemicals"][L],bbl:0}),`≈ −6% of chemical spend`],
+ ["lv-truck","Pay trucking by matched field tickets",()=>({cost:-0.04*S.opex["Trucking"][L],bbl:0}),`≈ −4% of trucking spend`],
+ ["lv-esp","Cut ESP-failure deferment by 30%",()=>({cost:0,bbl:0.3*S.defer["ESP failure"][L]}),`+${Math.round(0.3*S.defer["ESP failure"][L]).toLocaleString("en-US")} bbl`]];
+D["ov-proj"]={k:"ov",t:"About this projection",says:"September as recorded, then each selected action applied: invoice savings lower the cost, recovered barrels raise production. Cost per barrel = cost / barrels.",means:"A simple what-if to show which action moves the number most. Not a forecast.",rel:["ov-lift"]};
+(()=>{const box=document.getElementById("checks");box.innerHTML=LEVERS.map(([id,t,,m])=>`<label class="chk"><input type="checkbox" id="${id}"><span>${t}</span><span>${m}</span></label>`).join("");box.addEventListener("change",proj);proj();})();
+function proj(){let cost=S.total[L],bbl=S.prod[L];LEVERS.forEach(([id,,f])=>{if(document.getElementById(id).checked){const r=f();cost+=r.cost;bbl+=r.bbl}});
+ const v=cost/bbl,base=S.lifting[L];document.getElementById("projout").innerHTML=`${v.toFixed(2)}<small> USD/bbl in September</small>`;
+ const d=v-base,rev=(bbl-S.prod[L])*S.netback;document.getElementById("projdelta").textContent=`${d<0?"−":"+"}${Math.abs(d).toFixed(2)} USD/bbl vs recorded ${base.toFixed(2)} · cost saved ${U(S.total[L]-cost)} · extra revenue ${U(rev)}`;
+ const s=document.getElementById("projbar");s.innerHTML="";const max=Math.max(...S.lifting,v)*1.1,bw=36,gap=8;
+ S.lifting.forEach((x,i)=>{const h=x/max*70;el("rect",{x:i*(bw+gap),y:76-h,width:bw,height:h,fill:i===L?"var(--muted)":"var(--steel-2)"},s);txt(s,i*(bw+gap)+bw/2,92,MON[i],{"text-anchor":"middle",style:"font-size:10px"})});
+ const h=v/max*70;el("rect",{x:n*(bw+gap),y:76-h,width:bw,height:h,fill:"var(--moss)"},s);txt(s,n*(bw+gap)+bw/2,92,"New",{"text-anchor":"middle",style:"font-size:10px;fill:var(--ink)"});txt(s,n*(bw+gap)+bw/2,70-h,v.toFixed(2),{"text-anchor":"middle",class:"val"});}
+
+/* kpis & overviews */
+const avgL=sum(S.lifting)/n;
+Object.assign(D,{
+"k-lift":{k:"kpi",t:"Lifting cost, September",stat:[S.lifting[L].toFixed(2)+" USD/bbl",`12-month average ${avgL.toFixed(2)}`],spark:spark(S.lifting,MON),says:`Lowest ${Math.min(...S.lifting).toFixed(2)}, highest ${Math.max(...S.lifting).toFixed(2)} USD/bbl.`,rel:["ov-lift","m-"+L]},
+"k-defer":{k:"kpi",t:"Deferred production",stat:[U(deferUsd),`${Math.round(deferBbl).toLocaleString("en-US")} bbl in 12 months, at ${S.netback} USD/bbl`],says:`${(deferBbl/sum(S.prod)*100).toFixed(1)}% of the oil produced. ESP failures are the largest reason.`,rel:["ov-defer","df-0"]},
+"k-risk":{k:"kpi",t:"Money at risk in the queue",stat:[U(atRisk),`${S.queue.filter(q=>q.risk).length} of ${S.queue.length} queued invoices`],says:"The amount that should not be paid until the issue is resolved.",rel:["ov-queue"]},
+"k-afe":{k:"kpi",t:"Workover overruns",stat:[U(afeOver),`${S.afe.filter(j=>j.actual>j.afe*1.1).length} of ${S.afe.length} jobs more than 10% over AFE`],rel:["r-afe"]},
+"k-inv":{k:"kpi",t:"Invoices checked",stat:[sum(S.inv)+"",`in 12 months · ${S.rules.reduce((a,r)=>a+r.year,0)} flagged`],says:"Every invoice passes the seven checks before it reaches the payment run.",rel:["ov-rules"]},
+"ov-queue":{k:"ov",t:"How to decide",says:"Hold: do not pay until resolved. Verify: confirm the difference with the field or vendor, then pay the confirmed amount. Approve: all checks passed.",means:"Finance decides on a handful of invoices instead of reading every one."},
+"ov-lift":{k:"ov",t:"How lifting cost is calculated",says:"Operating cost of the month (power, chemicals, well services, ESPs, maintenance, trucking, camp) divided by the barrels produced in the month. Capital projects and taxes are excluded.",means:"The number partners and management compare between fields and months. It rises when cost rises or when production falls."},
+"ov-defer":{k:"ov",t:"Why deferment belongs in a finance report",says:"Lost barrels are invisible in the cost ledger, but they are the largest money item: the field pays almost the same cost for less oil.",means:"Valuing deferment in dollars puts operations and finance on one number.",dec:["Record every hour of downtime with a reason code.","Report deferment in barrels and dollars every month."]},
+"ov-rules":{k:"ov",t:"How the checks work",says:"Each invoice is compared with the vendor contract, the PO, the field tickets, the AFE and the vendor list before payment.",means:"Problems are caught before money leaves, not found later in an audit."}});
+
+/* strategy */
+const PLAY=[["Next 30 days","Stop the leaks",[["pl-queue","Clear the September queue",`${U(atRisk)} at risk`],["pl-rate","Load contract rates into the checks","Chemicals, trucking, rigs"],["pl-limit","Enforce the approval limit","No split invoices"]]],
+ ["Next quarter","Measure what is lost",[["pl-defer","Reason code for every hour of downtime",`${U(deferUsd)} a year`],["pl-esp","ESP run-life tracking","Largest deferment reason"],["pl-afe","Daily cost on every workover",`${U(afeOver)} over AFE`]]],
+ ["Next year","One number for all",[["pl-dash","Monthly cost and deferment dashboard","Finance + operations"],["pl-partner","Partner and ministry reports from the same data","No retyping"],["pl-kpi","Lifting cost target per field",`From ${S.lifting[L].toFixed(2)} USD/bbl`]]]];
+const PT={"pl-queue":["Clear the queue","Seven invoices need a decision.",["Hold the duplicate, AFE and new-vendor invoices.","Verify quantities with field tickets."],["ov-queue"]],
+"pl-rate":["Contract rates in the checks","Rate checks need the contract rates in one table.",["One table: vendor, item, unit, rate, valid from/to.","Update it at every contract change."],["r-rate"]],
+"pl-limit":["Approval limit","Split invoices avoid manager approval.",["Group invoices per vendor per day before the limit check."],["r-split"]],
+"pl-defer":["Downtime reason codes","Deferment cannot be reduced if it is not measured.",["Five reason codes, recorded daily by the field.","Valued at netback in the monthly report."],["ov-defer"]],
+"pl-esp":["ESP run life","ESP failures are the largest single reason for lost oil.",["Install date, failure date and cause for every pump.","Compare vendors by run life, not by price."],["df-0"]],
+"pl-afe":["Workover cost control","Three jobs ran more than 10% over AFE.",["Daily cost report on jobs longer than 5 days.","AFE supplement before the overrun, not after."],["k-afe"]],
+"pl-dash":["One dashboard","Finance and operations report different numbers today.",["Cost, production and deferment from the same data.","Updated monthly in hours, not days."],["ov-lift"]],
+"pl-partner":["Partner and ministry reports","The same numbers are typed again for each report.",["Generate the reports from the same tables."],[]],
+"pl-kpi":["Lifting cost target","What gets measured gets managed.",["Target per field, reviewed monthly."],["k-lift"]]};
+Object.entries(PT).forEach(([id,[t,says,dec,rel]])=>D[id]={k:"play",t,says,dec,rel});
+
+/* ---------- render ---------- */
+document.getElementById("tiles").innerHTML=[["k-lift",S.lifting[L].toFixed(2),"USD/bbl","lifting cost in September"],["k-defer",(deferUsd/1e6).toFixed(1),"M USD","of oil deferred in 12 months"],["k-risk",K(atRisk),"USD","at risk in the invoice queue"],["k-afe",K(afeOver),"USD","workover cost above AFE"],["k-inv",sum(S.inv),"invoices","checked before payment in 12 months"]].map(([id,v,u,s])=>`<button class="tk" data-open="${id}"><b>${v}<small>${u}</small></b><span>${s}</span><em>Open details →</em></button>`).join("");
+
+(()=>{const box=document.getElementById("queue");const qs=[...S.queue].sort((a,b)=>b.risk-a.risk);box.innerHTML=qs.map(q=>`<button class="q" data-open="q-${q.id}"><span class="stripe" style="background:${q.pill==="hold"?"var(--brick)":q.pill==="verify"?"var(--amber)":"var(--moss)"}"></span><span class="qid">${q.id}</span><span class="qs">${esc(q.vendor)}<small>${q.rule?esc(RL[q.rule].t):"All checks passed"}</small></span><span class="qf">${esc(q.why)}</span><span class="qa">${U(q.amount)}</span><span class="pill ${PILL[q.pill][0]}">${PILL[q.pill][1]}</span></button>`).join("");})();
+
+document.getElementById("catleg").innerHTML=S.cats.map(c=>`<span><i class="sq" style="background:${CATC[c]}"></i>${c}</span>`).join("")+`<span><i style="background:var(--ink)"></i>USD per bbl</span>`;
+(()=>{const s=document.getElementById("stack"),x0=70,x1=1030,y0=290,h=250,max=Math.ceil(Math.max(...S.total)/5e5)*5e5,bw=52,sx=i=>x0+30+i/(n-1)*(x1-x0-60),sy=v=>y0-v/max*h;
+ const lmax=Math.ceil(Math.max(...S.lifting)+0.5),ly=v=>y0-v/lmax*h;
+ for(let v=0;v<=max;v+=5e5){el("line",{x1:x0,x2:x1,y1:sy(v),y2:sy(v),class:v?"gl":"ax"},s);txt(s,x0-8,sy(v)+4,(v/1e6).toFixed(1)+"M",{"text-anchor":"end"})}
+ for(let v=0;v<=lmax;v+=1)txt(s,x1+10,ly(v)+4,v+" $/bbl",{style:"font-size:10px"});
+ S.months.forEach((m,i)=>{let acc=0;const gm=el("g",{},s);el("rect",{x:sx(i)-bw/2-6,y:y0+6,width:bw+12,height:24,fill:"transparent"},gm);txt(gm,sx(i),y0+20,MON[i],{"text-anchor":"middle",class:"lbl"});act(gm,`${MONL[i]}: ${U(S.total[i])} · ${S.lifting[i].toFixed(2)} USD/bbl`,"m-"+i);
+  S.cats.forEach((c,ci)=>{const v=S.opex[c][i],g=el("g",{},s);el("rect",{x:sx(i)-bw/2,y:sy(acc+v),width:bw,height:sy(acc)-sy(acc+v),fill:CATC[c]},g);acc+=v;act(g,`${MONL[i]} · ${c}: ${U(v)}`,"c-"+ci)})});
+ el("path",{d:"M"+S.lifting.map((v,i)=>sx(i)+","+ly(v)).join("L"),fill:"none",stroke:"var(--ink)","stroke-width":2.2,style:"pointer-events:none"},s);
+ S.lifting.forEach((v,i)=>{el("circle",{cx:sx(i),cy:ly(v),r:4,fill:"var(--ink)",style:"pointer-events:none"},s);txt(s,sx(i),ly(v)-9,v.toFixed(2),{"text-anchor":"middle",class:"val",style:"pointer-events:none"})});})();
+
+(()=>{const s=document.getElementById("defer"),x0=200,w=300,tot=S.reasons.map(r=>sum(S.defer[r])*S.netback),max=Math.max(...tot),sc=v=>v/max*w;
+ S.reasons.forEach((r,i)=>{const y=14+i*52,g=el("g",{},s);el("rect",{x:0,y:y-6,width:600,height:48,fill:"transparent"},g);txt(g,x0-10,y+20,r,{"text-anchor":"end",class:"lbl"});
+  el("rect",{x:x0,y,width:sc(tot[i]),height:30,fill:i===0?"var(--brick)":"var(--amber)",opacity:i===0?1:.8},g);txt(g,x0+sc(tot[i])+6,y+20,(tot[i]/1e6).toFixed(2)+"M",{class:"val",style:"font-size:13px"});act(g,`${r}: ${U(tot[i])}`,"df-"+i)});
+ txt(s,x0,292,`Total ${U(deferUsd)} · ${Math.round(deferBbl).toLocaleString("en-US")} bbl`,{style:"fill:var(--ink);font-weight:600"});})();
+
+(()=>{const s=document.getElementById("afe"),x0=150,w=270,max=200000,sc=v=>v/max*w;
+ [0,50e3,100e3,150e3,200e3].forEach(v=>{el("line",{x1:x0+sc(v),x2:x0+sc(v),y1:4,y2:272,class:v?"gl":"ax"},s);txt(s,x0+sc(v),290,v/1000+"k",{"text-anchor":"middle"})});
+ S.afe.forEach((j,i)=>{const y=20+i*33,g=el("g",{},s),bad=j.actual>j.afe*1.1,c=bad?"var(--brick)":"var(--moss)";el("rect",{x:0,y:y-14,width:460,height:30,fill:"transparent"},g);
+  txt(g,x0-10,y+4,`${j.id} · ${j.well}`,{"text-anchor":"end",class:"lbl"});el("line",{x1:x0+sc(j.afe),x2:x0+sc(j.actual),y1:y,y2:y,stroke:c,"stroke-width":3},g);
+  el("circle",{cx:x0+sc(j.afe),cy:y,r:7,fill:"var(--paper)",stroke:"var(--muted)","stroke-width":2},g);el("circle",{cx:x0+sc(j.actual),cy:y,r:6,fill:c},g);
+  act(g,`${j.id} ${j.job}: AFE ${K(j.afe)} → actual ${K(j.actual)}`,"j-"+j.id)});})();
+
+(()=>{const s=document.getElementById("heat"),x0=210,cw=73,ch=36,y0=34,all=S.cats.flatMap(c=>S.opex[c]),mx=Math.max(...all);const col=v=>{const p=v/mx;return p>.75?"var(--hm4)":p>.5?"var(--hm3)":p>.3?"var(--hm2)":"var(--hm1)"};
+ S.months.forEach((m,i)=>txt(s,x0+i*cw+cw/2,y0-12,MON[i],{"text-anchor":"middle",style:"font-size:11px"}));
+ S.cats.forEach((c,ci)=>{const y=y0+ci*(ch+4);const t=txt(s,x0-10,y+22,S.vendors[c],{"text-anchor":"end",class:"lbl"});act(t,S.vendors[c],"c-"+ci);
+  S.months.forEach((m,i)=>{const v=S.opex[c][i],g=el("g",{},s),p=v/mx;el("rect",{x:x0+i*cw+2,y,width:cw-4,height:ch,fill:col(v)},g);txt(g,x0+i*cw+cw/2,y+22,Math.round(v/1000),{"text-anchor":"middle",style:`fill:${p>.5?"var(--paper)":"var(--ink)"};font-weight:600;pointer-events:none`});act(g,`${S.vendors[c]} · ${MONL[i]}: ${U(v)}`,`h-${ci}-${i}`)})});})();
+
+(()=>{const s=document.getElementById("rules"),x0=260,w=640,max=Math.max(...S.rules.map(r=>r.year)),sc=v=>v/max*w;
+ S.rules.forEach((r,i)=>{const y=8+i*35,g=el("g",{},s);el("rect",{x:0,y:y-5,width:1100,height:33,fill:"transparent"},g);txt(g,x0-10,y+16,r.t,{"text-anchor":"end",class:"lbl"});
+  el("rect",{x:x0,y,width:Math.max(2,sc(r.year)),height:22,fill:"var(--teal)",opacity:.75},g);txt(g,x0+sc(r.year)+6,y+16,r.year,{class:"val"});
+  txt(g,1090,y+16,r.sept?`${r.sept} in Sep`:"0 in Sep",{"text-anchor":"end",style:r.sept?"fill:var(--brick);font-weight:600":""});act(g,`${r.t}: ${r.year} in 12 months, ${r.sept} in September`,"r-"+r.id)});})();
+
+(()=>{const box=document.getElementById("play");let k=0;PLAY.forEach(([h,sub,steps])=>{const c=document.createElement("div");c.className="pcol";c.innerHTML=`<h3>${h}</h3><p>${sub}</p>`;
+ steps.forEach(([id,t,m])=>{k++;const b=document.createElement("button");b.className="step";b.innerHTML=`<b>${k}</b><span class="st">${esc(t)}<small>${esc(m)}</small></span>`;b.onclick=()=>open(id);c.appendChild(b)});box.appendChild(c)});})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive production data review for an oil field: daily QC, wells vs facility meter, load reconciliation and the plan to automate it (test data).">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Production Data Health Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: analyst's ledger notebook — unboxed chart panels on warm paper, a decision queue up top, one slide-in dossier for every detail */
+:root{
+  --paper:#eeebe4; --sheet:#f7f5f0; --ink:#2b2d33; --muted:#6c6b66; --rule:#cfcabf; --grid:#dcd7cc;
+  --steel:#4c7aa8; --steel-2:#9bb6d2; --violet:#8b6bc0; --moss:#4f9a55; --brick:#c2504a; --amber:#d9862b; --teal:#3f9a96; --rose:#c46b97; --sand:#b39a5f;
+  --hm0:#e3ded3; --hm1:#c9d8e6; --hm2:#93b3d1; --hm3:#5c8bb8; --hm4:#335f8c; --scrim:rgba(30,30,34,.28);
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans","IBM Plex Sans Arabic",system-ui,-apple-system,Segoe UI,sans-serif;
+  --f-ar:"IBM Plex Sans Arabic","IBM Plex Sans",Tahoma,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1d1f23; --sheet:#25272c; --ink:#e6e3dc; --muted:#a09d95; --rule:#3a3c41; --grid:#2e3035;
+  --steel:#7aa5d1; --steel-2:#3f5f80; --violet:#a98ddb; --moss:#73bb78; --brick:#e0766f; --amber:#e9a14f; --teal:#5fbcb7; --rose:#dc8ab2; --sand:#cdb57c;
+  --hm0:#2c2e33; --hm1:#2c4258; --hm2:#3c6286; --hm3:#5a88b5; --hm4:#8db5dc; --scrim:rgba(0,0,0,.5); color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:grid;gap:10px;border-bottom:1px solid var(--rule);padding-bottom:22px;margin-bottom:24px}
+.eyebrow{font-family:var(--f-data);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(38px,6vw,64px);line-height:.98;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{max-width:70ch;color:var(--muted);margin:0}
+.banner{display:flex;gap:10px;align-items:flex-start;border:1px dashed var(--amber);padding:10px 14px;border-radius:4px;font-size:13px;max-width:900px}
+.banner b{color:var(--amber);font-family:var(--f-data);font-size:11px;letter-spacing:.06em;white-space:nowrap;padding-top:2px}
+.hint{display:inline-flex;gap:8px;align-items:center;font-size:13px}
+.hint i{width:8px;height:8px;border-radius:50%;background:var(--brick);display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:44px 40px}
+.panel{min-width:0;display:grid;gap:8px;align-content:start}
+.s5{grid-column:span 5}.s7{grid-column:span 7}.s12{grid-column:span 12}.s4{grid-column:span 4}.s8{grid-column:span 8}.s6{grid-column:span 6}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2{font-family:var(--f-body);font-weight:600;font-size:15px;margin:0}
+h2 .n{font-family:var(--f-data);font-weight:500;color:var(--muted);font-size:12px;margin-right:6px}
+.more{font:500 12px var(--f-data);color:var(--steel);background:none;border:1px solid var(--rule);border-radius:999px;padding:3px 10px;cursor:pointer}
+.more:hover{border-color:var(--steel)}
+.note{font-size:13px;color:var(--muted);margin:0;max-width:70ch}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--f-data);font-size:11px;fill:var(--muted)}
+svg .lbl{fill:var(--ink);font-family:var(--f-body);font-size:12px}
+svg .val{fill:var(--ink);font-weight:500}
+svg .ax{stroke:var(--rule);stroke-width:1}
+svg .gl{stroke:var(--grid);stroke-width:1}
+.hit{cursor:pointer;outline:none;transition:opacity .15s}
+.hit:hover,.hit:focus-visible{opacity:.7}
+.hit:focus-visible{stroke:var(--ink);stroke-width:2}
+.takeaways{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-block:1px solid var(--rule)}
+.tk{all:unset;box-sizing:border-box;padding:16px 16px 16px 0;display:grid;gap:4px;align-content:start;cursor:pointer;min-width:0}
+.tk+.tk{padding-left:16px;border-left:1px solid var(--rule)}
+.tk:hover b,.tk:focus-visible b{color:var(--steel)}
+.tk:focus-visible{outline:2px solid var(--steel);outline-offset:-2px}
+.tk b{font-family:var(--f-display);font-size:36px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;transition:color .15s}
+.tk b small{font-size:16px;color:var(--muted);font-weight:500;margin-left:3px}
+.tk span{font-size:13px;color:var(--muted)}
+.tk em{font:500 11px var(--f-data);font-style:normal;color:var(--steel)}
+/* queue */
+.queue{display:grid;gap:0;border-top:1px solid var(--rule)}
+.q{all:unset;box-sizing:border-box;display:grid;grid-template-columns:6px 92px minmax(0,1.6fr) minmax(0,1fr) 150px 170px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule);cursor:pointer}
+.q:hover .qs,.q:focus-visible .qs{text-decoration:underline}
+.q:focus-visible{outline:2px solid var(--steel)}
+.stripe{align-self:stretch;border-radius:3px}
+.qid{font:500 13px var(--f-data)}
+.qs{font-weight:600;min-width:0}
+.qs small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.qf{font-size:12.5px;color:var(--muted);min-width:0}
+.qa{font:500 14px var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
+.pill{font:600 11px var(--f-data);letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:999px;justify-self:start;border:1px solid}
+.p-hold{color:var(--brick);border-color:var(--brick)}
+.p-verify{color:var(--amber);border-color:var(--amber)}
+.p-ok{color:var(--moss);border-color:var(--moss)}
+.p-done{color:var(--muted);border-color:var(--rule)}
+/* projection */
+.proj{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:28px;align-items:start}
+.checks{display:grid;gap:8px}
+.chk{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--steel)}
+.chk span:last-child{font:13px var(--f-data);color:var(--muted)}
+.projout{font:600 44px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.projout small{font-size:18px;color:var(--muted)}
+.delta{font:500 13px var(--f-data)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.legend i.sq{border-radius:2px}
+.scroll{overflow-x:auto}
+.play{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--rule)}
+.pcol{padding:14px 18px 6px 0;display:grid;gap:8px;align-content:start;min-width:0}
+.pcol+.pcol{padding-left:18px;border-left:1px solid var(--rule)}
+.pcol h3{font:600 22px var(--f-display);margin:0}
+.pcol p{margin:0;font-size:12.5px;color:var(--muted)}
+.step{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px 1fr;gap:8px;padding:9px 0;border-top:1px dashed var(--rule);cursor:pointer}
+.step b{font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center}
+.step:hover .st,.step:focus-visible .st{color:var(--steel);text-decoration:underline}
+.step:focus-visible{outline:2px solid var(--steel)}
+.st{font-size:14px}
+.st small{display:block;font:12px var(--f-data);color:var(--muted)}
+footer{margin-top:44px;border-top:1px solid var(--rule);padding-top:14px;font-size:12px;color:var(--muted);display:grid;gap:4px}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--paper);font-family:var(--f-data);font-size:12px;padding:6px 9px;border-radius:3px;opacity:0;transition:opacity .12s;z-index:5;max-width:260px}
+#scrim{position:fixed;inset:0;background:var(--scrim);z-index:20}
+#dr{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--sheet);border-left:1px solid var(--rule);z-index:21;display:grid;grid-template-rows:auto 1fr;box-shadow:-12px 0 40px rgba(0,0,0,.12);transition:transform .22s ease}
+#dr[hidden]{display:grid!important;transform:translateX(105%);visibility:hidden}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) 12px 20px;border-bottom:1px solid var(--rule)}
+.dh button{font:500 12px var(--f-data);background:none;border:1px solid var(--rule);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer}
+.dh button:hover{border-color:var(--ink)}
+.db{overflow-y:auto;padding:20px calc(20px + env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) 22px;display:grid;gap:18px;align-content:start}
+.kind{font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:var(--muted)}
+.kind i{width:9px;height:9px;border-radius:50%}
+.db h3{font:700 30px/1.05 var(--f-display);margin:6px 0 0;text-wrap:balance}
+.ar{font-family:var(--f-ar);direction:rtl;unicode-bidi:isolate;color:var(--muted);font-size:14px;margin-top:4px;display:block;text-align:left}
+.stat{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.stat b{font:600 46px/1 var(--f-display);color:var(--steel);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted);max-width:32ch}
+.sec{display:grid;gap:6px}
+.sec h4{margin:0;font:500 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:5px}
+.sec p{margin:0}
+.sec ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.dec{list-style:none;padding:0!important}
+.dec li{display:grid;grid-template-columns:24px 1fr;gap:6px;counter-increment:d}
+.dec{counter-reset:d}
+.dec li::before{content:counter(d);font:600 12px var(--f-data);color:var(--paper);background:var(--brick);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px}
+.kv dt{color:var(--muted);font-family:var(--f-data);font-size:12px;padding-top:1px}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th{font:500 11px var(--f-data);color:var(--muted);text-align:left;border-bottom:1px solid var(--rule);padding:4px 6px 4px 0}
+.tbl td{border-bottom:1px solid var(--grid);padding:5px 6px 5px 0;vertical-align:top}
+.tbl td.num{text-align:right;font-family:var(--f-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl td.arc{font-family:var(--f-ar);direction:rtl;text-align:right}
+.tbl tr.go{cursor:pointer}.tbl tr.go:hover td{background:var(--paper)}
+.kpis{display:flex;flex-wrap:wrap;gap:6px}
+.kpis span{font:12px var(--f-data);border:1px solid var(--rule);padding:3px 8px;border-radius:3px}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.rel button{font:13px var(--f-body);background:none;color:var(--steel);border:1px solid var(--steel-2);border-radius:999px;padding:3px 11px;cursor:pointer}
+.rel button:hover{background:var(--steel);color:var(--paper)}
+.src{font-size:12px;color:var(--muted);font-style:italic}
+.flag{font:500 11px var(--f-data);color:var(--brick)}
+.fl{display:grid;gap:6px}
+.fl div{border-left:3px solid var(--amber);padding:4px 10px;font-size:13.5px;background:var(--paper)}
+.fl div.hi{border-color:var(--brick)}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}.s5,.s7,.s4,.s8,.s6,.s12{grid-column:auto}.takeaways{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tk:nth-child(odd){padding-left:0;border-left:0}.tk:nth-child(even){padding-left:16px;border-left:1px solid var(--rule)}.tk:nth-child(n+3){border-top:1px solid var(--rule)}
+ .q{grid-template-columns:6px minmax(0,1fr) auto;row-gap:4px}.q .qid{grid-column:2}.q .qs{grid-column:2/4}.q .qf{grid-column:2/4}.q .qa{grid-column:2;text-align:left}.q .pill{grid-column:3;grid-row:1;justify-self:end}.stripe{grid-row:1/5}
+ .proj{grid-template-columns:1fr}
+ .play{grid-template-columns:1fr}.pcol+.pcol{padding-left:0;border-left:0;border-top:1px solid var(--rule)}
+ #dr{top:auto;left:0;width:100%;max-height:86vh;border-left:0;border-top:1px solid var(--rule);border-radius:12px 12px 0 0}
+ #dr[hidden]{transform:translateY(105%)}
+ .dh{padding-left:max(16px,env(safe-area-inset-left,0px));padding-top:12px}
+ .db{padding-left:max(18px,env(safe-area-inset-left,0px))}}
+@media (prefers-reduced-motion:reduce){#tip,#dr,.hit{transition:none}}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Oil &amp; Gas Data Ops · Daily production QC · 12 wells, facility meter · 1 June – 28 September 2026</div>
+    <h1>Production Data Health Review</h1>
+    <p class="lede">How many errors reach the daily well file, why the sum of the wells does not match the facility meter, what was loaded and what was rejected, and the plan to automate the morning check. Click any line, bar, cell, row or figure for its details.</p>
+    <div class="banner"><b>TEST DATA</b><span>A fictional oil field: 12 wells (8 ESP, 4 natural flow), 120 days, 1,440 daily rows with 162 errors planted on purpose and logged in an answer key. Every figure comes from a working QC engine and SQL loader run on this data, and is listed in the workbook <a href="Oil_Data_Health_Review_Data.xlsx" download style="color:var(--steel);font-weight:600">Oil_Data_Health_Review_Data.xlsx</a> (download) (start with its “Report Map” sheet).</span></div>
+    <span class="hint"><i></i>Everything is clickable. Press Esc to close the details panel.</span>
+  </header>
+
+  <section class="takeaways" aria-label="Key figures" id="tiles"></section>
+
+  <div class="grid" style="margin-top:38px">
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">1</span>Sum of wells vs facility meter</h2><button class="more" data-open="ov-meter">Why they differ</button></div>
+      <p class="note">Oil per day, bbl. Red dots: days where the wells differ from the meter by more than 1.5%. Click a day.</p>
+      <div class="legend"><span><i style="background:var(--muted)"></i>Facility meter</span><span><i style="background:var(--amber)"></i>Sum of wells, raw file</span><span><i style="background:var(--steel)"></i>Sum of wells, after suggested fixes</span><span><i style="background:var(--brick)"></i>Break (&gt; 1.5%)</span></div>
+      <div class="scroll"><svg id="lines" viewBox="0 0 1100 330" style="min-width:760px" role="group" aria-label="Daily oil: wells vs meter"></svg></div>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">2</span>Decision queue</h2><button class="more" data-open="ov-queue">How to decide</button></div>
+      <p class="note">The largest problem of each kind, sorted by barrels at stake. The pill is the loader’s decision: reject the row, or load it with a warning.</p>
+      <div class="queue" id="queue"></div>
+    </div>
+
+    <div class="panel s7">
+      <div class="ph"><h2><span class="n">3</span>Issues found, by rule</h2><button class="more" data-open="ov-score">Test score</button></div>
+      <p class="note">QC findings in the period. Red = row rejected, amber = loaded with a warning, grey = missing day. Click a bar.</p>
+      <svg id="types" viewBox="0 0 600 330" role="group" aria-label="Issues by type"></svg>
+    </div>
+    <div class="panel s5">
+      <div class="ph"><h2><span class="n">4</span>Every row accounted for</h2><button class="more" data-open="ov-load">How the load works</button></div>
+      <p class="note">Rows in = rows loaded + rows rejected. Rejected rows by main reason. Click a bar.</p>
+      <svg id="load" viewBox="0 0 460 330" role="group" aria-label="Load reconciliation"></svg>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">5</span>Well × issue</h2></div>
+      <p class="note">Findings per well and rule. Darker = more. Click a cell for the readings behind it, or a well name.</p>
+      <div class="scroll"><svg id="heat" viewBox="0 0 1100 470" style="min-width:820px" role="group" aria-label="Findings per well and rule"></svg></div>
+    </div>
+
+    <div class="panel s7">
+      <div class="ph"><h2><span class="n">6</span>Hours for the morning check</h2></div>
+      <p class="note">Per day. Today (manual, analyst estimate) vs automated. Click a step.</p>
+      <svg id="hours" viewBox="0 0 600 300" role="group" aria-label="Hours per step"></svg>
+    </div>
+    <div class="panel s5">
+      <div class="ph"><h2><span class="n">7</span>Target setup</h2></div>
+      <p class="note">Runs on the operator’s own server. Click a box.</p>
+      <svg id="flow" viewBox="0 0 460 300" role="group" aria-label="Target data flow"></svg>
+    </div>
+
+    <div class="panel s12">
+      <div class="ph"><h2><span class="n">8</span>Roadmap</h2><span class="note">Analyst recommendations</span></div>
+      <div class="play" id="play"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Source: synthetic daily well file, facility meter and answer key (seed 42), QC findings and load reconciliation produced by the QC engine and SQL loader, in Oil_Data_Health_Review_Data.xlsx.</span>
+    <span>Hours per step are analyst estimates to be measured in a pilot. Roadmap and KPIs are analyst recommendations.</span>
+  </footer>
+</div>
+<div id="tip" aria-hidden="true"></div>
+<div id="scrim" hidden></div>
+<aside id="dr" hidden role="dialog" aria-modal="true" aria-labelledby="dtitle">
+  <div class="dh"><button id="back" hidden>← Back</button><span></span><button id="close">Close ✕</button></div>
+  <div class="db" id="db" tabindex="-1"></div>
+</aside>
+
+<script>
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const txt=(p,x,y,s,a={})=>{const t=el("text",{x,y,...a},p);t.textContent=s;return t};
+const IQD=v=>Math.round(v).toLocaleString("en-US")+" IQD";
+const M=v=>{const a=Math.abs(v);return (v<0?"−":"")+(a>=1e9?(a/1e9).toFixed(2)+"B":a>=1e6?(a/1e6).toFixed(a>=1e8?0:1)+"M":a>=1e3?(a/1e3).toFixed(0)+"K":Math.round(a))};
+const P=(v,d=1)=>(v*100).toFixed(d)+"%";
+const tip=document.getElementById("tip");
+const act=(n,s,id)=>{n.classList.add("hit");n.setAttribute("tabindex","0");n.setAttribute("role","button");n.setAttribute("aria-label",s);
+ n.addEventListener("mousemove",e=>{tip.textContent=s+"  ·  click for details";tip.style.opacity=1;tip.style.left=Math.min(e.clientX+12,innerWidth-270)+"px";tip.style.top=(e.clientY+12)+"px"});
+ n.addEventListener("mouseleave",()=>tip.style.opacity=0);
+ n.addEventListener("click",e=>{e.stopPropagation();tip.style.opacity=0;open(id)});
+ n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open(id)}});};
+function spark(a,labels){const w=400,h=84,max=Math.max(...a,1),sx=j=>14+j/(a.length-1)*(w-28),sy=v=>h-20-v/max*(h-34);
+ return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="M${a.map((v,j)=>sx(j)+","+sy(v)).join("L")}L${sx(a.length-1)},${h-20}L${sx(0)},${h-20}Z" fill="var(--steel)" opacity=".14"/><path d="M${a.map((v,j)=>sx(j)+","+sy(v)).join("L")}" fill="none" stroke="var(--steel)" stroke-width="2"/>${a.map((v,j)=>`<circle cx="${sx(j)}" cy="${sy(v)}" r="2.6" fill="var(--steel)"/>`).join("")}${labels.map((l,j)=>j%2===0?`<text x="${sx(j)}" y="${h-4}" text-anchor="middle" style="font-size:10px">${l}</text>`:"").join("")}<text x="${w-14}" y="11" text-anchor="end" style="font-size:10px">max ${M(max)}</text></svg>`}
+const dr=document.getElementById("dr"),db=document.getElementById("db"),scrim=document.getElementById("scrim"),backB=document.getElementById("back");
+let stack=[],lastFocus=null;
+function render(id){const d=D[id];if(!d)return;const [kl,kc]=KIND[d.k];
+ let h=`<div><div class="kind"><i style="background:${kc}"></i>${kl}</div><h3 id="dtitle">${esc(d.t)}</h3>${d.ar?`<span class="ar">${esc(d.ar)}</span>`:""}</div>`;
+ if(d.stat)h+=`<div class="stat"><b>${esc(d.stat[0])}</b><span>${esc(d.stat[1])}</span></div>`;
+ if(d.spark)h+=d.spark;
+ if(d.says)h+=`<div class="sec"><h4>What the data shows</h4><p>${esc(d.says)}</p></div>`;
+ if(d.means)h+=`<div class="sec"><h4>What it means</h4><p>${esc(d.means)}</p></div>`;
+ if(d.html)h+=d.html;
+ if(d.dec&&d.dec.length)h+=`<div class="sec"><h4>${esc(d.decTitle||"Strategic decisions")} <span class="flag">· recommendation</span></h4><ol class="dec">${d.dec.map(x=>`<li><span>${esc(x)}</span></li>`).join("")}</ol></div>`;
+ if(d.kpi&&d.kpi.length)h+=`<div class="sec"><h4>KPIs to track</h4><div class="kpis">${d.kpi.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div>`;
+ const rel=(d.rel||[]).filter(r=>D[r]&&r!==id);
+ if(rel.length)h+=`<div class="sec"><h4>Related</h4><div class="rel">${rel.map(r=>`<button data-go="${r}">${esc(D[r].t)}</button>`).join("")}</div></div>`;
+ h+=`<p class="src">${SRCNOTE}</p>`;
+ db.innerHTML=h;db.scrollTop=0;backB.hidden=stack.length<2;}
+function open(id){if(!D[id])return;if(dr.hidden){lastFocus=document.activeElement;stack=[]}stack.push(id);render(id);scrim.hidden=false;dr.hidden=false;requestAnimationFrame(()=>db.focus())}
+function close(){dr.hidden=true;scrim.hidden=true;stack=[];if(lastFocus&&lastFocus.focus)lastFocus.focus()}
+db.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b&&D[b.dataset.go]){stack.push(b.dataset.go);render(b.dataset.go)}});
+backB.onclick=()=>{stack.pop();render(stack[stack.length-1])};
+document.getElementById("close").onclick=close;scrim.onclick=close;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dr.hidden)close()});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)open(b.dataset.open)});
+
+const S={"recon": [{"date": "2026-06-01", "meter_bbl": 29658.3, "wells_raw_bbl": 27768.7, "raw_diff_pct": -6.37, "wells_after_fixes_bbl": 29553.9, "after_diff_pct": -0.35}, {"date": "2026-06-02", "meter_bbl": 29566.1, "wells_raw_bbl": 27152.8, "raw_diff_pct": -8.16, "wells_after_fixes_bbl": 29506.6, "after_diff_pct": -0.2}, {"date": "2026-06-03", "meter_bbl": 29282.2, "wells_raw_bbl": 31127.5, "raw_diff_pct": 6.3, "wells_after_fixes_bbl": 29351.5, "after_diff_pct": 0.24}, {"date": "2026-06-04", "meter_bbl": 28228.1, "wells_raw_bbl": 26373.2, "raw_diff_pct": -6.57, "wells_after_fixes_bbl": 28201.0, "after_diff_pct": -0.1}, {"date": "2026-06-05", "meter_bbl": 29086.4, "wells_raw_bbl": 26105.1, "raw_diff_pct": -10.25, "wells_after_fixes_bbl": 29090.5, "after_diff_pct": 0.01}, {"date": "2026-06-06", "meter_bbl": 29006.4, "wells_raw_bbl": 29105.8, "raw_diff_pct": 0.34, "wells_after_fixes_bbl": 29105.8, "after_diff_pct": 0.34}, {"date": "2026-06-07", "meter_bbl": 27041.4, "wells_raw_bbl": 26981.3, "raw_diff_pct": -0.22, "wells_after_fixes_bbl": 26981.3, "after_diff_pct": -0.22}, {"date": "2026-06-08", "meter_bbl": 28213.2, "wells_raw_bbl": 29408.7, "raw_diff_pct": 4.24, "wells_after_fixes_bbl": 28144.1, "after_diff_pct": -0.24}, {"date": "2026-06-09", "meter_bbl": 29110.8, "wells_raw_bbl": 29028.2, "raw_diff_pct": -0.28, "wells_after_fixes_bbl": 29028.2, "after_diff_pct": -0.28}, {"date": "2026-06-10", "meter_bbl": 27431.8, "wells_raw_bbl": 28837.6, "raw_diff_pct": 5.12, "wells_after_fixes_bbl": 27482.0, "after_diff_pct": 0.18}, {"date": "2026-06-11", "meter_bbl": 28938.8, "wells_raw_bbl": 28836.8, "raw_diff_pct": -0.35, "wells_after_fixes_bbl": 28836.8, "after_diff_pct": -0.35}, {"date": "2026-06-12", "meter_bbl": 26911.7, "wells_raw_bbl": 26951.6, "raw_diff_pct": 0.15, "wells_after_fixes_bbl": 26951.6, "after_diff_pct": 0.15}, {"date": "2026-06-13", "meter_bbl": 27183.5, "wells_raw_bbl": 27130.3, "raw_diff_pct": -0.2, "wells_after_fixes_bbl": 27130.3, "after_diff_pct": -0.2}, {"date": "2026-06-14", "meter_bbl": 27935.1, "wells_raw_bbl": 27978.0, "raw_diff_pct": 0.15, "wells_after_fixes_bbl": 27978.0, "after_diff_pct": 0.15}, {"date": "2026-06-15", "meter_bbl": 26333.2, "wells_raw_bbl": 26350.9, "raw_diff_pct": 0.07, "wells_after_fixes_bbl": 26350.9, "after_diff_pct": 0.07}, {"date": "2026-06-16", "meter_bbl": 28742.4, "wells_raw_bbl": 16886.6, "raw_diff_pct": -41.25, "wells_after_fixes_bbl": 28905.8, "after_diff_pct": 0.57}, {"date": "2026-06-17", "meter_bbl": 28837.5, "wells_raw_bbl": 28863.6, "raw_diff_pct": 0.09, "wells_after_fixes_bbl": 28863.6, "after_diff_pct": 0.09}, {"date": "2026-06-18", "meter_bbl": 28665.9, "wells_raw_bbl": 28658.1, "raw_diff_pct": -0.03, "wells_after_fixes_bbl": 28658.1, "after_diff_pct": -0.03}, {"date": "2026-06-19", "meter_bbl": 28664.7, "wells_raw_bbl": 28700.0, "raw_diff_pct": 0.12, "wells_after_fixes_bbl": 28700.0, "after_diff_pct": 0.12}, {"date": "2026-06-20", "meter_bbl": 28772.2, "wells_raw_bbl": 28621.4, "raw_diff_pct": -0.52, "wells_after_fixes_bbl": 28621.4, "after_diff_pct": -0.52}, {"date": "2026-06-21", "meter_bbl": 28449.8, "wells_raw_bbl": 28549.4, "raw_diff_pct": 0.35, "wells_after_fixes_bbl": 28549.4, "after_diff_pct": 0.35}, {"date": "2026-06-22", "meter_bbl": 28388.3, "wells_raw_bbl": 28436.4, "raw_diff_pct": 0.17, "wells_after_fixes_bbl": 28436.4, "after_diff_pct": 0.17}, {"date": "2026-06-23", "meter_bbl": 26142.8, "wells_raw_bbl": 26214.0, "raw_diff_pct": 0.27, "wells_after_fixes_bbl": 26214.0, "after_diff_pct": 0.27}, {"date": "2026-06-24", "meter_bbl": 28266.6, "wells_raw_bbl": 26598.3, "raw_diff_pct": -5.9, "wells_after_fixes_bbl": 28314.3, "after_diff_pct": 0.17}, {"date": "2026-06-25", "meter_bbl": 27404.3, "wells_raw_bbl": 27319.8, "raw_diff_pct": -0.31, "wells_after_fixes_bbl": 27319.8, "after_diff_pct": -0.31}, {"date": "2026-06-26", "meter_bbl": 28224.6, "wells_raw_bbl": 35123.5, "raw_diff_pct": 24.44, "wells_after_fixes_bbl": 28145.1, "after_diff_pct": -0.28}, {"date": "2026-06-27", "meter_bbl": 26715.1, "wells_raw_bbl": 27038.2, "raw_diff_pct": 1.21, "wells_after_fixes_bbl": 26797.0, "after_diff_pct": 0.31}, {"date": "2026-06-28", "meter_bbl": 27979.6, "wells_raw_bbl": 28040.4, "raw_diff_pct": 0.22, "wells_after_fixes_bbl": 28040.4, "after_diff_pct": 0.22}, {"date": "2026-06-29", "meter_bbl": 26455.6, "wells_raw_bbl": 25413.4, "raw_diff_pct": -3.94, "wells_after_fixes_bbl": 28124.7, "after_diff_pct": 6.31}, {"date": "2026-06-30", "meter_bbl": 28084.7, "wells_raw_bbl": 27975.1, "raw_diff_pct": -0.39, "wells_after_fixes_bbl": 27975.1, "after_diff_pct": -0.39}, {"date": "2026-07-01", "meter_bbl": 28152.6, "wells_raw_bbl": 28905.0, "raw_diff_pct": 2.67, "wells_after_fixes_bbl": 28058.2, "after_diff_pct": -0.34}, {"date": "2026-07-02", "meter_bbl": 26972.5, "wells_raw_bbl": 26981.1, "raw_diff_pct": 0.03, "wells_after_fixes_bbl": 26981.1, "after_diff_pct": 0.03}, {"date": "2026-07-03", "meter_bbl": 27712.7, "wells_raw_bbl": 25680.2, "raw_diff_pct": -7.33, "wells_after_fixes_bbl": 27843.0, "after_diff_pct": 0.47}, {"date": "2026-07-04", "meter_bbl": 27652.3, "wells_raw_bbl": 34744.6, "raw_diff_pct": 25.65, "wells_after_fixes_bbl": 27713.9, "after_diff_pct": 0.22}, {"date": "2026-07-05", "meter_bbl": 27816.3, "wells_raw_bbl": 27802.1, "raw_diff_pct": -0.05, "wells_after_fixes_bbl": 27802.1, "after_diff_pct": -0.05}, {"date": "2026-07-06", "meter_bbl": 27960.5, "wells_raw_bbl": 25185.7, "raw_diff_pct": -9.92, "wells_after_fixes_bbl": 27900.2, "after_diff_pct": -0.22}, {"date": "2026-07-07", "meter_bbl": 27651.8, "wells_raw_bbl": 27824.3, "raw_diff_pct": 0.62, "wells_after_fixes_bbl": 27824.3, "after_diff_pct": 0.62}, {"date": "2026-07-08", "meter_bbl": 27580.6, "wells_raw_bbl": 23297.2, "raw_diff_pct": -15.53, "wells_after_fixes_bbl": 27661.7, "after_diff_pct": 0.29}, {"date": "2026-07-09", "meter_bbl": 27166.4, "wells_raw_bbl": 35281.0, "raw_diff_pct": 29.87, "wells_after_fixes_bbl": 27028.5, "after_diff_pct": -0.51}, {"date": "2026-07-10", "meter_bbl": 27425.7, "wells_raw_bbl": 24473.6, "raw_diff_pct": -10.76, "wells_after_fixes_bbl": 27411.1, "after_diff_pct": -0.05}, {"date": "2026-07-11", "meter_bbl": 27734.8, "wells_raw_bbl": 24942.8, "raw_diff_pct": -10.07, "wells_after_fixes_bbl": 27645.4, "after_diff_pct": -0.32}, {"date": "2026-07-12", "meter_bbl": 25714.3, "wells_raw_bbl": 25664.3, "raw_diff_pct": -0.19, "wells_after_fixes_bbl": 25664.3, "after_diff_pct": -0.19}, {"date": "2026-07-13", "meter_bbl": 25518.8, "wells_raw_bbl": 25151.7, "raw_diff_pct": -1.44, "wells_after_fixes_bbl": 25602.0, "after_diff_pct": 0.33}, {"date": "2026-07-14", "meter_bbl": 26285.7, "wells_raw_bbl": 26308.8, "raw_diff_pct": 0.09, "wells_after_fixes_bbl": 26308.8, "after_diff_pct": 0.09}, {"date": "2026-07-15", "meter_bbl": 27247.4, "wells_raw_bbl": 25278.8, "raw_diff_pct": -7.22, "wells_after_fixes_bbl": 27259.0, "after_diff_pct": 0.04}, {"date": "2026-07-16", "meter_bbl": 27217.1, "wells_raw_bbl": 27295.1, "raw_diff_pct": 0.29, "wells_after_fixes_bbl": 27295.1, "after_diff_pct": 0.29}, {"date": "2026-07-17", "meter_bbl": 27125.1, "wells_raw_bbl": 24814.6, "raw_diff_pct": -8.52, "wells_after_fixes_bbl": 27204.5, "after_diff_pct": 0.29}, {"date": "2026-07-18", "meter_bbl": 27446.1, "wells_raw_bbl": 27322.6, "raw_diff_pct": -0.45, "wells_after_fixes_bbl": 27322.6, "after_diff_pct": -0.45}, {"date": "2026-07-19", "meter_bbl": 27336.1, "wells_raw_bbl": 27416.5, "raw_diff_pct": 0.29, "wells_after_fixes_bbl": 27416.5, "after_diff_pct": 0.29}, {"date": "2026-07-20", "meter_bbl": 27144.1, "wells_raw_bbl": 24293.4, "raw_diff_pct": -10.5, "wells_after_fixes_bbl": 27061.9, "after_diff_pct": -0.3}, {"date": "2026-07-21", "meter_bbl": 26976.8, "wells_raw_bbl": 27012.2, "raw_diff_pct": 0.13, "wells_after_fixes_bbl": 27012.2, "after_diff_pct": 0.13}, {"date": "2026-07-22", "meter_bbl": 27052.5, "wells_raw_bbl": 24409.2, "raw_diff_pct": -9.77, "wells_after_fixes_bbl": 27029.8, "after_diff_pct": -0.08}, {"date": "2026-07-23", "meter_bbl": 26762.7, "wells_raw_bbl": 27689.0, "raw_diff_pct": 3.46, "wells_after_fixes_bbl": 26717.7, "after_diff_pct": -0.17}, {"date": "2026-07-24", "meter_bbl": 27020.6, "wells_raw_bbl": 27165.5, "raw_diff_pct": 0.54, "wells_after_fixes_bbl": 27090.0, "after_diff_pct": 0.26}, {"date": "2026-07-25", "meter_bbl": 26876.6, "wells_raw_bbl": 29224.0, "raw_diff_pct": 8.73, "wells_after_fixes_bbl": 26830.9, "after_diff_pct": -0.17}, {"date": "2026-07-26", "meter_bbl": 26077.6, "wells_raw_bbl": 28965.6, "raw_diff_pct": 11.07, "wells_after_fixes_bbl": 26238.7, "after_diff_pct": 0.62}, {"date": "2026-07-27", "meter_bbl": 26147.0, "wells_raw_bbl": 24192.7, "raw_diff_pct": -7.47, "wells_after_fixes_bbl": 26159.9, "after_diff_pct": 0.05}, {"date": "2026-07-28", "meter_bbl": 25880.1, "wells_raw_bbl": 25097.6, "raw_diff_pct": -3.02, "wells_after_fixes_bbl": 26066.6, "after_diff_pct": 0.72}, {"date": "2026-07-29", "meter_bbl": 25508.6, "wells_raw_bbl": 25526.0, "raw_diff_pct": 0.07, "wells_after_fixes_bbl": 25526.0, "after_diff_pct": 0.07}, {"date": "2026-07-30", "meter_bbl": 25350.1, "wells_raw_bbl": 25285.3, "raw_diff_pct": -0.26, "wells_after_fixes_bbl": 25285.3, "after_diff_pct": -0.26}, {"date": "2026-07-31", "meter_bbl": 26151.7, "wells_raw_bbl": 26103.0, "raw_diff_pct": -0.19, "wells_after_fixes_bbl": 26103.0, "after_diff_pct": -0.19}, {"date": "2026-08-01", "meter_bbl": 25192.1, "wells_raw_bbl": 26220.4, "raw_diff_pct": 4.08, "wells_after_fixes_bbl": 25290.6, "after_diff_pct": 0.39}, {"date": "2026-08-02", "meter_bbl": 26312.3, "wells_raw_bbl": 25961.0, "raw_diff_pct": -1.34, "wells_after_fixes_bbl": 26429.1, "after_diff_pct": 0.44}, {"date": "2026-08-03", "meter_bbl": 26599.8, "wells_raw_bbl": 26654.9, "raw_diff_pct": 0.21, "wells_after_fixes_bbl": 26654.9, "after_diff_pct": 0.21}, {"date": "2026-08-04", "meter_bbl": 26563.0, "wells_raw_bbl": 26548.2, "raw_diff_pct": -0.06, "wells_after_fixes_bbl": 26548.2, "after_diff_pct": -0.06}, {"date": "2026-08-05", "meter_bbl": 26311.0, "wells_raw_bbl": 26472.4, "raw_diff_pct": 0.61, "wells_after_fixes_bbl": 26472.4, "after_diff_pct": 0.61}, {"date": "2026-08-06", "meter_bbl": 26374.1, "wells_raw_bbl": 23717.1, "raw_diff_pct": -10.07, "wells_after_fixes_bbl": 26438.7, "after_diff_pct": 0.24}, {"date": "2026-08-07", "meter_bbl": 26338.1, "wells_raw_bbl": 27149.8, "raw_diff_pct": 3.08, "wells_after_fixes_bbl": 26313.5, "after_diff_pct": -0.09}, {"date": "2026-08-08", "meter_bbl": 26352.4, "wells_raw_bbl": 13542.0, "raw_diff_pct": -48.61, "wells_after_fixes_bbl": 26374.4, "after_diff_pct": 0.08}, {"date": "2026-08-09", "meter_bbl": 24769.5, "wells_raw_bbl": 24730.5, "raw_diff_pct": -0.16, "wells_after_fixes_bbl": 24730.5, "after_diff_pct": -0.16}, {"date": "2026-08-10", "meter_bbl": 26266.7, "wells_raw_bbl": 24271.6, "raw_diff_pct": -7.6, "wells_after_fixes_bbl": 26269.8, "after_diff_pct": 0.01}, {"date": "2026-08-11", "meter_bbl": 23236.6, "wells_raw_bbl": 24093.5, "raw_diff_pct": 3.69, "wells_after_fixes_bbl": 23274.4, "after_diff_pct": 0.16}, {"date": "2026-08-12", "meter_bbl": 24679.3, "wells_raw_bbl": 22268.8, "raw_diff_pct": -9.77, "wells_after_fixes_bbl": 24831.2, "after_diff_pct": 0.62}, {"date": "2026-08-13", "meter_bbl": 24267.2, "wells_raw_bbl": 24257.5, "raw_diff_pct": -0.04, "wells_after_fixes_bbl": 24257.5, "after_diff_pct": -0.04}, {"date": "2026-08-14", "meter_bbl": 26188.1, "wells_raw_bbl": 26158.0, "raw_diff_pct": -0.11, "wells_after_fixes_bbl": 26254.7, "after_diff_pct": 0.25}, {"date": "2026-08-15", "meter_bbl": 25806.5, "wells_raw_bbl": 23271.0, "raw_diff_pct": -9.83, "wells_after_fixes_bbl": 25794.0, "after_diff_pct": -0.05}, {"date": "2026-08-16", "meter_bbl": 25897.9, "wells_raw_bbl": 25860.7, "raw_diff_pct": -0.14, "wells_after_fixes_bbl": 25860.7, "after_diff_pct": -0.14}, {"date": "2026-08-17", "meter_bbl": 25351.5, "wells_raw_bbl": 25244.2, "raw_diff_pct": -0.42, "wells_after_fixes_bbl": 25244.2, "after_diff_pct": -0.42}, {"date": "2026-08-18", "meter_bbl": 24230.1, "wells_raw_bbl": 23289.7, "raw_diff_pct": -3.88, "wells_after_fixes_bbl": 24215.7, "after_diff_pct": -0.06}, {"date": "2026-08-19", "meter_bbl": 26030.2, "wells_raw_bbl": 24070.3, "raw_diff_pct": -7.53, "wells_after_fixes_bbl": 25961.5, "after_diff_pct": -0.26}, {"date": "2026-08-20", "meter_bbl": 25723.8, "wells_raw_bbl": 28328.7, "raw_diff_pct": 10.13, "wells_after_fixes_bbl": 25835.8, "after_diff_pct": 0.44}, {"date": "2026-08-21", "meter_bbl": 25908.8, "wells_raw_bbl": 27463.5, "raw_diff_pct": 6.0, "wells_after_fixes_bbl": 25889.7, "after_diff_pct": -0.07}, {"date": "2026-08-22", "meter_bbl": 25720.1, "wells_raw_bbl": 25724.7, "raw_diff_pct": 0.02, "wells_after_fixes_bbl": 25724.7, "after_diff_pct": 0.02}, {"date": "2026-08-23", "meter_bbl": 25740.0, "wells_raw_bbl": 23743.8, "raw_diff_pct": -7.76, "wells_after_fixes_bbl": 25655.5, "after_diff_pct": -0.33}, {"date": "2026-08-24", "meter_bbl": 25531.7, "wells_raw_bbl": 25573.2, "raw_diff_pct": 0.16, "wells_after_fixes_bbl": 25573.2, "after_diff_pct": 0.16}, {"date": "2026-08-25", "meter_bbl": 23405.3, "wells_raw_bbl": 23422.3, "raw_diff_pct": 0.07, "wells_after_fixes_bbl": 23422.3, "after_diff_pct": 0.07}, {"date": "2026-08-26", "meter_bbl": 25801.2, "wells_raw_bbl": 25719.5, "raw_diff_pct": -0.32, "wells_after_fixes_bbl": 25719.5, "after_diff_pct": -0.32}, {"date": "2026-08-27", "meter_bbl": 25608.6, "wells_raw_bbl": 25615.7, "raw_diff_pct": 0.03, "wells_after_fixes_bbl": 25615.7, "after_diff_pct": 0.03}, {"date": "2026-08-28", "meter_bbl": 25538.0, "wells_raw_bbl": 23738.1, "raw_diff_pct": -7.05, "wells_after_fixes_bbl": 25648.6, "after_diff_pct": 0.43}, {"date": "2026-08-29", "meter_bbl": 25806.7, "wells_raw_bbl": 21720.2, "raw_diff_pct": -15.84, "wells_after_fixes_bbl": 25468.3, "after_diff_pct": -1.31}, {"date": "2026-08-30", "meter_bbl": 25052.6, "wells_raw_bbl": 25133.9, "raw_diff_pct": 0.32, "wells_after_fixes_bbl": 25133.9, "after_diff_pct": 0.32}, {"date": "2026-08-31", "meter_bbl": 24628.0, "wells_raw_bbl": 22235.6, "raw_diff_pct": -9.71, "wells_after_fixes_bbl": 24620.3, "after_diff_pct": -0.03}, {"date": "2026-09-01", "meter_bbl": 25282.5, "wells_raw_bbl": 25256.2, "raw_diff_pct": -0.1, "wells_after_fixes_bbl": 25256.2, "after_diff_pct": -0.1}, {"date": "2026-09-02", "meter_bbl": 25376.4, "wells_raw_bbl": 23078.7, "raw_diff_pct": -9.05, "wells_after_fixes_bbl": 25356.0, "after_diff_pct": -0.08}, {"date": "2026-09-03", "meter_bbl": 21909.3, "wells_raw_bbl": 21921.8, "raw_diff_pct": 0.06, "wells_after_fixes_bbl": 21921.8, "after_diff_pct": 0.06}, {"date": "2026-09-04", "meter_bbl": 25277.2, "wells_raw_bbl": 25966.4, "raw_diff_pct": 2.73, "wells_after_fixes_bbl": 25291.2, "after_diff_pct": 0.06}, {"date": "2026-09-05", "meter_bbl": 24723.7, "wells_raw_bbl": 23196.1, "raw_diff_pct": -6.18, "wells_after_fixes_bbl": 24703.8, "after_diff_pct": -0.08}, {"date": "2026-09-06", "meter_bbl": 25053.7, "wells_raw_bbl": 21106.7, "raw_diff_pct": -15.75, "wells_after_fixes_bbl": 25138.1, "after_diff_pct": 0.34}, {"date": "2026-09-07", "meter_bbl": 23627.1, "wells_raw_bbl": 23475.7, "raw_diff_pct": -0.64, "wells_after_fixes_bbl": 23475.7, "after_diff_pct": -0.64}, {"date": "2026-09-08", "meter_bbl": 25110.6, "wells_raw_bbl": 26973.2, "raw_diff_pct": 7.42, "wells_after_fixes_bbl": 25127.2, "after_diff_pct": 0.07}, {"date": "2026-09-09", "meter_bbl": 24406.7, "wells_raw_bbl": 24363.1, "raw_diff_pct": -0.18, "wells_after_fixes_bbl": 24363.1, "after_diff_pct": -0.18}, {"date": "2026-09-10", "meter_bbl": 22614.0, "wells_raw_bbl": 21178.8, "raw_diff_pct": -6.35, "wells_after_fixes_bbl": 22672.6, "after_diff_pct": 0.26}, {"date": "2026-09-11", "meter_bbl": 24739.8, "wells_raw_bbl": 22158.2, "raw_diff_pct": -10.44, "wells_after_fixes_bbl": 24765.4, "after_diff_pct": 0.1}, {"date": "2026-09-12", "meter_bbl": 24924.3, "wells_raw_bbl": 24958.4, "raw_diff_pct": 0.14, "wells_after_fixes_bbl": 24958.4, "after_diff_pct": 0.14}, {"date": "2026-09-13", "meter_bbl": 24666.7, "wells_raw_bbl": 24781.9, "raw_diff_pct": 0.47, "wells_after_fixes_bbl": 24781.9, "after_diff_pct": 0.47}, {"date": "2026-09-14", "meter_bbl": 24957.5, "wells_raw_bbl": 22653.7, "raw_diff_pct": -9.23, "wells_after_fixes_bbl": 25056.6, "after_diff_pct": 0.4}, {"date": "2026-09-15", "meter_bbl": 22812.7, "wells_raw_bbl": 22840.6, "raw_diff_pct": 0.12, "wells_after_fixes_bbl": 22840.6, "after_diff_pct": 0.12}, {"date": "2026-09-16", "meter_bbl": 24803.7, "wells_raw_bbl": 24716.8, "raw_diff_pct": -0.35, "wells_after_fixes_bbl": 24716.8, "after_diff_pct": -0.35}, {"date": "2026-09-17", "meter_bbl": 24569.0, "wells_raw_bbl": 22139.0, "raw_diff_pct": -9.89, "wells_after_fixes_bbl": 24732.6, "after_diff_pct": 0.67}, {"date": "2026-09-18", "meter_bbl": 24522.4, "wells_raw_bbl": 20220.3, "raw_diff_pct": -17.54, "wells_after_fixes_bbl": 24534.7, "after_diff_pct": 0.05}, {"date": "2026-09-19", "meter_bbl": 24617.7, "wells_raw_bbl": 24684.2, "raw_diff_pct": 0.27, "wells_after_fixes_bbl": 24684.2, "after_diff_pct": 0.27}, {"date": "2026-09-20", "meter_bbl": 24003.6, "wells_raw_bbl": 28065.9, "raw_diff_pct": 16.92, "wells_after_fixes_bbl": 23900.2, "after_diff_pct": -0.43}, {"date": "2026-09-21", "meter_bbl": 24538.3, "wells_raw_bbl": 24602.5, "raw_diff_pct": 0.26, "wells_after_fixes_bbl": 24602.5, "after_diff_pct": 0.26}, {"date": "2026-09-22", "meter_bbl": 24467.3, "wells_raw_bbl": 24426.1, "raw_diff_pct": -0.17, "wells_after_fixes_bbl": 24426.1, "after_diff_pct": -0.17}, {"date": "2026-09-23", "meter_bbl": 23971.1, "wells_raw_bbl": 23901.5, "raw_diff_pct": -0.29, "wells_after_fixes_bbl": 23901.5, "after_diff_pct": -0.29}, {"date": "2026-09-24", "meter_bbl": 24351.9, "wells_raw_bbl": 24362.6, "raw_diff_pct": 0.04, "wells_after_fixes_bbl": 24362.6, "after_diff_pct": 0.04}, {"date": "2026-09-25", "meter_bbl": 24345.3, "wells_raw_bbl": 32274.0, "raw_diff_pct": 32.57, "wells_after_fixes_bbl": 24434.1, "after_diff_pct": 0.36}, {"date": "2026-09-26", "meter_bbl": 22821.7, "wells_raw_bbl": 20679.0, "raw_diff_pct": -9.39, "wells_after_fixes_bbl": 22945.0, "after_diff_pct": 0.54}, {"date": "2026-09-27", "meter_bbl": 23051.4, "wells_raw_bbl": 10362.9, "raw_diff_pct": -55.04, "wells_after_fixes_bbl": 23077.0, "after_diff_pct": 0.11}, {"date": "2026-09-28", "meter_bbl": 23915.0, "wells_raw_bbl": 21917.9, "raw_diff_pct": -8.35, "wells_after_fixes_bbl": 24005.8, "after_diff_pct": 0.38}], "types": [{"id": "missing_value", "label": "Missing value", "rule": "Empty oil or WHP cell.", "n": 40, "action": "reject", "wells": 12, "fix": "Fill with the well's trend estimate (mark as estimated) and ask the source to re-send", "ex": "WELL-02 · 2026-06-01 · whp_psi = "}, {"id": "sentinel_value", "label": "Placeholder code", "rule": "-999, 9999 or -9999 typed instead of a reading.", "n": 25, "action": "reject", "wells": 10, "fix": "Replace with the well's trend estimate and ask the source to re-send", "ex": "WELL-06 · 2026-06-04 · oil_bbl = -999.0"}, {"id": "unit_error", "label": "Wrong unit", "rule": "Oil in m3 or WHP in bar: about 0.16x or 0.07x the well's own trend.", "n": 20, "action": "reject", "wells": 10, "fix": "Divide by 0.0689476 to convert bar back to psi", "ex": "WELL-09 · 2026-06-11 · whp_psi = 42.2"}, {"id": "date_gap", "label": "Missing day", "rule": "A well has no row for a day inside the period.", "n": 15, "action": "info", "wells": 10, "fix": "Request the missing day; until then estimate oil from the trend", "ex": "WELL-06 · 2026-06-01 · row = "}, {"id": "duplicate_row", "label": "Duplicate row", "rule": "The same well and day appear twice.", "n": 15, "action": "reject", "wells": 9, "fix": "Drop the repeated row, keep the first", "ex": "WELL-06 · 2026-06-03 · row = "}, {"id": "liquid_mismatch", "label": "Liquid ≠ oil + water", "rule": "Liquid differs from oil + water by more than 0.15 bbl.", "n": 14, "action": "reject", "wells": 8, "fix": "Set liquid to oil + water, confirm which of the three is wrong", "ex": "WELL-09 · 2026-06-01 · liquid_bbl = 4466.0"}, {"id": "misallocation", "label": "Possible mis-allocation", "rule": "Oil more than 12% above the well's own trend.", "n": 12, "action": "warn", "wells": 8, "fix": "Use liquid minus water when it agrees with the trend, otherwise the trend estimate", "ex": "WELL-05 · 2026-06-02 · oil_bbl = 2678.6"}, {"id": "negative_rate", "label": "Negative rate", "rule": "A rate below zero, usually a sign error.", "n": 10, "action": "reject", "wells": 7, "fix": "Probably a sign error: use the absolute value, confirm with the source", "ex": "WELL-01 · 2026-06-04 · water_bbl = -1082.1"}, {"id": "uptime_over_24", "label": "Uptime over 24 h", "rule": "More than 24 hours of production in one day.", "n": 10, "action": "reject", "wells": 9, "fix": "Cap at 24 h and confirm the real uptime with SCADA", "ex": "WELL-01 · 2026-06-19 · uptime_hrs = 27.9"}], "heat": {"wells": ["WELL-01", "WELL-02", "WELL-03", "WELL-04", "WELL-05", "WELL-06", "WELL-07", "WELL-08", "WELL-09", "WELL-10", "WELL-11", "WELL-12"], "types": ["missing_value", "sentinel_value", "unit_error", "date_gap", "liquid_mismatch", "duplicate_row", "misallocation", "negative_rate", "uptime_over_24"], "m": [[7, 1, 3, 1, 0, 0, 0, 1, 1], [4, 1, 1, 2, 2, 1, 0, 2, 0], [3, 0, 1, 1, 0, 1, 2, 1, 1], [1, 2, 1, 3, 0, 2, 1, 0, 1], [5, 2, 2, 1, 1, 3, 2, 2, 0], [2, 3, 2, 2, 2, 2, 0, 0, 1], [4, 3, 0, 1, 0, 2, 3, 1, 1], [3, 4, 0, 0, 1, 0, 1, 0, 1], [2, 2, 4, 1, 2, 1, 1, 1, 1], [7, 0, 1, 0, 4, 1, 1, 0, 2], [1, 1, 1, 2, 1, 2, 0, 0, 1], [1, 6, 4, 1, 1, 0, 1, 2, 0]]}, "queue": [{"id": "F0025", "well": "WELL-12", "date": "2026-06-16", "type": "sentinel_value", "label": "Placeholder code", "col": "oil_bbl", "value": -9999.0, "expected": 3044.6, "fix": "Replace with the well's trend estimate and ask the source to re-send", "fixv": 3044.6, "rule": "oil_bbl holds a placeholder code (-999 / 9999 / -9999), not a real reading", "impact": 3044.6, "action": "reject"}, {"id": "F0013", "well": "WELL-03", "date": "2026-06-05", "type": "date_gap", "label": "Missing day", "col": "row", "value": null, "expected": 2985.4, "fix": "Request the missing day; until then estimate oil from the trend", "fixv": 2985.4, "rule": "No row for this well on this day", "impact": 2985.4, "action": "info"}, {"id": "F0006", "well": "WELL-03", "date": "2026-06-02", "type": "missing_value", "label": "Missing value", "col": "oil_bbl", "value": null, "expected": 2983.9, "fix": "Fill with the well's trend estimate (mark as estimated) and ask the source to re-send", "fixv": 2983.9, "rule": "oil_bbl is empty", "impact": 2983.9, "action": "reject"}, {"id": "F0061", "well": "WELL-12", "date": "2026-07-13", "type": "unit_error", "label": "Wrong unit", "col": "oil_bbl", "value": 465.9, "expected": 2910.2, "fix": "Divide by 0.158987 to convert m3 back to bbl", "fixv": 2930.4, "rule": "Oil is about 0.16x the well's own trend: looks like m3 instead of bbl", "impact": 2444.3, "action": "reject"}, {"id": "F0017", "well": "WELL-12", "date": "2026-06-10", "type": "misallocation", "label": "Possible mis-allocation", "col": "oil_bbl", "value": 4490.8, "expected": 3044.2, "fix": "Use liquid minus water when it agrees with the trend, otherwise the trend estimate", "fixv": 3135.2, "rule": "Oil is more than 12% above the well's own trend", "impact": 1446.6, "action": "warn"}], "load": {"rows_in": 1440, "loaded": 1312, "rejected": 128, "warned": 12, "gaps": 15, "by": [["missing_value", 39], ["sentinel_value", 25], ["unit_error", 18], ["duplicate_row", 15], ["liquid_mismatch", 13], ["negative_rate", 9], ["uptime_over_24", 9]]}, "steps": [["Collect the daily file and well tests", 0.5, 0.0], ["Check every well by eye", 1.5, 0.25], ["Chase the field for corrections", 0.75, 0.25], ["Load into the database / Excel", 0.5, 0.0], ["Build the morning report", 0.75, 0.0]], "score": {"planted": 162, "found": 161, "fp": 0, "seeds": 30, "seeds_mean": 99.6, "seeds_min": 98.1, "seeds_fp": 4, "seeds_rows": 43200}, "breaks": [59, 1], "tol": 1.5, "nfind": 161, "find": [["2026-06-01", "WELL-02", "missing_value", "whp_psi", null, 667.5], ["2026-06-01", "WELL-06", "date_gap", "row", null, 1785.2], ["2026-06-01", "WELL-09", "liquid_mismatch", "liquid_bbl", 4466.0, 3873.8], ["2026-06-01", "WELL-10", "missing_value", "whp_psi", null, 664.0], ["2026-06-01", "WELL-11", "missing_value", "whp_psi", null, 390.6], ["2026-06-02", "WELL-03", "missing_value", "oil_bbl", null, 2983.9], ["2026-06-02", "WELL-05", "misallocation", "oil_bbl", 2678.6, 2033.3], ["2026-06-03", "WELL-06", "duplicate_row", "row", null, null], ["2026-06-04", "WELL-01", "negative_rate", "water_bbl", -1082.1, null], ["2026-06-04", "WELL-06", "sentinel_value", "oil_bbl", -999.0, 828.8], ["2026-06-04", "WELL-10", "liquid_mismatch", "liquid_bbl", 1502.4, 1326.7], ["2026-06-04", "WELL-10", "missing_value", "whp_psi", null, 661.7], ["2026-06-05", "WELL-03", "date_gap", "row", null, 2985.4], ["2026-06-07", "WELL-07", "missing_value", "whp_psi", null, 787.7], ["2026-06-07", "WELL-07", "sentinel_value", "gas_mscf", -9999.0, null], ["2026-06-08", "WELL-09", "misallocation", "oil_bbl", 4167.9, 2867.8], ["2026-06-10", "WELL-12", "misallocation", "oil_bbl", 4490.8, 3044.2], ["2026-06-11", "WELL-09", "unit_error", "whp_psi", 42.2, 614.6], ["2026-06-13", "WELL-01", "unit_error", "whp_psi", 60.1, 873.8], ["2026-06-14", "WELL-01", "missing_value", "whp_psi", null, 873.8], ["2026-06-14", "WELL-10", "missing_value", "whp_psi", null, 654.4], ["2026-06-15", "WELL-08", "sentinel_value", "gas_mscf", -999.0, null], ["2026-06-16", "WELL-07", "misallocation", "oil_bbl", 3577.8, 2532.9], ["2026-06-16", "WELL-10", "liquid_mismatch", "liquid_bbl", 1454.1, 1339.8], ["2026-06-16", "WELL-12", "sentinel_value", "oil_bbl", -9999.0, 3044.6], ["2026-06-17", "WELL-05", "negative_rate", "water_bbl", -242.6, null], ["2026-06-19", "WELL-01", "uptime_over_24", "uptime_hrs", 27.9, 24.0], ["2026-06-24", "WELL-05", "unit_error", "oil_bbl", 324.4, 2024.7], ["2026-06-25", "WELL-02", "liquid_mismatch", "liquid_bbl", 2274.2, 2084.9], ["2026-06-25", "WELL-04", "sentinel_value", "whp_psi", -9999.0, 372.2], ["2026-06-25", "WELL-10", "missing_value", "whp_psi", null, 650.8], ["2026-06-26", "WELL-12", "sentinel_value", "oil_bbl", 9999.0, 3020.6], ["2026-06-27", "WELL-07", "missing_value", "oil_bbl", null, 2502.7], ["2026-06-27", "WELL-09", "duplicate_row", "row", null, null], ["2026-06-29", "WELL-04", "date_gap", "row", null, 2711.3], ["2026-06-30", "WELL-06", "sentinel_value", "gas_mscf", -999.0, null], ["2026-06-30", "WELL-08", "missing_value", "whp_psi", null, 251.0], ["2026-07-01", "WELL-05", "misallocation", "oil_bbl", 2857.5, 1997.0], ["2026-07-01", "WELL-07", "sentinel_value", "gas_mscf", 9999.0, null], ["2026-07-01", "WELL-09", "missing_value", "whp_psi", null, 605.1], ["2026-07-01", "WELL-10", "uptime_over_24", "uptime_hrs", 25.5, 24.0], ["2026-07-01", "WELL-11", "uptime_over_24", "uptime_hrs", 28.2, 24.0], ["2026-07-01", "WELL-12", "unit_error", "whp_psi", 45.3, 663.3], ["2026-07-03", "WELL-11", "date_gap", "row", null, 2162.8], ["2026-07-03", "WELL-12", "negative_rate", "water_bbl", -275.8, null], ["2026-07-04", "WELL-12", "sentinel_value", "oil_bbl", 9999.0, 2968.3], ["2026-07-06", "WELL-01", "date_gap", "row", null, 2714.5], ["2026-07-06", "WELL-02", "negative_rate", "water_bbl", -656.7, null], ["2026-07-06", "WELL-08", "missing_value", "whp_psi", null, 249.7], ["2026-07-07", "WELL-03", "uptime_over_24", "uptime_hrs", 25.8, 24.0], ["2026-07-07", "WELL-09", "liquid_mismatch", "liquid_bbl", 4573.2, 3724.2], ["2026-07-08", "WELL-02", "sentinel_value", "gas_mscf", 9999.0, null], ["2026-07-08", "WELL-02", "unit_error", "oil_bbl", 447.2, 2820.2], ["2026-07-08", "WELL-05", "missing_value", "oil_bbl", null, 1998.9], ["2026-07-09", "WELL-08", "sentinel_value", "oil_bbl", 9999.0, 1746.5], ["2026-07-10", "WELL-04", "unit_error", "whp_psi", 25.1, 363.7], ["2026-07-10", "WELL-12", "missing_value", "oil_bbl", null, 2937.5], ["2026-07-11", "WELL-01", "missing_value", "oil_bbl", null, 2702.6], ["2026-07-13", "WELL-05", "duplicate_row", "row", null, null], ["2026-07-13", "WELL-11", "unit_error", "whp_psi", 25.4, 371.5], ["2026-07-13", "WELL-12", "unit_error", "oil_bbl", 465.9, 2910.2], ["2026-07-15", "WELL-05", "missing_value", "oil_bbl", null, 1980.2], ["2026-07-17", "WELL-12", "unit_error", "oil_bbl", 451.8, 2890.1], ["2026-07-18", "WELL-09", "uptime_over_24", "uptime_hrs", 25.4, 24.0], ["2026-07-19", "WELL-03", "missing_value", "whp_psi", null, 757.8], ["2026-07-19", "WELL-05", "missing_value", "whp_psi", null, 846.6], ["2026-07-20", "WELL-02", "date_gap", "row", null, 2768.5], ["2026-07-21", "WELL-06", "unit_error", "whp_psi", 26.2, 380.3], ["2026-07-22", "WELL-02", "liquid_mismatch", "liquid_bbl", 4044.7, 3448.1], ["2026-07-22", "WELL-04", "missing_value", "oil_bbl", null, 2620.6], ["2026-07-23", "WELL-07", "missing_value", "whp_psi", null, 756.4], ["2026-07-23", "WELL-10", "duplicate_row", "row", null, null], ["2026-07-24", "WELL-01", "missing_value", "oil_bbl", null, 2646.2], ["2026-07-24", "WELL-02", "duplicate_row", "row", null, null], ["2026-07-24", "WELL-05", "liquid_mismatch", "liquid_bbl", 2766.8, 2359.7], ["2026-07-24", "WELL-06", "liquid_mismatch", "liquid_bbl", 2342.7, 1895.1], ["2026-07-25", "WELL-05", "sentinel_value", "whp_psi", -999.0, 839.2], ["2026-07-25", "WELL-07", "duplicate_row", "row", null, null], ["2026-07-25", "WELL-09", "negative_rate", "water_bbl", -1067.4, null], ["2026-07-26", "WELL-03", "duplicate_row", "row", null, null], ["2026-07-27", "WELL-05", "date_gap", "row", null, 1967.2], ["2026-07-28", "WELL-10", "missing_value", "oil_bbl", null, 969.0], ["2026-08-01", "WELL-06", "unit_error", "oil_bbl", 253.1, 1595.5], ["2026-08-01", "WELL-07", "duplicate_row", "row", null, null], ["2026-08-01", "WELL-10", "unit_error", "whp_psi", 43.2, 630.0], ["2026-08-02", "WELL-03", "misallocation", "oil_bbl", 3837.7, 2695.8], ["2026-08-02", "WELL-07", "date_gap", "row", null, 2334.9], ["2026-08-02", "WELL-08", "misallocation", "oil_bbl", 2419.9, 1676.7], ["2026-08-03", "WELL-01", "missing_value", "whp_psi", null, 840.0], ["2026-08-05", "WELL-01", "unit_error", "whp_psi", 57.9, 836.2], ["2026-08-06", "WELL-02", "missing_value", "oil_bbl", null, 2721.6], ["2026-08-07", "WELL-03", "misallocation", "oil_bbl", 3440.4, 2689.9], ["2026-08-08", "WELL-06", "liquid_mismatch", "liquid_bbl", 2058.5, 1815.7], ["2026-08-08", "WELL-12", "sentinel_value", "oil_bbl", -9999.0, 2833.4], ["2026-08-10", "WELL-04", "uptime_over_24", "uptime_hrs", 28.7, 24.0], ["2026-08-10", "WELL-11", "date_gap", "row", null, 1998.2], ["2026-08-11", "WELL-09", "sentinel_value", "whp_psi", -9999.0, 585.9], ["2026-08-11", "WELL-11", "duplicate_row", "row", null, null], ["2026-08-12", "WELL-04", "date_gap", "row", null, 2562.4], ["2026-08-13", "WELL-10", "uptime_over_24", "uptime_hrs", 29.1, 24.0], ["2026-08-14", "WELL-07", "misallocation", "oil_bbl", 3082.5, 2305.3], ["2026-08-14", "WELL-11", "duplicate_row", "row", null, null], ["2026-08-14", "WELL-12", "date_gap", "row", null, 2824.7], ["2026-08-15", "WELL-01", "missing_value", "oil_bbl", null, 2523.0], ["2026-08-15", "WELL-03", "negative_rate", "water_bbl", -486.8, null], ["2026-08-15", "WELL-08", "liquid_mismatch", "liquid_bbl", 2403.1, 2212.4], ["2026-08-17", "WELL-12", "liquid_mismatch", "liquid_bbl", 3896.3, 3143.3], ["2026-08-18", "WELL-10", "missing_value", "oil_bbl", null, 926.0], ["2026-08-19", "WELL-02", "missing_value", "oil_bbl", null, 2703.0], ["2026-08-19", "WELL-04", "misallocation", "oil_bbl", 3370.1, 2543.3], ["2026-08-20", "WELL-04", "duplicate_row", "row", null, null], ["2026-08-20", "WELL-06", "sentinel_value", "gas_mscf", -999.0, null], ["2026-08-21", "WELL-06", "duplicate_row", "row", null, null], ["2026-08-23", "WELL-05", "missing_value", "oil_bbl", null, 1911.7], ["2026-08-23", "WELL-12", "sentinel_value", "whp_psi", 9999.0, 633.2], ["2026-08-24", "WELL-06", "uptime_over_24", "uptime_hrs", 27.0, 24.0], ["2026-08-25", "WELL-09", "sentinel_value", "whp_psi", -9999.0, 577.2], ["2026-08-26", "WELL-05", "negative_rate", "water_bbl", -440.1, null], ["2026-08-26", "WELL-05", "sentinel_value", "gas_mscf", 9999.0, null], ["2026-08-28", "WELL-05", "missing_value", "oil_bbl", null, 1910.5], ["2026-08-28", "WELL-11", "liquid_mismatch", "liquid_bbl", 2579.1, 2310.2], ["2026-08-29", "WELL-11", "sentinel_value", "whp_psi", -9999.0, 364.0], ["2026-08-29", "WELL-12", "sentinel_value", "oil_bbl", -999.0, 2749.1], ["2026-08-31", "WELL-09", "missing_value", "oil_bbl", null, 2384.7], ["2026-09-01", "WELL-01", "sentinel_value", "gas_mscf", 9999.0, null], ["2026-09-01", "WELL-02", "negative_rate", "water_bbl", -792.2, null], ["2026-09-02", "WELL-12", "unit_error", "oil_bbl", 430.5, 2741.1], ["2026-09-04", "WELL-07", "misallocation", "oil_bbl", 2900.0, 2227.7], ["2026-09-05", "WELL-06", "missing_value", "oil_bbl", null, 1507.7], ["2026-09-06", "WELL-01", "unit_error", "oil_bbl", 384.7, 2440.4], ["2026-09-06", "WELL-07", "missing_value", "whp_psi", null, 728.3], ["2026-09-06", "WELL-07", "uptime_over_24", "uptime_hrs", 26.1, 24.0], ["2026-09-06", "WELL-09", "unit_error", "oil_bbl", 377.4, 2308.2], ["2026-09-08", "WELL-01", "missing_value", "whp_psi", null, 813.8], ["2026-09-08", "WELL-05", "duplicate_row", "row", null, null], ["2026-09-10", "WELL-06", "date_gap", "row", null, 1493.8], ["2026-09-11", "WELL-02", "missing_value", "oil_bbl", null, 2607.2], ["2026-09-11", "WELL-04", "sentinel_value", "whp_psi", -9999.0, 347.3], ["2026-09-11", "WELL-08", "uptime_over_24", "uptime_hrs", 28.4, 24.0], ["2026-09-14", "WELL-01", "missing_value", "oil_bbl", null, 2402.9], ["2026-09-17", "WELL-02", "date_gap", "row", null, 2593.6], ["2026-09-17", "WELL-07", "negative_rate", "water_bbl", -1336.4, null], ["2026-09-18", "WELL-04", "date_gap", "row", null, 2407.4], ["2026-09-18", "WELL-09", "unit_error", "oil_bbl", 360.5, 2266.4], ["2026-09-18", "WELL-10", "liquid_mismatch", "liquid_bbl", 1482.8, 1208.1], ["2026-09-20", "WELL-04", "duplicate_row", "row", null, null], ["2026-09-20", "WELL-05", "duplicate_row", "row", null, null], ["2026-09-20", "WELL-10", "missing_value", "whp_psi", null, 605.5], ["2026-09-20", "WELL-12", "negative_rate", "water_bbl", -419.6, null], ["2026-09-21", "WELL-08", "sentinel_value", "whp_psi", -9999.0, 231.3], ["2026-09-21", "WELL-09", "unit_error", "whp_psi", 39.0, 566.1], ["2026-09-25", "WELL-07", "sentinel_value", "oil_bbl", 9999.0, 2159.1], ["2026-09-26", "WELL-05", "unit_error", "whp_psi", 55.1, 795.2], ["2026-09-26", "WELL-08", "missing_value", "whp_psi", null, 231.0], ["2026-09-26", "WELL-09", "date_gap", "row", null, 2266.0], ["2026-09-27", "WELL-06", "missing_value", "oil_bbl", null, 1456.3], ["2026-09-27", "WELL-08", "sentinel_value", "oil_bbl", -9999.0, 1580.1], ["2026-09-27", "WELL-10", "misallocation", "oil_bbl", 1169.4, 858.3], ["2026-09-28", "WELL-03", "missing_value", "whp_psi", null, 716.0], ["2026-09-28", "WELL-03", "unit_error", "oil_bbl", 394.7, 2453.1], ["2026-09-28", "WELL-10", "liquid_mismatch", "liquid_bbl", 810.8, 727.3]], "worst": {"date": "2026-09-27", "meter_bbl": 23051.4, "wells_raw_bbl": 10362.9, "raw_diff_pct": -55.04, "wells_after_fixes_bbl": 23077.0, "after_diff_pct": 0.11}};
+const SRCNOTE="Source: fictional oil field, synthetic data (test data). Recommendations are analyst suggestions.";
+const KIND={day:["Day","var(--steel)"],flag:["Flag","var(--brick)"],rule:["QC rule","var(--teal)"],well:["Well","var(--violet)"],cell:["Well × rule","var(--teal)"],reason:["Reject reason","var(--brick)"],step:["Report step","var(--amber)"],flow:["Target setup","var(--teal)"],kpi:["Key figure","var(--steel)"],ov:["Overview","var(--muted)"],play:["Roadmap step","var(--brick)"]};
+const B=v=>v==null?"—":Math.round(v).toLocaleString("en-US");
+const B1=v=>v==null?"—":(+v).toLocaleString("en-US",{maximumFractionDigits:1});
+const TL=Object.fromEntries(S.types.map(t=>[t.id,t]));
+const ACOL={reject:"var(--brick)",warn:"var(--amber)",info:"var(--muted)"};
+const PILL={reject:["p-hold","Reject"],warn:["p-verify","Load + warn"],info:["p-done","Request day"]};
+const hb=S.steps.reduce((a,s)=>a+s[1],0),ha=S.steps.reduce((a,s)=>a+s[2],0);
+const D={};
+const findTable=rows=>rows.length?`<div class="tbl"><table><tr><th>Date</th><th>Well</th><th>Rule</th><th>Column</th><th>Value</th><th>Expected</th></tr>${rows.map(r=>`<tr class="go" data-go="t-${r[2]}"><td>${r[0]}</td><td>${r[1]}</td><td>${esc(TL[r[2]].label)}</td><td>${r[3]}</td><td class="num">${B1(r[4])}</td><td class="num">${B1(r[5])}</td></tr>`).join("")}</table></div>`:"<p>No findings.</p>";
+
+/* days */
+S.recon.forEach((r,i)=>{const fs=S.find.filter(x=>x[0]===r.date);const br=Math.abs(r.raw_diff_pct)>S.tol;
+ D["d-"+i]={k:"day",t:r.date,stat:[(r.raw_diff_pct>0?"+":"")+r.raw_diff_pct+"%",`raw wells vs meter · after fixes ${(r.after_diff_pct>0?"+":"")+r.after_diff_pct}%`],
+ html:`<div class="sec"><h4>The same day, three numbers</h4><div class="tbl"><table><tr><td>Facility meter</td><td class="num">${B(r.meter_bbl)} bbl</td></tr><tr><td>Sum of wells, raw file</td><td class="num">${B(r.wells_raw_bbl)} bbl</td></tr><tr><td>Sum of wells, after suggested fixes</td><td class="num">${B(r.wells_after_fixes_bbl)} bbl</td></tr></table></div></div><div class="sec"><h4>QC findings this day (${fs.length})</h4>${findTable(fs)}</div>`,
+ says:br?(Math.abs(r.after_diff_pct)<=S.tol?"The raw file does not match the meter. The QC findings below explain the gap: after the suggested fixes the wells agree with the meter.":"Still outside tolerance after the fixes: a missing day was estimated as if the well ran 24 h, but it was really down part of the day."):"Within the 1.5% tolerance.",
+ means:br?"Allocation and reports built from the raw file would be wrong for this day.":"Safe to use for allocation and reporting.",rel:["ov-meter"]};});
+
+/* rules */
+S.types.forEach(t=>{const ex=S.find.filter(x=>x[2]===t.id).slice(0,8);
+ D["t-"+t.id]={k:"rule",t:t.label,stat:[t.n+" found",`in ${t.wells} of 12 wells · loader action: ${PILL[t.action][1].toLowerCase()}`],says:t.rule,
+ means:{reject:"A clear data error. The row is kept aside with the reason and never mixed into the production table.",warn:"Could be an error or a real change (choke change, workover). The row is loaded and an engineer decides.",info:"There is no row to load. The source is asked to send the day; the trend gives an estimate meanwhile."}[t.action],
+ html:`<div class="sec"><h4>Suggested fix</h4><p>${esc(t.fix)}</p></div><div class="sec"><h4>Examples</h4>${findTable(ex)}</div>`,kpi:["Findings per week","False alarms marked by engineers"],rel:["ov-score"]};});
+
+/* wells & cells */
+S.heat.wells.forEach((w,i)=>{const fs=S.find.filter(x=>x[1]===w);
+ D["w-"+w]={k:"well",t:w,stat:[fs.length+" findings","in 120 days"],html:`<div class="sec"><h4>By rule</h4><div class="tbl"><table>${S.heat.types.map((t,j)=>S.heat.m[i][j]?`<tr class="go" data-go="h-${i}-${j}"><td>${esc(TL[t].label)}</td><td class="num">${S.heat.m[i][j]}</td></tr>`:"").join("")}</table></div></div>`,
+  says:"Most errors are typing and export problems, not real changes in the well.",dec:["Ask the field operator of this well to use the export template, not manual typing."]};
+ S.heat.types.forEach((t,j)=>{const rows=fs.filter(x=>x[2]===t);D[`h-${i}-${j}`]={k:"cell",t:`${w} · ${TL[t].label}`,stat:[rows.length+"",rows.length===1?"finding":"findings"],html:`<div class="sec"><h4>Readings</h4>${findTable(rows)}</div>`,rel:["w-"+w,"t-"+t]}})});
+
+/* queue */
+S.queue.forEach(q=>{D["q-"+q.id]={k:"flag",t:`${q.well} · ${q.label}`,stat:[B(q.impact)+" bbl",`at stake on ${q.date}`],says:q.rule+".",
+ html:`<div class="sec"><h4>Reading</h4><dl class="kv"><dt>Finding</dt><dd>${q.id}</dd><dt>Column</dt><dd>${q.col}</dd><dt>Value in file</dt><dd>${B1(q.value)}</dd><dt>Well’s own trend</dt><dd>${B1(q.expected)}</dd><dt>Suggested value</dt><dd>${B1(q.fixv)}</dd></dl></div>`,
+ means:q.action==="warn"?"Loaded with a warning: a real change in the well could also look like this.":q.action==="info"?"No row exists for this day; the meter check shows the gap.":"Rejected: the row is not loaded until the source confirms or re-sends it.",
+ dec:[q.fix],rel:["t-"+q.type,"w-"+q.well]};});
+
+/* load reasons */
+S.load.by.forEach(([r,n])=>{D["r-"+r]={k:"reason",t:TL[r]?TL[r].label:r,stat:[n+" rows","rejected with this as the main reason"],says:"Each rejected row is stored with every reason and the original text, so nothing disappears.",rel:["ov-load"].concat(TL[r]?["t-"+r]:[])}});
+
+/* steps */
+S.steps.forEach((s,i)=>{D["st-"+i]={k:"step",t:s[0],stat:[`${s[1]} h → ${s[2]} h`,"per day, today vs automated"],
+ says:["The file arrives by email; well tests are in another sheet.","Every well and every column is scanned by eye for odd numbers.","Calls and messages to the field to confirm suspicious readings.","Copy-paste into the database or the master Excel.","Charts and tables rebuilt for the morning meeting."][i],
+ means:["The tool reads the file from a shared folder at a fixed time.","Nine rules run on every row in seconds; only the flags need a person.","Only real exceptions are chased, with the rule and the expected value ready.","Loaded in one transaction, with a reconciliation report.","The dashboard updates itself after each load."][i]};});
+
+/* flow */
+Object.assign(D,{"fl-src":{k:"flow",t:"Daily well file",says:"The same file the field sends today. Nobody changes software on day one.",dec:["Agree one export template with fixed column names and units."]},
+"fl-rules":{k:"flow",t:"QC rules",says:"Nine explainable rules. Each flag says what fired, why, and the suggested fix.",dec:["Tune thresholds with an engineer in the pilot."]},
+"fl-sql":{k:"flow",t:"SQL Server",says:"Valid rows in the production table; rejected rows in their own table with the reasons; every load logged with file and SHA-256.",dec:["Windows login, parameterised SQL, no passwords in files."]},
+"fl-dash":{k:"flow",t:"Dashboard and morning report",says:"Rates per well, water cut, ESP data and red flags. Login required; every number shows its source and as-of date.",dec:["Same numbers for production, reservoir and finance."]}});
+
+/* kpis & overviews */
+const w=S.worst;
+Object.assign(D,{
+"k-found":{k:"kpi",t:"Planted errors found",stat:[S.score.found+" / "+S.score.planted,"99.4% on this data set"],says:`On ${S.score.seeds} more synthetic data sets: average ${S.score.seeds_mean}%, lowest ${S.score.seeds_min}%.`,means:"The one miss was a row with two errors at once; the row was still flagged under the other error.",rel:["ov-score"]},
+"k-fp":{k:"kpi",t:"False alarms",stat:[S.score.fp+"","on this data set"],says:`${S.score.seeds_fp} false alarms in ${S.score.seeds_rows.toLocaleString("en-US")} rows across ${S.score.seeds} more test sets.`,means:"Few false alarms is what makes engineers keep using a QC tool.",rel:["ov-score"]},
+"k-breaks":{k:"kpi",t:"Days failing the meter check",stat:[S.breaks[0]+" → "+S.breaks[1],"of 120 days, raw vs after fixes"],says:`Worst day ${w.date}: wells ${B(w.wells_raw_bbl)} bbl vs meter ${B(w.meter_bbl)} bbl (${w.raw_diff_pct}%).`,means:"With raw data, half of the days would give a wrong allocation.",rel:["ov-meter"]},
+"k-load":{k:"kpi",t:"Rows loaded",stat:[B(S.load.loaded)+" / "+B(S.load.rows_in),`${S.load.rejected} rejected with a reason · ${S.load.warned} loaded with a warning`],says:"Counts are read back from the database after the load. If they do not match, the whole load is cancelled.",rel:["ov-load"]},
+"k-hours":{k:"kpi",t:"Hours for the morning check",stat:[`${hb} h → ${ha} h`,"per day, analyst estimate"],says:`About ${Math.round((hb-ha)*22)} hours a month back for analysis. To be measured in a pilot.`,rel:["st-1"]},
+"ov-meter":{k:"ov",t:"Why the wells and the meter differ",says:"The meter measures the real total. The well file carries typing and export errors: missing days, placeholder codes, oil in m3, inflated allocations.",means:"Fix the well data first, then the remaining gap is real (measurement or downtime) and worth investigating.",dec:["Check the wells against the meter every day, with a 1.5% tolerance.","Investigate only the days that still break after the fixes."]},
+"ov-queue":{k:"ov",t:"How to decide",says:"Reject: a clear data error, ask the source to re-send. Load + warn: could be real (choke change, workover), an engineer confirms. Request day: no row was sent.",means:"A person decides on a few exceptions instead of reading 1,440 rows."},
+"ov-score":{k:"ov",t:"How the engine was tested",says:"162 errors of 9 kinds were planted on purpose and logged in an answer key. The engine never sees the key; its findings are compared with it afterwards.",means:"These numbers are on synthetic data. Real data has legitimate changes, so a pilot measures the score on the operator’s own correction history."},
+"ov-load":{k:"ov",t:"How the load works",says:"Structure checks, then the QC rules, then one database transaction. Rows in = loaded + rejected, read back from the database. The same file is never loaded twice.",means:"Every barrel in the production table can be traced to a file, a row and a load run."}});
+
+/* roadmap */
+const PLAY=[["Week 1","Install and map",[["pl-install","Install on a computer inside the network","No internet, no data leaves"],["pl-map","Map the file format and units","Columns, units, well names"],["pl-target","Agree the success targets","e.g. ≥ 90% found, ≤ 2 false alarms a day"]]],
+ ["Weeks 2–3","Measure on real history",[["pl-run","Run 3 months of history",`${S.types.length} rules on every row`],["pl-tune","Tune thresholds with an engineer","2 sessions of 1 hour"],["pl-score","Score against past corrections","Found / missed / false alarms"]]],
+ ["Week 4","Daily routine",[["pl-daily","Run on new days","Load + report every morning"],["pl-time","Measure the time saved",`${hb} h → ${ha} h estimate`],["pl-decide","Go / no-go report","Numbers, not opinions"]]]];
+const PT={"pl-install":["Install inside the network","Operators do not send production data outside.",["Offline install package, checked with SHA-256.","Runs on a test server or a company laptop."],["fl-sql"]],
+"pl-map":["Map the file","Every field exports differently.",["Map columns and units once.","Agree one export template for the future."],["fl-src"]],
+"pl-target":["Agree targets","Success is measured, not argued.",["Detection rate on past corrections.","False alarms per day.","Minutes per day before vs after."],["ov-score"]],
+"pl-run":["Run the history","Three months of the original files, before corrections.",["All rules on every row.","Meter check every day."],["ov-meter"]],
+"pl-tune":["Tune thresholds","Real wells have choke changes and workovers.",["Add choke and well-test dates as context.","Keep mis-allocation as a warning."],["t-misallocation"]],
+"pl-score":["Score","Past corrections are the answer key.",["Compare flags with the corrections the team made.","Review every false alarm with the engineer."],["k-found","k-fp"]],
+"pl-daily":["Daily routine","The tool must work on new days, not only history.",["Scheduled load every morning.","Report ready before the meeting."],["ov-load"]],
+"pl-time":["Time saved","The morning check is the cost being replaced.",["Team records minutes per day for a week before and a week during."],["k-hours"]],
+"pl-decide":["Go / no-go","The operator decides on evidence.",["Final report with the measured numbers.","Deployment plan if the targets are met."],[]]};
+Object.entries(PT).forEach(([id,[t,says,dec,rel]])=>D[id]={k:"play",t,says,dec,rel});
+
+/* ---------- render ---------- */
+document.getElementById("tiles").innerHTML=[["k-found",S.score.found,"/"+S.score.planted,"planted errors found by the QC engine"],["k-fp",S.score.fp,"false alarms","on 1,440 daily rows"],["k-breaks",S.breaks[0]+"→"+S.breaks[1],"days","failing the meter check, raw vs fixed"],["k-load",B(S.load.loaded),"/"+B(S.load.rows_in),"rows loaded, the rest rejected with a reason"],["k-hours",hb+"→"+ha,"h/day","for the morning check (estimate)"]].map(([id,v,u,s])=>`<button class="tk" data-open="${id}"><b>${v}<small>${u}</small></b><span>${s}</span><em>Open details →</em></button>`).join("");
+
+(()=>{const s=document.getElementById("lines"),R=S.recon,n=R.length,x0=60,x1=1080,y0=280,h=250,max=36000,sx=i=>x0+10+i/(n-1)*(x1-x0-20),sy=v=>y0-v/max*h;
+ [0,10000,20000,30000].forEach(v=>{el("line",{x1:x0,x2:x1,y1:sy(v),y2:sy(v),class:v?"gl":"ax"},s);txt(s,x0-8,sy(v)+4,v/1000+"k",{"text-anchor":"end"})});
+ R.forEach((r,i)=>{if(r.date.endsWith("-01"))txt(s,sx(i),y0+20,new Date(r.date).toLocaleString("en-US",{month:"short"}),{"text-anchor":"start",class:"lbl"})});
+ [["meter_bbl","var(--muted)",2.4,""],["wells_raw_bbl","var(--amber)",1.8,""],["wells_after_fixes_bbl","var(--steel)",1.8,"5 3"]].forEach(([k,c,w,d])=>el("path",{d:"M"+R.map((r,i)=>sx(i)+","+sy(r[k])).join("L"),fill:"none",stroke:c,"stroke-width":w,"stroke-dasharray":d,style:"pointer-events:none"},s));
+ R.forEach((r,i)=>{const g=el("g",{},s);el("rect",{x:sx(i)-4.3,y:20,width:8.6,height:270,fill:"transparent"},g);
+  if(Math.abs(r.raw_diff_pct)>S.tol)el("circle",{cx:sx(i),cy:sy(r.wells_raw_bbl),r:3.6,fill:"var(--brick)"},g);
+  act(g,`${r.date}: meter ${B(r.meter_bbl)} · wells ${B(r.wells_raw_bbl)} (${r.raw_diff_pct}%)`,"d-"+i)});})();
+
+(()=>{const box=document.getElementById("queue");box.innerHTML=S.queue.map(q=>`<button class="q" data-open="q-${q.id}"><span class="stripe" style="background:${ACOL[q.action]}"></span><span class="qid">${q.id}</span><span class="qs">${esc(q.well)} · ${esc(q.label)}<small>${q.date}</small></span><span class="qf">${esc(q.rule)}</span><span class="qa">${B(q.impact)} bbl</span><span class="pill ${PILL[q.action][0]}">${PILL[q.action][1]}</span></button>`).join("");})();
+
+(()=>{const s=document.getElementById("types"),x0=190,w=360,max=Math.max(...S.types.map(t=>t.n)),sc=v=>v/max*w;
+ S.types.forEach((t,i)=>{const y=6+i*35,g=el("g",{},s);el("rect",{x:0,y:y-4,width:600,height:33,fill:"transparent"},g);txt(g,x0-10,y+17,t.label,{"text-anchor":"end",class:"lbl"});
+  el("rect",{x:x0,y,width:sc(t.n),height:24,fill:ACOL[t.action]},g);txt(g,x0+sc(t.n)+6,y+17,t.n,{class:"val",style:"font-size:13px"});act(g,`${t.label}: ${t.n}`,"t-"+t.id)});})();
+
+(()=>{const s=document.getElementById("load"),L=S.load,x0=24,W=412,sc=v=>v/L.rows_in*W;
+ txt(s,x0,18,`${B(L.rows_in)} rows in`,{class:"lbl",style:"font-weight:600"});
+ const g1=el("g",{},s);el("rect",{x:x0,y:28,width:sc(L.loaded),height:30,fill:"var(--moss)"},g1);txt(g1,x0+8,48,`${B(L.loaded)} loaded`,{style:"fill:var(--paper);font-weight:600"});act(g1,`${L.loaded} rows loaded`,"k-load");
+ const g2=el("g",{},s);el("rect",{x:x0+sc(L.loaded),y:28,width:sc(L.rejected),height:30,fill:"var(--brick)"},g2);txt(g2,x0+W,74,`${L.rejected} rejected`,{"text-anchor":"end",class:"val"});act(g2,`${L.rejected} rows rejected`,"ov-load");
+ const mx=Math.max(...L.by.map(b=>b[1])),x1=170,w=230;
+ L.by.forEach(([r,n],i)=>{const y=96+i*31,g=el("g",{},s);el("rect",{x:0,y:y-4,width:460,height:29,fill:"transparent"},g);txt(g,x1-10,y+15,TL[r]?TL[r].label:r,{"text-anchor":"end",class:"lbl"});
+  el("rect",{x:x1,y,width:n/mx*w,height:20,fill:"var(--brick)",opacity:.8},g);txt(g,x1+n/mx*w+6,y+15,n,{class:"val"});act(g,`${r}: ${n} rows`,"r-"+r)});
+ txt(s,x0,322,`+ ${L.warned} loaded with a warning · ${L.gaps} missing days requested`,{style:"fill:var(--ink)"});})();
+
+(()=>{const s=document.getElementById("heat"),H=S.heat,x0=110,cw=106,ch=31,y0=62,mx=Math.max(...H.m.flat());const col=v=>v===0?"var(--hm0)":v<=1?"var(--hm1)":v<=2?"var(--hm2)":v<=4?"var(--hm3)":"var(--hm4)";
+ H.types.forEach((t,j)=>{const l=TL[t].label.split(" "),a=l.slice(0,Math.ceil(l.length/2)).join(" "),b=l.slice(Math.ceil(l.length/2)).join(" ");txt(s,x0+j*cw+cw/2,y0-(b?24:10),a,{"text-anchor":"middle",style:"font-size:10.5px"});if(b)txt(s,x0+j*cw+cw/2,y0-10,b,{"text-anchor":"middle",style:"font-size:10.5px"})});
+ H.wells.forEach((wl,i)=>{const y=y0+i*(ch+2);const t=txt(s,x0-10,y+20,wl,{"text-anchor":"end",class:"lbl"});act(t,wl,"w-"+wl);
+  H.types.forEach((tp,j)=>{const v=H.m[i][j],g=el("g",{},s);el("rect",{x:x0+j*cw+2,y,width:cw-4,height:ch,fill:col(v)},g);if(v)txt(g,x0+j*cw+cw/2,y+20,v,{"text-anchor":"middle",style:`fill:${v>=3?"var(--paper)":"var(--ink)"};font-weight:600;pointer-events:none`});act(g,`${wl} · ${TL[tp].label}: ${v}`,`h-${i}-${j}`)})});})();
+
+(()=>{const s=document.getElementById("hours"),x0=250,w=300,max=1.6,sc=v=>v/max*w;
+ [0,.5,1,1.5].forEach(v=>{el("line",{x1:x0+sc(v),x2:x0+sc(v),y1:4,y2:256,class:v?"gl":"ax"},s);txt(s,x0+sc(v),272,v+"h",{"text-anchor":"middle"})});
+ S.steps.forEach((st,i)=>{const y=8+i*50,g=el("g",{},s);el("rect",{x:0,y:y-4,width:600,height:46,fill:"transparent"},g);
+  const words=st[0].split(" ");let l1="",l2="";words.forEach(w=>{(l1+" "+w).trim().length<=32&&!l2?l1=(l1+" "+w).trim():l2=(l2+" "+w).trim()});
+  txt(g,x0-10,y+14,l1,{"text-anchor":"end",class:"lbl"});if(l2)txt(g,x0-10,y+29,l2,{"text-anchor":"end",class:"lbl"});
+  el("rect",{x:x0,y,width:sc(st[1]),height:16,fill:"var(--brick)"},g);txt(g,x0+sc(st[1])+5,y+12,st[1]+"h",{class:"val"});
+  el("rect",{x:x0,y:y+19,width:Math.max(2,sc(st[2])),height:16,fill:"var(--steel)"},g);txt(g,x0+Math.max(2,sc(st[2]))+5,y+31,st[2]+"h",{class:"val"});
+  act(g,`${st[0]}: ${st[1]}h → ${st[2]}h`,"st-"+i)});
+ txt(s,x0,292,`Total: ${hb} hours a day → ${ha} hours`,{style:"fill:var(--ink);font-weight:600"});})();
+
+(()=>{const s=document.getElementById("flow");const box=(x,y,w,h,t1,t2,id,col)=>{const g=el("g",{},s);el("rect",{x,y,width:w,height:h,rx:6,fill:"var(--sheet)",stroke:col,"stroke-width":2},g);txt(g,x+w/2,y+h/2-(t2?3:-4),t1,{"text-anchor":"middle",class:"lbl",style:"font-weight:600"});if(t2)txt(g,x+w/2,y+h/2+13,t2,{"text-anchor":"middle",style:"font-size:10px"});act(g,t1,id);return g};
+ const arr=(x1,y1,x2,y2)=>{el("line",{x1,y1,x2,y2,stroke:"var(--muted)","stroke-width":1.5},s);el("path",{d:`M${x2},${y2} l-7,-4 l0,8 z`,fill:"var(--muted)",transform:`rotate(${Math.atan2(y2-y1,x2-x1)*180/Math.PI} ${x2} ${y2})`},s)};
+ box(4,120,120,60,"Daily well file","CSV / Excel","fl-src","var(--violet)");arr(124,150,166,150);
+ box(168,120,112,60,"QC rules","9 checks","fl-rules","var(--teal)");arr(280,140,318,96);arr(280,160,318,204);
+ box(320,60,132,72,"SQL Server","loaded + rejected","fl-sql","var(--moss)");box(320,172,132,72,"Dashboard","morning report","fl-dash","var(--steel)");
+ arr(386,132,386,170);})();
+
+(()=>{const box=document.getElementById("play");let k=0;PLAY.forEach(([h,sub,steps])=>{const c=document.createElement("div");c.className="pcol";c.innerHTML=`<h3>${h}</h3><p>${sub}</p>`;
+ steps.forEach(([id,t,m])=>{k++;const b=document.createElement("button");b.className="step";b.innerHTML=`<b>${k}</b><span class="st">${esc(t)}<small>${esc(m)}</small></span>`;b.onclick=()=>open(id);c.appendChild(b)});box.appendChild(c)});})();
+</script>
+
+</body>
+</html>
