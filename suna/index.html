@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Suna — تقارير الفحص الهندسي (NDT) أسرع وأدق وجاهزة للتوقيع. ديمو تفاعلي.">
+<meta property="og:title" content="Suna — تقارير الفحص الهندسي">
+<meta property="og:description" content="اكتب القياسات، وSuna يحسب ويحكم ويصيغ التقرير الرسمي باللغتين بنفس اللحظة.">
+<meta property="og:image" content="https://yousif99u1234-hue.github.io/yousif-ahmed/suna/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23FF7A00'/%3E%3Cpath d='M42 20.5c-2.6-2.6-6.2-4-10.3-4-6.3 0-10.7 3.6-10.7 8.6 0 11.4 22 6.4 22 17.4 0 4.8-4.4 8.5-10.9 8.5-4.6 0-8.6-1.7-11.3-4.6' fill='none' stroke='%23fff' stroke-width='5.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>Suna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Suna — Apple-like white & orange. Layout: frosted nav; glass cards float over a line-art oil & gas scene with mouse parallax. */
+:root{
+  --bg:#FBFBFD; --glass:rgba(255,255,255,.74); --surface:#FFFFFF; --surface-2:#F5F5F7; --ink:#1D1D1F; --muted:#6E6E73; --line:rgba(0,0,0,.08);
+  --accent:#FF7A00; --accent-2:#FFA14A; --accent-ink:#FFFFFF; --accent-soft:#FFF1E5;
+  --ok:#248A3D; --ok-soft:#E6F5EA; --warn:#A15C07; --warn-soft:#FDF3D9; --bad:#D70015; --bad-soft:#FFE6E9;
+  --hazard:#FF7A00;
+  --f-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Arabic","IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+  --f-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Arabic","IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+  --f-mono:"SF Mono","IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --shadow:0 1px 1px rgba(0,0,0,.03),0 8px 30px -12px rgba(60,30,0,.18);
+  --ease:cubic-bezier(.22,1,.36,1);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:linear-gradient(180deg,#FFFFFF 0%,#FFF8F1 55%,#FFEFE0 100%) fixed;background-color:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4{text-wrap:balance;margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.ltr{direction:ltr;unicode-bidi:isolate}
+button{font:inherit}
+:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(255,122,0,.28)!important}
+
+/* Scene + cursor effects */
+.scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.scene svg{position:absolute;inset-inline:0;bottom:0;width:100%;height:78vh;min-height:520px;direction:ltr}
+.scene .layer{transition:transform 1.2s var(--ease);will-change:transform}
+.pj-beam{transform-box:view-box;transform-origin:1340px 700px;animation:pump 3.2s ease-in-out infinite}
+.pj-crank{transform-box:view-box;transform-origin:1420px 768px;animation:spin 3.2s linear infinite}
+.flame{transform-box:view-box;transform-origin:1110px 380px;animation:flick 1.6s ease-in-out infinite}
+.flow{animation:flow 2.4s linear infinite}
+@keyframes pump{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes flick{0%,100%{transform:scale(1,1)}30%{transform:scale(.92,1.12)}60%{transform:scale(1.06,.9)}}
+@keyframes flow{to{stroke-dashoffset:-56}}
+#glow{position:fixed;width:620px;height:620px;left:0;top:0;margin:-310px 0 0 -310px;border-radius:50%;background:radial-gradient(circle,rgba(255,138,40,.20) 0%,rgba(255,170,90,.08) 35%,transparent 65%);pointer-events:none;z-index:1;transition:opacity .4s;opacity:0}
+#tip{position:fixed;z-index:60;pointer-events:none;background:rgba(29,29,31,.86);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff;font-size:12px;font-weight:500;padding:6px 10px;border-radius:9px;opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s;white-space:nowrap;font-family:var(--f-body)}
+#tip.on{opacity:1;transform:none}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:rip .6s var(--ease) forwards;pointer-events:none}
+.btn:not(.primary) .ripple{background:rgba(255,122,0,.18)}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+
+/* Top bar */
+.top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1280px;margin:0 auto;padding:8px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;min-height:56px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:-.02em;white-space:nowrap;cursor:pointer}
+.brand svg{transition:transform .5s var(--ease)}
+.brand:hover svg{transform:rotate(-12deg) scale(1.06)}
+.brand small{font-weight:600;font-size:11px;letter-spacing:0;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:999px}
+.tabs{display:flex;gap:2px;flex-wrap:wrap;flex:1;justify-content:center;position:relative}
+.tab{appearance:none;border:0;background:transparent;padding:7px 15px;border-radius:999px;color:var(--muted);font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:color .2s,background .2s}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{background:var(--ink);color:#fff}
+.tab .n{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:700;display:inline-grid;place-items:center}
+.lang{appearance:none;border:0;background:var(--surface-2);color:var(--ink);padding:7px 15px;border-radius:999px;font-weight:600;font-size:13px;cursor:pointer;transition:background .2s}
+.lang:hover{background:var(--accent-soft);color:var(--accent)}
+
+main{position:relative;z-index:2;max-width:1280px;margin:0 auto;padding:30px 22px 80px}
+.view-in>*{animation:rise .6s var(--ease) both}
+.view-in>*:nth-child(2){animation-delay:.05s}.view-in>*:nth-child(3){animation-delay:.1s}.view-in>*:nth-child(4){animation-delay:.15s}
+@keyframes rise{from{opacity:.0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.eyebrow{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:4px}
+.pagehead h1{font-family:var(--f-display);font-size:36px;font-weight:700;letter-spacing:-.025em;line-height:1.1}
+.pagehead p{margin:6px 0 0;color:var(--muted);font-size:16px;max-width:60ch}
+.sample{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:6px 12px;border-radius:999px;border:1px solid var(--line)}
+.sample::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+/* Hero */
+.hero{padding:42px 0 34px;text-align:center}
+.hero .eyebrow{font-size:15px}
+.hero h1{font-family:var(--f-display);font-size:clamp(36px,6vw,66px);font-weight:700;letter-spacing:-.035em;line-height:1.06}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#FF5E00,#FF8A00 45%,#FFB347);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font-size:clamp(16px,2vw,20px);color:var(--muted);margin:16px auto 26px;max-width:46ch}
+.hero .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+.panel{background:var(--glass);backdrop-filter:saturate(180%) blur(22px);-webkit-backdrop-filter:saturate(180%) blur(22px);border:1px solid rgba(255,255,255,.7);border-radius:22px;box-shadow:var(--shadow)}
+.tilt{position:relative;transform-style:preserve-3d;transition:transform .5s var(--ease),box-shadow .5s var(--ease);will-change:transform}
+.tilt::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(255,150,60,.16),transparent 45%);opacity:0;transition:opacity .3s}
+.tilt:hover::after{opacity:1}
+.tilt:hover{box-shadow:0 1px 1px rgba(0,0,0,.03),0 22px 50px -18px rgba(255,110,0,.35)}
+.btn{position:relative;overflow:hidden;appearance:none;border:0;background:var(--surface-2);color:var(--ink);font-weight:600;font-size:14px;padding:10px 20px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:transform .35s var(--ease),background .2s,box-shadow .3s}
+.btn:hover{background:#ECECEF}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(180deg,#FF8A1F,#FF6F00);color:#fff;box-shadow:0 6px 18px -6px rgba(255,111,0,.6)}
+.btn.primary:hover{box-shadow:0 10px 26px -6px rgba(255,111,0,.7)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn.lg{font-size:16px;padding:13px 26px}
+.btn.sm{padding:6px 13px;font-size:13px}
+.btn .arr{transition:transform .3s var(--ease)}
+.btn:hover .arr{transform:translateX(3px)}
+[dir="rtl"] .btn .arr{transform:scaleX(-1)}
+[dir="rtl"] .btn:hover .arr{transform:scaleX(-1) translateX(3px)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.accept,.pill.valid{background:var(--ok-soft);color:var(--ok)}
+.pill.monitor,.pill.expiring{background:var(--warn-soft);color:var(--warn)}
+.pill.reject,.pill.expired{background:var(--bad-soft);color:var(--bad)}
+
+/* Inspection view */
+.inspect{display:grid;grid-template-columns:minmax(340px,450px) minmax(0,1fr);gap:24px;align-items:start}
+.form{overflow:hidden}
+.sec{padding:18px 20px;border-bottom:1px solid var(--line);display:grid;gap:12px}
+.sec:last-child{border-bottom:0}
+.sec h3{font-size:15px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:9px;letter-spacing:-.01em}
+.sec h3 i{font-style:normal;font-family:var(--f-mono);font-size:10.5px;font-weight:600;color:#fff;background:var(--accent);border-radius:6px;padding:2px 6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted);min-width:0}
+.fld.full{grid-column:1/-1}
+input,select,textarea{font:inherit;font-size:14px;color:var(--ink);background:rgba(245,245,247,.9);border:1px solid transparent;border-radius:12px;padding:9px 12px;min-width:0;width:100%;transition:box-shadow .2s,background .2s,border-color .2s}
+input:hover,select:hover,textarea:hover{background:#EFEFF2}
+input:focus,select:focus,textarea:focus{outline:none;background:#fff;border-color:rgba(255,122,0,.55);box-shadow:0 0 0 4px rgba(255,122,0,.16)}
+textarea{resize:vertical;min-height:88px;line-height:1.6}
+input.mono{text-align:center}
+.methods{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.mth{appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.8);border-radius:14px;padding:10px 4px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .3s var(--ease),background .25s,box-shadow .3s}
+.mth:hover{transform:translateY(-2px);box-shadow:0 8px 18px -10px rgba(255,111,0,.5)}
+.mth b{font-family:var(--f-mono);font-size:15px}
+.mth span{font-size:10.5px;color:var(--muted);line-height:1.25;text-align:center}
+.mth[aria-pressed="true"]{background:linear-gradient(180deg,#FF8A1F,#FF6F00);border-color:transparent;color:#fff;box-shadow:0 8px 20px -8px rgba(255,111,0,.65)}
+.mth[aria-pressed="true"] span{color:rgba(255,255,255,.85)}
+.pts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pt{display:flex;flex-direction:column;gap:3px}
+.pt label{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);text-align:center}
+.pt input{padding:8px 4px;border-bottom:3px solid transparent;border-radius:10px}
+.pt input.s-accept{border-bottom-color:var(--ok)}
+.pt input.s-monitor{border-bottom-color:#E0A000;background:var(--warn-soft)}
+.pt input.s-reject{border-bottom-color:var(--bad);background:var(--bad-soft)}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ind{display:grid;grid-template-columns:1.6fr 1fr .8fr auto;gap:6px;align-items:end}
+.ind .x{appearance:none;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:8px;border-radius:50%;font-size:16px;line-height:1;transition:background .2s,color .2s}
+.ind .x:hover{color:var(--bad);background:var(--bad-soft)}
+.drop{border:1.5px dashed rgba(255,122,0,.35);border-radius:14px;padding:16px;text-align:center;color:var(--muted);cursor:pointer;font-size:13px;transition:background .2s,border-color .2s,transform .3s var(--ease);background:rgba(255,241,229,.35)}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);transform:scale(1.01)}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap}
+.thumbs figure{margin:0;position:relative;width:64px;height:64px;border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.thumbs button{position:absolute;inset-block-start:3px;inset-inline-end:3px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:12px;cursor:pointer;line-height:1}
+.note{font-size:12.5px;padding:9px 12px;border-radius:12px;display:flex;gap:8px;align-items:flex-start}
+.note.valid{background:var(--ok-soft);color:var(--ok)}
+.note.expiring{background:var(--warn-soft);color:var(--warn)}
+.note.expired{background:var(--bad-soft);color:var(--bad);font-weight:600}
+.actions{padding:16px 20px;display:flex;gap:8px;flex-wrap:wrap;background:rgba(255,255,255,.5);border-top:1px solid var(--line)}
+
+.pv{position:sticky;top:80px;min-width:0}
+.pbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:13px;color:var(--muted);background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.7);box-shadow:var(--shadow)}
+.live{display:inline-flex;align-items:center;gap:8px}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,122,0,.55)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.sheetwrap{max-height:calc(100vh - 150px);overflow:auto;border-radius:10px;padding:6px 6px 24px;scrollbar-width:thin}
+.flash{animation:flashv .5s var(--ease)}
+@keyframes flashv{from{background:rgba(255,160,70,.35)}to{background:transparent}}
+
+/* Report sheet */
+.paper{background:#FFFFFF;color:#1D1D1F;border-radius:10px;box-shadow:0 2px 4px rgba(0,0,0,.04),0 30px 60px -24px rgba(90,40,0,.35);padding:34px 38px 26px;max-width:880px;margin:0 auto;font-size:12.5px;line-height:1.5;transition:transform .5s var(--ease)}
+.paper h4{font-size:12px;font-weight:700;color:#1D1D1F;margin:18px 0 8px;padding-bottom:5px;border-bottom:2px solid #FF7A00;display:flex;justify-content:space-between;gap:8px}
+.paper h4 span{font-weight:500;color:#86868B;font-size:11px}
+.p-head{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;padding-bottom:14px;border-bottom:3px solid #1D1D1F}
+.p-logo{width:92px;height:52px;border:1.5px dashed #C7C7CC;border-radius:8px;display:grid;place-items:center;color:#A1A1A6;font-size:10.5px;text-align:center;padding:4px}
+.p-title .t1{font-family:var(--f-display);font-size:19px;font-weight:700;letter-spacing:-.015em}
+.p-title .t2{font-size:12px;color:#86868B}
+.p-no{text-align:end;display:flex;flex-direction:column;gap:1px;font-size:11px;color:#86868B}
+.p-no b{font-size:14px;color:#1D1D1F}
+.p-band{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;flex-wrap:wrap}
+.p-tags{display:flex;gap:6px;flex-wrap:wrap}
+.p-tag{border-radius:999px;padding:3px 10px;font-size:11px;background:#F5F5F7}
+.p-tag b{font-family:var(--f-mono)}
+.stamp{border:3px solid currentColor;border-radius:8px;padding:5px 16px;font-weight:800;font-size:15px;letter-spacing:.06em;transform:rotate(-3deg);display:inline-flex;flex-direction:column;align-items:center;line-height:1.15}
+.stamp.pop{animation:stampin .45s var(--ease)}
+@keyframes stampin{from{transform:rotate(-3deg) scale(1.35);opacity:.3}to{transform:rotate(-3deg) scale(1);opacity:1}}
+.stamp small{font-size:9.5px;letter-spacing:.14em;font-family:var(--f-mono)}
+.c-accept{color:#248A3D}.c-monitor{color:#A15C07}.c-reject{color:#D70015}
+.bg-accept{background:#E6F5EA}.bg-monitor{background:#FDF3D9}.bg-reject{background:#FFE6E9}
+.ptable{width:100%;border-collapse:collapse}
+.ptable th,.ptable td{border:1px solid #E5E5EA;padding:5px 8px;text-align:start;vertical-align:top}
+.ptable th{background:#F5F5F7;font-weight:600;font-size:11px;color:#3A3A3C;white-space:nowrap}
+.ptable.kv th{width:17%}
+.ptable td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:center}
+.ptable tbody tr{transition:background .15s}
+.ptable tbody tr:hover{background:#FFF6EE}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid #E5E5EA;border-radius:10px;overflow:hidden}
+.metrics div{padding:9px 11px;border-inline-end:1px solid #F0F0F2}
+.metrics div:last-child{border-inline-end:0}
+.metrics span{display:block;font-size:10.5px;color:#86868B}
+.metrics b{font-family:var(--f-mono);font-size:15px;font-variant-numeric:tabular-nums}
+.metrics b em{font-style:normal;font-size:10.5px;font-weight:500;color:#86868B;margin-inline-start:3px}
+.viz{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-top:12px}
+.viz figure{margin:0;border:1px solid #F0F0F2;border-radius:10px;padding:8px}
+.viz figcaption{font-size:10.5px;color:#86868B;margin-bottom:4px}
+.viz rect[data-tip]{cursor:pointer;transition:opacity .15s}
+.viz rect[data-tip]:hover{opacity:1!important;filter:brightness(1.12)}
+.heat{display:grid;gap:3px;direction:ltr}
+.heat div{border-radius:5px;color:#fff;font-family:var(--f-mono);font-size:10.5px;padding:6px 2px;text-align:center;line-height:1.2;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s}
+.heat div:hover{transform:scale(1.14);box-shadow:0 6px 14px -4px rgba(0,0,0,.35);position:relative;z-index:1}
+.heat div small{display:block;opacity:.8;font-size:9px}
+.legend{display:flex;align-items:center;gap:6px;font-size:9.5px;color:#86868B;margin-top:6px;direction:ltr}
+.legend i{flex:1;height:6px;border-radius:3px;background:linear-gradient(90deg,hsl(0 72% 42%),hsl(40 85% 45%),hsl(130 55% 36%))}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.summary{margin-top:12px;padding:10px 12px;border-inline-start:4px solid currentColor;border-radius:6px;font-size:12.5px}
+.summary b{display:block;margin-bottom:2px}
+.summary p{margin:0;color:#1D1D1F}
+.p-notes{white-space:pre-wrap;margin:0;color:#1D1D1F}
+.p-photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.p-photos figure{margin:0}
+.p-photos img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px}
+.p-photos figcaption{font-size:10px;color:#86868B;font-family:var(--f-mono);direction:ltr;text-align:center}
+.empty{color:#A1A1A6;font-style:italic}
+.signs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.signs div{border:1px solid #E5E5EA;border-radius:10px;padding:10px 12px;min-height:92px;display:flex;flex-direction:column;gap:2px}
+.signs span{font-size:10.5px;color:#86868B}
+.signs .line{margin-top:auto;border-top:1px solid #C7C7CC;padding-top:3px;font-size:10px;color:#A1A1A6}
+.warnbox{margin-top:6px;font-size:11px;font-weight:700;color:#D70015;background:#FFE6E9;padding:4px 8px;border-radius:5px}
+.p-foot{margin-top:14px;padding-top:8px;border-top:1px solid #F0F0F2;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:10px;color:#A1A1A6;flex-wrap:wrap}
+.p-foot .by{display:inline-flex;align-items:center;gap:5px;color:#86868B;font-weight:600}
+
+/* Overview */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:18px}
+.kpi{padding:20px 22px}
+.kpi .l{color:var(--muted);font-size:13px;font-weight:500}
+.kpi .v{font-family:var(--f-display);font-size:42px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:6px}
+.kpi .v.k-accent{color:var(--accent)}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+.ovgrid{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:16px}
+.card{padding:20px 22px}
+.card h2{font-size:17px;font-weight:600;margin-bottom:14px;letter-spacing:-.01em}
+.hbars{display:grid;gap:12px}
+.hb{display:grid;grid-template-columns:40px 1fr 26px;gap:10px;align-items:center;font-size:13px;cursor:pointer}
+.hb b{font-family:var(--f-mono)}
+.hb .track{height:10px;background:#EFEFF2;border-radius:999px;overflow:hidden}
+.hb .fill{height:100%;background:linear-gradient(90deg,#FFB347,#FF7A00);border-radius:999px;transform-origin:left;animation:grow .9s var(--ease) both}
+[dir="rtl"] .hb .fill{transform-origin:right}
+.hb:hover .fill{filter:brightness(1.08) saturate(1.2)}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.hb .c{font-family:var(--f-mono);text-align:end;color:var(--muted)}
+.list{display:grid}
+.li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 8px;margin:0 -8px;border-radius:12px;border-bottom:1px solid var(--line);font-size:13.5px;transition:background .2s}
+.li:hover{background:rgba(255,241,229,.7)}
+.li:last-child{border-bottom:0}
+.li .meta{color:var(--muted);font-size:12px}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.alert:last-child{border-bottom:0}
+.alert .dot{width:9px;height:9px;border-radius:50%;margin-top:7px;flex:none}
+.alert .meta{color:var(--muted);font-size:12px}
+.cta{margin-top:18px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:linear-gradient(120deg,#1D1D1F,#3A2410);color:#fff;border:0}
+.cta p{margin:0;font-weight:600;font-size:18px;letter-spacing:-.01em}
+.cta span{display:block;font-weight:400;font-size:14px;opacity:.7}
+
+/* Tables */
+.tblwrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-size:12px;color:var(--muted);text-align:start;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl tbody tr{transition:background .2s}
+.tbl tbody tr:hover td{background:rgba(255,241,229,.6)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tr.hl td{background:var(--accent-soft)}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px;border-bottom:1px solid var(--line)}
+.toolbar input{max-width:340px;border-radius:999px;padding-inline:16px}
+.seg{display:inline-flex;background:rgba(118,118,128,.12);border-radius:10px;padding:2px;gap:2px}
+.seg button{appearance:none;border:0;background:transparent;padding:6px 14px;border-radius:8px;color:var(--ink);cursor:pointer;font-weight:500;font-size:13px;transition:background .25s,box-shadow .25s}
+.seg button[aria-pressed="true"]{background:#fff;font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.04)}
+.seg button i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-inline-start:4px}
+.days{display:flex;align-items:center;gap:10px;min-width:150px}
+.days .bar{flex:1;height:6px;background:#EFEFF2;border-radius:999px;overflow:hidden;min-width:60px}
+.days .bar i{display:block;height:100%;border-radius:999px;transform-origin:left;animation:grow .9s var(--ease) both}
+[dir="rtl"] .days .bar i{transform-origin:right}
+.days b{font-family:var(--f-mono);font-size:13px;min-width:56px}
+.kind{font-size:12px;color:var(--muted)}
+.addc{padding:16px;display:grid;grid-template-columns:1.4fr .8fr 1.4fr 1fr auto;gap:10px;align-items:end;border-top:1px solid var(--line);background:rgba(255,255,255,.45);border-radius:0 0 22px 22px}
+
+#toast{position:fixed;inset-block-end:24px;left:50%;transform:translate(-50%,20px);background:rgba(29,29,31,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff;padding:12px 20px;border-radius:999px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .35s var(--ease);z-index:50;box-shadow:0 12px 30px -10px rgba(0,0,0,.4)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:1100px){.ovgrid{grid-template-columns:1fr 1fr}.ovgrid .card:last-child{grid-column:1/-1}}
+@media (max-width:1000px){
+  .inspect{grid-template-columns:1fr}
+  .pv{position:static}
+  .sheetwrap{max-height:none;overflow:visible}
+  .addc{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  main{padding:20px 16px 60px}
+  .tabs{justify-content:flex-start}
+  .pagehead h1{font-size:28px}
+  .ovgrid{grid-template-columns:1fr}
+  .g2{grid-template-columns:1fr}
+  .methods{grid-template-columns:repeat(3,1fr)}
+  .pts{grid-template-columns:repeat(3,1fr)}
+  .paper{padding:18px 14px}
+  .p-head{grid-template-columns:1fr}
+  .p-no{text-align:start}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .viz,.two,.signs{grid-template-columns:1fr}
+  .p-photos{grid-template-columns:repeat(2,1fr)}
+  .ind{grid-template-columns:1fr 1fr}
+  .addc{grid-template-columns:1fr}
+}
+/* Explainer video player */
+.vsec{margin:6px 0 34px}
+.vsec .vhead{text-align:center;margin-bottom:16px}
+.vsec .vhead h2{font-family:var(--f-display);font-size:28px;font-weight:700;letter-spacing:-.02em}
+.vsec .vhead p{margin:4px 0 0;color:var(--muted)}
+.vplayer{max-width:980px;margin:0 auto;border-radius:24px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.04),0 40px 80px -30px rgba(120,50,0,.45);background:#fff;border:1px solid rgba(255,255,255,.8)}
+.vframe{position:relative;aspect-ratio:16/9;overflow:hidden;background:linear-gradient(160deg,#FFFFFF 0%,#FFF6EE 60%,#FFE9D6 100%);cursor:pointer;direction:ltr}
+.vframe:fullscreen{border-radius:0;aspect-ratio:auto;display:grid;place-items:center}
+.vstage{position:absolute;left:0;top:0;width:960px;height:540px;transform-origin:0 0;font-family:var(--f-body);color:#1D1D1F;user-select:none}
+.vblob{position:absolute;border-radius:50%;filter:blur(40px);opacity:.55}
+.sc{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+.vcap{position:absolute;left:0;right:0;top:46px;text-align:center;direction:var(--vdir,ltr)}
+.vtag,.vban,.vmet span{direction:var(--vdir,ltr)}
+.vcap .num{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:var(--f-mono);font-size:13px;font-weight:600;color:#fff;background:linear-gradient(180deg,#FF8A1F,#FF6F00);padding:3px 10px;border-radius:999px;margin-bottom:10px}
+.vcap h3{font-family:var(--f-display);font-size:34px;font-weight:700;letter-spacing:-.02em;margin:0}
+.vcap p{font-size:16px;color:#6E6E73;margin:6px auto 0;max-width:620px}
+.vcard{position:absolute;background:rgba(255,255,255,.92);border-radius:20px;box-shadow:0 2px 4px rgba(0,0,0,.04),0 24px 50px -20px rgba(120,50,0,.35);border:1px solid rgba(0,0,0,.05)}
+.vcell{position:absolute;width:100px;height:62px;border-radius:14px;background:#F5F5F7;display:grid;place-items:center;font-family:var(--f-mono);font-size:21px;font-weight:600;border-bottom:4px solid transparent;transition:background .25s,border-color .25s}
+.vcell small{position:absolute;top:5px;font-size:9.5px;color:#A1A1A6;font-weight:500}
+.vcell.ok{border-bottom-color:#34A853}
+.vcell.warn{border-bottom-color:#F2A900;background:#FDF3D9;color:#A15C07}
+.vcursor{position:absolute;width:22px;height:22px;margin:-4px 0 0 -4px;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
+.vmet{position:absolute;width:156px;height:112px;padding:14px 16px}
+.vmet span{display:block;font-size:13px;color:#86868B}
+.vmet b{display:block;white-space:nowrap;font-family:var(--f-mono);font-size:27px;font-weight:600;letter-spacing:-.02em;margin-top:8px}
+.vmet em{font-style:normal;font-size:11.5px;color:#86868B;font-weight:500;margin-left:4px}
+.vline{position:absolute;height:9px;border-radius:5px;background:#EDEDF0}
+.vstamp{position:absolute;border:4px solid #A15C07;color:#A15C07;border-radius:10px;padding:6px 16px;white-space:nowrap;font-weight:800;font-size:21px;letter-spacing:.05em;text-align:center;line-height:1.1;background:rgba(253,243,217,.6)}
+.vstamp small{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.16em}
+.vrow{position:absolute;left:230px;width:500px;height:64px;padding:0 18px;display:flex;align-items:center;gap:14px}
+.vrow .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#FFB347,#FF7A00);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;flex:none}
+.vrow .nm{flex:1;min-width:0}
+.vrow .nm b{display:block;font-size:15px}
+.vrow .nm span{font-size:12px;color:#86868B;font-family:var(--f-mono)}
+.vpill{font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;background:#F5F5F7;color:#86868B}
+.vpill.ok{background:#E6F5EA;color:#248A3D}
+.vpill.bad{background:#FFE6E9;color:#D70015}
+.vban{position:absolute;left:230px;width:500px;top:420px;height:52px;border-radius:14px;background:#D70015;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;font-size:16px;box-shadow:0 14px 30px -12px rgba(215,0,21,.6)}
+.vlist{position:absolute;left:560px;top:250px;display:grid;gap:14px}
+.vlist div{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:500}
+.vlist i{width:24px;height:24px;border-radius:50%;background:#FF7A00;color:#fff;display:grid;place-items:center;font-style:normal;font-size:13px;font-weight:700}
+.vbig{position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;border:0;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 18px 40px -12px rgba(255,111,0,.6);display:grid;place-items:center;cursor:pointer;transition:transform .35s var(--ease),opacity .3s}
+.vbig:hover{transform:scale(1.08)}
+.vbig svg{width:30px;height:30px;fill:#FF7A00}
+.vframe.playing .vbig{opacity:0;pointer-events:none;transform:scale(.8)}
+.vctrl{position:absolute;left:16px;right:16px;bottom:14px;display:flex;align-items:center;gap:12px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.78);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 8px 24px -10px rgba(0,0,0,.25);transition:opacity .4s,transform .4s var(--ease);cursor:default;direction:ltr}
+.vframe.playing.idle .vctrl{opacity:0;transform:translateY(10px)}
+.vframe.playing.idle{cursor:none}
+.vctrl button{appearance:none;border:0;background:transparent;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#1D1D1F;flex:none}
+.vctrl button:hover{background:rgba(255,122,0,.12);color:#FF7A00}
+.vctrl svg{width:16px;height:16px;fill:currentColor}
+.vbar{position:relative;flex:1;height:22px;cursor:pointer;display:flex;align-items:center}
+.vbar .tr{position:absolute;left:0;right:0;height:5px;border-radius:3px;background:rgba(0,0,0,.1);overflow:hidden}
+.vbar .fl{position:absolute;left:0;height:5px;border-radius:3px;background:linear-gradient(90deg,#FFB347,#FF7A00);width:0}
+.vbar .mk{position:absolute;width:2px;height:9px;background:rgba(255,255,255,.95);border-radius:1px;transform:translateX(-1px)}
+.vbar .kn{position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35);transform:translateX(-7px) scale(0);transition:transform .2s}
+.vbar:hover .kn,.vbar.drag .kn{transform:translateX(-7px) scale(1)}
+.vtime{font-family:var(--f-mono);font-size:12px;color:#6E6E73;white-space:nowrap}
+.vchap{font-size:12px;font-weight:600;color:#FF7A00;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.vmodal{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:20px;background:rgba(29,29,31,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:fadein .3s var(--ease)}
+.vmodal[hidden]{display:none}
+.vmodal .box{width:min(1000px,100%);position:relative;animation:rise .45s var(--ease)}
+.vmodal .close{position:absolute;top:-46px;inset-inline-end:0;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.9);font-size:18px;cursor:pointer}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@media (max-width:640px){.vchap{display:none}.vbig{width:64px;height:64px;margin:-32px 0 0 -32px}}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <radialGradient id="g-sun"><stop offset="0" stop-color="#FF9A3D" stop-opacity=".55"/><stop offset=".55" stop-color="#FFB877" stop-opacity=".16"/><stop offset="1" stop-color="#FFD9B8" stop-opacity="0"/></radialGradient>
+    <linearGradient id="g-col" x1="0" x2="1"><stop offset="0" stop-color="#FFE3CB"/><stop offset=".5" stop-color="#FFF3E8"/><stop offset="1" stop-color="#FFD2AA"/></linearGradient>
+    <linearGradient id="g-ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE6CF"/><stop offset="1" stop-color="#FFF4EA"/></linearGradient>
+    <radialGradient id="g-flame" cx=".5" cy=".75" r=".65"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".4" stop-color="#FFB13D"/><stop offset=".8" stop-color="#FF6A00" stop-opacity=".6"/><stop offset="1" stop-color="#FF6A00" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g class="layer" data-depth="6"><circle cx="1150" cy="330" r="290" fill="url(#g-sun)"/></g>
+  <g class="layer" data-depth="10" fill="#FFEAD9">
+    <path d="M0 770 C 200 715 380 735 560 705 S 900 715 1100 695 S 1400 715 1600 685 V900 H0Z"/>
+    <rect x="120" y="620" width="16" height="140" rx="8"/><rect x="150" y="660" width="12" height="100" rx="6"/>
+    <rect x="1380" y="600" width="18" height="120" rx="9"/><rect x="1412" y="640" width="12" height="80" rx="6"/><rect x="1440" y="655" width="60" height="55" rx="6"/>
+    <rect x="430" y="660" width="70" height="60" rx="6"/><circle cx="545" cy="690" r="26"/>
+  </g>
+  <g class="layer" data-depth="18" stroke="#FF9A4D" stroke-opacity=".55" stroke-width="1.5">
+    <g fill="url(#g-col)">
+      <rect x="600" y="470" width="40" height="350" rx="20"/>
+      <rect x="660" y="415" width="54" height="405" rx="27"/>
+      <rect x="735" y="540" width="34" height="280" rx="17"/>
+      <circle cx="880" cy="725" r="62"/><circle cx="1010" cy="745" r="44"/>
+      <rect x="1170" y="690" width="120" height="130" rx="10"/>
+    </g>
+    <g fill="none">
+      <path d="M600 540h40M600 610h40M600 680h40M600 750h40M660 490h54M660 570h54M660 650h54M660 730h54M735 610h34M735 690h34M735 760h34"/>
+      <path d="M1170 720h120M1170 760h120"/>
+      <path d="M850 780l-14 40M910 780l14 40M995 783l-10 37M1025 783l10 37"/>
+      <path d="M560 790H1310M560 802H1310" stroke="#FFB070" stroke-width="3" stroke-opacity=".7"/>
+      <path d="M580 790v30M640 790v30M700 790v30M760 790v30M820 790v30M940 790v30M1060 790v30M1130 790v30M1240 790v30"/>
+      <path d="M687 415v-30M1110 820V385" stroke="#FFC08A" stroke-width="5" stroke-opacity=".8" stroke-linecap="round"/>
+    </g>
+    <g class="flame" stroke="none"><ellipse cx="1110" cy="355" rx="17" ry="34" fill="url(#g-flame)"/><ellipse cx="1110" cy="364" rx="7" ry="15" fill="#FFF6D6" opacity=".9"/></g>
+  </g>
+  <g class="layer" data-depth="30">
+    <path d="M0 822 C 300 800 600 832 900 815 S 1400 800 1600 815 V900 H0Z" fill="url(#g-ground)"/>
+    <g stroke="#FF8A2A" stroke-opacity=".6" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M210 820 L270 420 L330 820M225 720H315M240 620H300M255 520H285M225 720L300 620L240 620L285 520M315 720L240 620"/>
+      <rect x="261" y="406" width="18" height="14" rx="2"/>
+      <path d="M190 812H350"/>
+      <path d="M1300 820 L1340 700 L1380 820M1260 822H1460"/>
+    </g>
+    <g class="pj-beam" fill="#FFD3AD" stroke="#FF8A2A" stroke-opacity=".7" stroke-width="2">
+      <rect x="1240" y="694" width="200" height="12" rx="5"/>
+      <path d="M1240 688q-32 10-26 46l15-3q-3-24 11-31z"/>
+      <path d="M1432 706l-12 62" fill="none"/>
+    </g>
+    <g class="pj-crank" fill="#FFC490" stroke="#FF8A2A" stroke-opacity=".7" stroke-width="2"><circle cx="1420" cy="768" r="20"/><rect x="1414" y="768" width="12" height="40" rx="5"/></g>
+    <circle cx="1340" cy="700" r="6" fill="#FF7A00"/>
+    <path d="M0 858H1600" stroke="#FFC796" stroke-width="7" stroke-linecap="round"/>
+    <path class="flow" d="M0 858H1600" stroke="#FF7A00" stroke-width="3" stroke-dasharray="3 25" stroke-linecap="round"/>
+  </g>
+</svg>
+</div>
+<div id="glow" aria-hidden="true"></div>
+<div id="tip" role="tooltip"></div>
+<div class="vmodal" id="vmodal" hidden><div class="box"><button class="close" type="button" data-vclose aria-label="close">×</button><div id="vslot"></div></div></div>
+<header class="top"><div class="top-in" id="top"></div></header>
+<main id="app"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2,'0');
+const today = new Date(); today.setHours(0,0,0,0);
+const isoOf = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const dayOffset = n => { const d = new Date(today); d.setDate(d.getDate()+n); return isoOf(d); };
+const parseISO = s => { const [y,m,d] = String(s).split('-').map(Number); return new Date(y,(m||1)-1,d||1); };
+const daysUntil = s => Math.round((parseISO(s) - today) / 86400000);
+const addYears = (s, y) => { const d = parseISO(s); d.setDate(d.getDate() + Math.round(y*365)); return isoOf(d); };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : NaN; };
+const fx = (n, d=1) => isFinite(n) ? n.toFixed(d) : '—';
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+/* ---------- copy ---------- */
+const T = {
+ar:{
+  brand:'Suna', demo:'تقارير الفحص الهندسي', sample:'بيانات تجريبية لشركة افتراضية', langBtn:'English',
+  nav_overview:'لوحة المتابعة', nav_inspect:'فحص جديد', nav_reports:'التقارير', nav_certs:'الشهادات والمعايرة',
+  ov_title:'نظرة عامة على أعمال الفحص', ov_sub:'كل ما يخص التقارير والشهادات في مكان واحد', hero_e:'Suna للفحص غير الإتلافي', hero_t:'تقارير الفحص الهندسي.<br><em>أسرع. أدق. جاهزة للتوقيع.</em>', hero_s:'اكتب القياسات، وSuna يحسب ويحكم ويصيغ التقرير الرسمي باللغتين بنفس اللحظة.', hero_b2:'الشهادات والمعايرة',
+  v_watch:'شاهد كيف يعمل', v_title:'كيف يعمل Suna', v_sub:'32 ثانية: من قراءة الموقع إلى تقرير جاهز للتوقيع',
+  v1s:'من قراءات الموقع إلى تقرير جاهز للتوقيع', v2t:'أدخل القياسات', v2s:'المفتش يكتب قراءة كل نقطة، وSuna يؤشر القراءات القريبة من الحد فوراً',
+  v3t:'Suna يحسب كل شيء', v3s:'نسبة الفقد، معدل التآكل، والعمر المتبقي حسب API 510', v4t:'الحكم بلحظة', v4s:'مقبول، تحت المراقبة، أو مرفوض، مع توصية مكتوبة جاهزة',
+  v5t:'فحص الشهادات تلقائياً', v5s:'إذا شهادة المفتش منتهية، Suna يوقف توقيع التقرير', v5ban:'التوقيع موقوف: شهادة API 510 منتهية',
+  v6t:'تقرير جاهز للتوقيع', v6s:'بشعار شركتكم، باللغتين، ومحفوظ برقم وتاريخ', v6a:'حسابات دقيقة وموحّدة', v6b:'عربي وإنكليزي', v6c:'سجل كامل لكل تقرير',
+  v_pts:'نقطة قياس', v_play:'تشغيل', v_pause:'إيقاف', v_full:'ملء الشاشة', v_close:'إغلاق',
+  vch:['المقدمة','القياسات','الحسابات','الحكم','الشهادات','التقرير'],
+  k_reports:'تقارير آخر 30 يوم', k_reports_s:'من أصل {n} تقرير مسجّل', k_reject:'نسبة الرفض', k_reject_s:'{n} تقرير مرفوض', k_open:'حالات تحتاج متابعة', k_open_s:'مراقبة أو إصلاح', k_certs:'شهادات تحتاج تجديد', k_certs_s:'{a} منتهية · {b} قريبة',
+  by_method:'التقارير حسب طريقة الفحص', recent:'آخر التقارير', alerts:'تنبيهات', no_alerts:'لا توجد تنبيهات',
+  al_expired:'منتهية منذ {n} يوم', al_expiring:'تنتهي بعد {n} يوم', al_reject:'نتيجة مرفوضة: المعدة تحتاج إصلاح',
+  cta_t:'جرّب إنشاء تقرير بنفسك', cta_s:'اكتب القياسات، والتقرير يتولد أمامك بنفس اللحظة', go_new:'ابدأ فحص جديد',
+  in_title:'فحص جديد', in_sub:'أدخل بيانات الفحص على اليمين، والتقرير الرسمي يتكوّن على اليسار مباشرة',
+  s_job:'بيانات العمل', f_client:'الزبون', f_site:'الموقع', f_tag:'رقم المعدة (Tag)', f_comp:'الجزء المفحوص', f_mat:'المادة', f_date:'تاريخ الفحص',
+  s_method:'طريقة الفحص والمعيار', f_std:'المعيار المرجعي',
+  s_thk:'قياسات السماكة (مم)', f_nom:'السماكة الاسمية', f_tmin:'أقل سماكة مسموحة t-min', f_prev:'أقل قراءة بالفحص السابق', f_years:'سنوات منذ الفحص السابق', add_pt:'+ نقطة قياس', rm_pt:'حذف آخر نقطة',
+  s_ind:'المؤشرات المكتشفة', f_limit:'حد القبول للطول (مم)', ind_loc:'الموقع', ind_type:'النوع', ind_len:'الطول مم', add_ind:'+ إضافة مؤشر',
+  s_notes:'الملاحظات والصور', f_notes:'ملاحظات المفتش', drop:'اسحب صور الفحص هنا أو اضغط للاختيار',
+  s_insp:'المفتش', f_insp:'المفتش المسؤول',
+  cert_valid:'الشهادة سارية حتى {d}', cert_expiring:'الشهادة تنتهي بعد {n} يوم ({d}). يُنصح بالتجديد', cert_expired:'شهادة المفتش منتهية منذ {d}. لا يجوز توقيع التقرير قبل التجديد',
+  save:'حفظ التقرير', update:'تحديث التقرير', copy:'نسخ الملخص', reset:'نموذج جديد', saved:'تم حفظ التقرير {no}', copied:'تم نسخ ملخص التقرير', copyFail:'تعذّر النسخ من المتصفح',
+  live:'معاينة مباشرة: تتحدث مع كل تعديل', result:'النتيجة',
+  r_title:'تقرير فحص غير إتلافي', r_alt:'Non-Destructive Testing Report', r_no:'رقم التقرير', r_logo:'شعار شركتكم',
+  r_job:'بيانات العمل', r_method:'الطريقة', r_std:'المعيار', r_results:'النتائج',
+  r_min:'أقل قراءة', r_loss:'نسبة الفقد', r_rate:'معدل التآكل', r_life:'العمر المتبقي', r_next:'الفحص القادم',
+  r_count:'عدد المؤشرات', r_max:'أطول مؤشر', r_limit:'حد القبول', r_rej:'مؤشرات مرفوضة',
+  r_pt:'النقطة', r_read:'القراءة', r_lossc:'الفقد %', r_status:'الحالة', r_map:'خريطة السماكة', r_chart:'السماكة لكل نقطة مقارنة بـ t-min (مم)',
+  r_photos:'صور الفحص', r_nophotos:'لم تُرفق صور', r_notes:'ملاحظات المفتش', r_insp:'المفتش', r_review:'المراجعة والاعتماد', r_sign:'التوقيع والتاريخ', r_auto:'أُنشئ تلقائياً بواسطة', r_page:'صفحة 1 من 1',
+  r_immediate:'فوري', yrs:'سنة', mmyr:'مم/سنة', nocorr:'لا يوجد تآكل',
+  res_accept:'مقبول', res_monitor:'تحت المراقبة', res_reject:'مرفوض',
+  sum_accept:'جميع القراءات ضمن الحدود المسموحة. تستمر المعدة بالخدمة حسب خطة الفحص.',
+  sum_monitor:'السماكة قريبة من الحد الأدنى أو العمر المتبقي قصير. يوصى بتقليص فترة الفحص ومراقبة النقاط المؤشرة.',
+  sum_reject:'توجد قراءات أقل من الحد المسموح. يوصى بإيقاف المعدة لحين الإصلاح أو إعادة التقييم.',
+  sumi_accept:'جميع المؤشرات ضمن حدود القبول حسب المعيار المرجعي.',
+  sumi_monitor:'المؤشرات مقبولة لكنها قريبة من حد القبول. يوصى بإعادة الفحص في الزيارة القادمة.',
+  sumi_reject:'يوجد شق أو مؤشر يتجاوز حد القبول. يوصى بالإصلاح وإعادة الفحص.',
+  rp_title:'سجل التقارير', rp_sub:'كل تقرير محفوظ برقم وتاريخ ونتيجة، وتقدر ترجعله بأي وقت', rp_no:'رقم التقرير', rp_date:'التاريخ', rp_tag:'المعدة', rp_method:'الطريقة', rp_result:'النتيجة', rp_insp:'المفتش', rp_open:'فتح', rp_search:'ابحث برقم المعدة أو التقرير', rp_none:'لا توجد نتائج',
+  c_title:'الشهادات والمعايرة', c_sub:'تنبيه تلقائي قبل انتهاء شهادات الفنيين ومعايرة الأجهزة', c_all:'الكل', c_expiring:'قريبة الانتهاء', c_expired:'منتهية',
+  c_name:'الاسم', c_kind:'النوع', c_detail:'الشهادة / الرقم التسلسلي', c_exp:'تاريخ الانتهاء', c_left:'المتبقي', c_status:'الحالة',
+  k_person:'فني', k_equip:'جهاز', days:'يوم', ago:'منذ {n} يوم', st_valid:'سارية', st_expiring:'تنتهي قريباً', st_expired:'منتهية',
+  c_addbtn:'+ إضافة', c_added:'تمت الإضافة', c_need:'اكتب الاسم وتاريخ الانتهاء',
+},
+en:{
+  brand:'Suna', demo:'NDT Reports', sample:'Sample data for a fictional company', langBtn:'عربي',
+  nav_overview:'Overview', nav_inspect:'New inspection', nav_reports:'Reports', nav_certs:'Certifications',
+  ov_title:'Inspection overview', ov_sub:'Reports, findings and certifications in one place', hero_e:'Suna for NDT', hero_t:'Inspection reports.<br><em>Faster. Sharper. Ready to sign.</em>', hero_s:'Type the readings. Suna calculates, judges and writes the formal bilingual report as you go.', hero_b2:'Certifications',
+  v_watch:'Watch how it works', v_title:'How Suna works', v_sub:'32 seconds: from field reading to a report ready to sign',
+  v1s:'From field readings to a report ready to sign', v2t:'Enter the readings', v2s:'The inspector types each point; Suna flags readings near the limit instantly',
+  v3t:'Suna does the maths', v3s:'Wall loss, corrosion rate and remaining life per API 510', v4t:'An instant verdict', v4s:'Accept, monitor or reject, with a written recommendation',
+  v5t:'Certificates checked automatically', v5s:'If the inspector\'s certificate has expired, Suna blocks the signature', v5ban:'Signing blocked: API 510 certificate expired',
+  v6t:'A report ready to sign', v6s:'With your logo, in two languages, filed by number and date', v6a:'Consistent, exact calculations', v6b:'Arabic & English', v6c:'A full record of every report',
+  v_pts:'points', v_play:'Play', v_pause:'Pause', v_full:'Full screen', v_close:'Close',
+  vch:['Intro','Readings','Maths','Verdict','Certificates','Report'],
+  k_reports:'Reports, last 30 days', k_reports_s:'of {n} reports on file', k_reject:'Reject rate', k_reject_s:'{n} rejected reports', k_open:'Open findings', k_open_s:'Monitor or repair', k_certs:'Certificates to renew', k_certs_s:'{a} expired · {b} expiring',
+  by_method:'Reports by method', recent:'Latest reports', alerts:'Alerts', no_alerts:'No alerts',
+  al_expired:'Expired {n} days ago', al_expiring:'Expires in {n} days', al_reject:'Rejected: equipment needs repair',
+  cta_t:'Try generating a report yourself', cta_s:'Type the readings and the report builds itself as you go', go_new:'Start new inspection',
+  in_title:'New inspection', in_sub:'Enter the inspection data on the left; the formal report builds on the right as you type',
+  s_job:'Job details', f_client:'Client', f_site:'Site', f_tag:'Equipment tag', f_comp:'Component', f_mat:'Material', f_date:'Inspection date',
+  s_method:'Method & code', f_std:'Reference code',
+  s_thk:'Thickness readings (mm)', f_nom:'Nominal thickness', f_tmin:'Minimum required t-min', f_prev:'Previous minimum reading', f_years:'Years since last inspection', add_pt:'+ Add point', rm_pt:'Remove last',
+  s_ind:'Recorded indications', f_limit:'Acceptance length limit (mm)', ind_loc:'Location', ind_type:'Type', ind_len:'Length mm', add_ind:'+ Add indication',
+  s_notes:'Notes & photos', f_notes:'Inspector notes', drop:'Drop inspection photos here or click to choose',
+  s_insp:'Inspector', f_insp:'Responsible inspector',
+  cert_valid:'Certificate valid until {d}', cert_expiring:'Certificate expires in {n} days ({d}). Renewal advised', cert_expired:'Inspector certificate expired on {d}. The report must not be signed until renewed',
+  save:'Save report', update:'Update report', copy:'Copy summary', reset:'New form', saved:'Report {no} saved', copied:'Report summary copied', copyFail:'The browser blocked copying',
+  live:'Live preview: updates as you type', result:'Result',
+  r_title:'Non-Destructive Testing Report', r_alt:'تقرير فحص غير إتلافي', r_no:'Report No.', r_logo:'Your logo',
+  r_job:'Job details', r_method:'Method', r_std:'Code', r_results:'Results',
+  r_min:'Min. reading', r_loss:'Wall loss', r_rate:'Corrosion rate', r_life:'Remaining life', r_next:'Next inspection',
+  r_count:'Indications', r_max:'Longest', r_limit:'Limit', r_rej:'Rejectable',
+  r_pt:'Point', r_read:'Reading', r_lossc:'Loss %', r_status:'Status', r_map:'Thickness map', r_chart:'Thickness per point vs t-min (mm)',
+  r_photos:'Inspection photos', r_nophotos:'No photos attached', r_notes:'Inspector notes', r_insp:'Inspector', r_review:'Review & approval', r_sign:'Signature & date', r_auto:'Generated automatically by', r_page:'Page 1 of 1',
+  r_immediate:'Immediate', yrs:'yr', mmyr:'mm/yr', nocorr:'No corrosion',
+  res_accept:'ACCEPT', res_monitor:'MONITOR', res_reject:'REJECT',
+  sum_accept:'All readings are within the allowable limits. The equipment stays in service per the inspection plan.',
+  sum_monitor:'Thickness is close to t-min or remaining life is short. Shorten the inspection interval and monitor the flagged points.',
+  sum_reject:'Some readings are below the minimum required thickness. Take the equipment out of service until repaired or re-rated.',
+  sumi_accept:'All indications are within the acceptance criteria of the reference code.',
+  sumi_monitor:'Indications are acceptable but close to the limit. Re-examine at the next visit.',
+  sumi_reject:'A crack or an indication beyond the acceptance limit was found. Repair and re-examine.',
+  rp_title:'Report register', rp_sub:'Every report is stored with its number, date and result', rp_no:'Report No.', rp_date:'Date', rp_tag:'Equipment', rp_method:'Method', rp_result:'Result', rp_insp:'Inspector', rp_open:'Open', rp_search:'Search by tag or report number', rp_none:'No matching reports',
+  c_title:'Certifications & calibration', c_sub:'Automatic alerts before technician certificates and equipment calibrations expire', c_all:'All', c_expiring:'Expiring', c_expired:'Expired',
+  c_name:'Name', c_kind:'Type', c_detail:'Certificate / serial', c_exp:'Expiry date', c_left:'Remaining', c_status:'Status',
+  k_person:'Technician', k_equip:'Equipment', days:'days', ago:'{n} days ago', st_valid:'Valid', st_expiring:'Expiring', st_expired:'Expired',
+  c_addbtn:'+ Add', c_added:'Added', c_need:'Enter a name and an expiry date',
+}};
+
+const METHODS = {
+  UT:{ar:'سماكة بالموجات فوق الصوتية', en:'Ultrasonic thickness'},
+  MT:{ar:'الجسيمات المغناطيسية', en:'Magnetic particle'},
+  PT:{ar:'السائل النافذ', en:'Liquid penetrant'},
+  VT:{ar:'الفحص البصري', en:'Visual testing'},
+  RT:{ar:'التصوير الإشعاعي', en:'Radiography'}
+};
+const STDS = ['API 510','API 570','API 653','ASME Sec. V','ASME B31.3','AWS D1.1'];
+const ITYPES = {linear:{ar:'خطي',en:'Linear'}, rounded:{ar:'دائري',en:'Rounded'}, porosity:{ar:'مسامية',en:'Porosity'}, crack:{ar:'شق',en:'Crack'}};
+const PEOPLE = {
+  ali:{ar:'علي حسن كريم', en:'Ali Hassan Kareem'},
+  zainab:{ar:'زينب مهدي صالح', en:'Zainab Mahdi Saleh'},
+  omar:{ar:'عمر سعد عبدالله', en:'Omar Saad Abdullah'},
+  mustafa:{ar:'مصطفى جبار ناصر', en:'Mustafa Jabbar Nasser'}
+};
+const NOTES = {
+  ar:'تم الفحص بعد تنظيف السطح وإزالة الطلاء في مواقع القياس.\nلوحظ ترقق موضعي قرب النقطتين TML-05 و TML-09 في الجزء السفلي من الجدار.\nيوصى بإعادة القياس بطريقة المسح الشبكي (Grid scan) في المنطقة المحددة.',
+  en:'Surface cleaned and coating removed at each measurement location.\nLocalised thinning observed near TML-05 and TML-09 on the bottom course.\nA grid scan of the affected area is recommended.'
+};
+
+/* ---------- state ---------- */
+const state = {
+  lang:'ar', view:'inspect', seq:147, editing:null, photos:[], certFilter:'all', search:'', highlight:null,
+  reports:[
+    {no:'NDT-UT-2026-0146', date:dayOffset(-1),  tag:'P-2210', method:'UT', result:'accept',  insp:'ali'},
+    {no:'NDT-MT-2026-0145', date:dayOffset(-3),  tag:'W-14',   method:'MT', result:'reject',  insp:'zainab'},
+    {no:'NDT-PT-2026-0144', date:dayOffset(-5),  tag:'N-05',   method:'PT', result:'accept',  insp:'zainab'},
+    {no:'NDT-UT-2026-0143', date:dayOffset(-8),  tag:'T-301',  method:'UT', result:'monitor', insp:'ali'},
+    {no:'NDT-VT-2026-0142', date:dayOffset(-11), tag:'C-12',   method:'VT', result:'accept',  insp:'omar'},
+    {no:'NDT-RT-2026-0141', date:dayOffset(-15), tag:'L-07',   method:'RT', result:'accept',  insp:'mustafa'},
+    {no:'NDT-UT-2026-0140', date:dayOffset(-19), tag:'V-1180', method:'UT', result:'accept',  insp:'ali'},
+    {no:'NDT-MT-2026-0139', date:dayOffset(-24), tag:'W-09',   method:'MT', result:'monitor', insp:'zainab'},
+    {no:'NDT-UT-2026-0138', date:dayOffset(-27), tag:'P-2002', method:'UT', result:'accept',  insp:'ali'},
+    {no:'NDT-RT-2026-0137', date:dayOffset(-36), tag:'L-03',   method:'RT', result:'reject',  insp:'mustafa'},
+    {no:'NDT-UT-2026-0136', date:dayOffset(-41), tag:'V-1150', method:'UT', result:'accept',  insp:'ali'},
+    {no:'NDT-PT-2026-0135', date:dayOffset(-47), tag:'N-11',   method:'PT', result:'accept',  insp:'zainab'}
+  ],
+  certs:[
+    {kind:'person', who:'ali',     detail:'ASNT SNT-TC-1A Level II — UT',     exp:dayOffset(212)},
+    {kind:'person', who:'zainab',  detail:'ASNT SNT-TC-1A Level II — MT / PT', exp:dayOffset(18)},
+    {kind:'person', who:'omar',    detail:'API 510 Authorized Inspector',     exp:dayOffset(-6)},
+    {kind:'person', who:'mustafa', detail:'ASNT SNT-TC-1A Level III — RT',    exp:dayOffset(398)},
+    {kind:'equip', name:{ar:'جهاز قياس سماكة UT',en:'UT thickness gauge'}, detail:'SN 1203877 · calibration', exp:dayOffset(25)},
+    {kind:'equip', name:{ar:'نير مغناطيسي MT',en:'MT yoke'},             detail:'SN Y-4471 · lift test',     exp:dayOffset(73)},
+    {kind:'equip', name:{ar:'كتلة معايرة IIW V1',en:'IIW V1 calibration block'}, detail:'SN CB-0912',        exp:dayOffset(151)},
+    {kind:'equip', name:{ar:'جهاز قياس الكثافة RT',en:'RT densitometer'}, detail:'SN D-3305 · calibration', exp:dayOffset(-2)}
+  ],
+  form:null
+};
+const t = (k, v={}) => String(T[state.lang][k] ?? k).replace(/\{(\w+)\}/g, (_,x) => v[x] ?? '');
+const L = o => (o && typeof o === 'object') ? (o[state.lang] ?? o.en) : (o ?? '');
+
+function defaultForm(){
+  const ar = state.lang === 'ar';
+  return {
+    client: ar ? 'شركة نموذجية للخدمات النفطية' : 'Sample Oilfield Services Co.',
+    site: ar ? 'حقل شرق بغداد — الوحدة 2' : 'East Baghdad Field — Unit 2',
+    tag:'V-1203', comp: ar ? 'جدار الوعاء — الحلقة السفلى' : 'Vessel shell — bottom course',
+    mat:'SA-516 Gr. 70', date:isoOf(today), method:'UT', std:'API 510',
+    nominal:'12.0', tmin:'8.4', prev:'11.2', years:'4',
+    points:[11.6,11.4,10.9,10.2,9.1,11.5,11.0,10.6,9.4,11.3,11.7,11.1].map(v => ({v:v.toFixed(1)})),
+    limit:'4.8',
+    inds:[{loc:'Weld W-3 @ 120 mm', type:'linear', len:'3.2'}, {loc:'Nozzle N2 toe', type:'rounded', len:'2.0'}],
+    notes: NOTES[state.lang], insp:'ali'
+  };
+}
+state.form = defaultForm();
+
+/* ---------- certificate status ---------- */
+function certStatus(c){ const d = daysUntil(c.exp); return d < 0 ? 'expired' : d <= 30 ? 'expiring' : 'valid'; }
+const certName = c => c.kind === 'person' ? (c.who ? L(PEOPLE[c.who]) : c.name) : L(c.name);
+const inspectorCert = key => state.certs.find(c => c.kind === 'person' && c.who === key);
+
+/* ---------- engineering logic ---------- */
+function compute(f){
+  if (f.method === 'UT'){
+    const nom = num(f.nominal), tmin = num(f.tmin), prev = num(f.prev), yrs = num(f.years);
+    const rows = f.points.map((p,i) => {
+      const v = num(p.v);
+      const st = !isFinite(v) ? null : v < tmin ? 'reject' : v < tmin*1.1 ? 'monitor' : 'accept';
+      return {id:'TML-'+pad(i+1), v, loss: isFinite(v)&&nom>0 ? (nom-v)/nom*100 : NaN, st};
+    });
+    const vals = rows.map(r => r.v).filter(isFinite);
+    const min = vals.length ? Math.min(...vals) : NaN;
+    const loss = nom > 0 ? (nom-min)/nom*100 : NaN;
+    const rate = (isFinite(prev) && yrs > 0 && prev > min) ? (prev-min)/yrs : 0;
+    const life = rate > 0 ? (min-tmin)/rate : Infinity;
+    let result = 'accept';
+    if (!isFinite(min)) result = 'accept';
+    else if (min < tmin) result = 'reject';
+    else if (min < tmin*1.1 || life < 4) result = 'monitor';
+    const next = result === 'reject' ? 0 : Math.min(isFinite(life) ? life/2 : 10, 10);
+    return {kind:'ut', rows, min, loss, rate, life, result, next, nom, tmin};
+  }
+  const limit = num(f.limit);
+  const rows = f.inds.map((d,i) => {
+    const len = num(d.len);
+    const st = d.type === 'crack' || (isFinite(len) && len > limit) ? 'reject' : 'accept';
+    return {...d, id:'IND-'+pad(i+1), lenN:len, st};
+  });
+  const rej = rows.filter(r => r.st === 'reject').length;
+  const lens = rows.map(r => r.lenN).filter(isFinite);
+  const max = lens.length ? Math.max(...lens) : 0;
+  const result = rej ? 'reject' : (rows.length && max > limit*0.75) ? 'monitor' : 'accept';
+  return {kind:'ind', rows, rej, max, limit, result};
+}
+const reportNo = () => state.editing || `NDT-${state.form.method}-${today.getFullYear()}-${String(state.seq).padStart(4,'0')}`;
+
+/* ---------- logo ---------- */
+let logoN = 0;
+function LOGO(sz){ const id = 'lg' + (logoN++); return `<svg width="${sz}" height="${sz}" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB347"/><stop offset=".55" stop-color="#FF7A00"/><stop offset="1" stop-color="#F25500"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#${id})"/><path d="M42 20.5c-2.6-2.6-6.2-4-10.3-4-6.3 0-10.7 3.6-10.7 8.6 0 11.4 22 6.4 22 17.4 0 4.8-4.4 8.5-10.9 8.5-4.6 0-8.6-1.7-11.3-4.6" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/><circle cx="46" cy="16" r="3.6" fill="#fff" opacity=".9"/></svg>`; }
+
+/* ---------- header ---------- */
+function renderTop(){
+  const alertsN = state.certs.filter(c => certStatus(c) !== 'valid').length;
+  const tabs = ['overview','inspect','reports','certs'].map(v => `
+    <button class="tab" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${t('nav_'+v)}${v==='certs'&&alertsN?`<span class="n">${alertsN}</span>`:''}</button>`).join('');
+  $('#top').innerHTML = `
+    <div class="brand" data-go="overview" role="link" tabindex="0">
+      ${LOGO(32)}<span>Suna</span><small>${t('demo')}</small>
+    </div>
+    <nav class="tabs" aria-label="Main">${tabs}</nav>
+    <button class="lang" id="langBtn" type="button">${t('langBtn')}</button>`;
+}
+
+/* ---------- overview ---------- */
+function renderOverview(){
+  const R = state.reports, last30 = R.filter(r => daysUntil(r.date) >= -30);
+  const rej = R.filter(r => r.result === 'reject').length;
+  const open = R.filter(r => r.result !== 'accept').length;
+  const exp = state.certs.filter(c => certStatus(c) === 'expired').length;
+  const soon = state.certs.filter(c => certStatus(c) === 'expiring').length;
+  const byM = Object.keys(METHODS).map(m => [m, R.filter(r => r.method === m).length]);
+  const maxM = Math.max(1, ...byM.map(x => x[1]));
+  const alerts = [
+    ...state.certs.filter(c => certStatus(c) !== 'valid').sort((a,b) => daysUntil(a.exp) - daysUntil(b.exp)).map(c => {
+      const d = daysUntil(c.exp), s = certStatus(c);
+      return `<div class="alert"><span class="dot" style="background:var(--${s==='expired'?'bad':'warn'})"></span><div><div>${esc(certName(c))}</div><div class="meta"><span class="ltr">${esc(c.detail)}</span> · ${s==='expired'?t('al_expired',{n:-d}):t('al_expiring',{n:d})}</div></div></div>`;
+    }),
+    ...R.filter(r => r.result === 'reject').slice(0,3).map(r => `<div class="alert"><span class="dot" style="background:var(--bad)"></span><div><div class="mono ltr">${r.tag} · ${r.no}</div><div class="meta">${t('al_reject')}</div></div></div>`)
+  ].join('') || `<p class="meta">${t('no_alerts')}</p>`;
+
+  $('#app').innerHTML = `
+    <section class="hero"><div class="eyebrow">${t('hero_e')}</div><h1>${t('hero_t')}</h1><p>${t('hero_s')}</p><div class="row"><button class="btn primary lg magnet" data-go="inspect">${t('go_new')} <span class="arr">→</span></button><button class="btn lg" data-vjump>▶ ${t('v_watch')}</button></div></section>
+    <section class="vsec" id="howto"><div class="vhead"><h2>${t('v_title')}</h2><p>${t('v_sub')}</p></div>${videoHTML()}</section>
+    <div class="pagehead"><div><h1 style="font-size:26px">${t('ov_title')}</h1><p>${t('ov_sub')}</p></div><span class="sample">${t('sample')}</span></div>
+    <div class="kpis">
+      <div class="panel kpi tilt"><div class="l">${t('k_reports')}</div><div class="v k-accent" data-count="${last30.length}">${last30.length}</div><div class="s">${t('k_reports_s',{n:R.length})}</div></div>
+      <div class="panel kpi tilt" style="--k:var(--bad)"><div class="l">${t('k_reject')}</div><div class="v" data-count="${Math.round(rej/R.length*100)}" data-suffix="%">${Math.round(rej/R.length*100)}%</div><div class="s">${t('k_reject_s',{n:rej})}</div></div>
+      <div class="panel kpi tilt" style="--k:var(--warn)"><div class="l">${t('k_open')}</div><div class="v" data-count="${open}">${open}</div><div class="s">${t('k_open_s')}</div></div>
+      <div class="panel kpi tilt" style="--k:var(--hazard)"><div class="l">${t('k_certs')}</div><div class="v" data-count="${exp+soon}">${exp+soon}</div><div class="s">${t('k_certs_s',{a:exp,b:soon})}</div></div>
+    </div>
+    <div class="ovgrid">
+      <section class="panel card tilt"><h2>${t('by_method')}</h2><div class="hbars">
+        ${byM.map(([m,n]) => `<div class="hb" data-tip="${m} · ${esc(L(METHODS[m]))} · ${n}"><b>${m}</b><div class="track"><div class="fill" style="width:${n/maxM*100}%"></div></div><span class="c">${n}</span></div>`).join('')}
+      </div></section>
+      <section class="panel card tilt"><h2>${t('recent')}</h2><div class="list">
+        ${R.slice(0,6).map(r => `<div class="li"><div><div class="mono ltr" style="display:inline-block">${r.no}</div><div class="meta"><span class="ltr">${r.tag}</span> · ${esc(L(PEOPLE[r.insp]) || r.insp)} · <span class="mono">${r.date}</span></div></div><span class="pill ${r.result}">${t('res_'+r.result)}</span></div>`).join('')}
+      </div></section>
+      <section class="panel card tilt"><h2>${t('alerts')}</h2>${alerts}</section>
+    </div>
+    <div class="panel cta tilt"><p>${t('cta_t')}<span>${t('cta_s')}</span></p><button class="btn primary lg magnet" data-go="inspect">${t('go_new')} <span class="arr">→</span></button></div>`;
+  mountPlayers($('#app'));
+}
+
+/* ---------- inspection form ---------- */
+function formHTML(){
+  const f = state.form, c = compute(f);
+  const fld = (k, label, attrs='') => `<label class="fld" for="f-${k}">${label}<input id="f-${k}" data-k="${k}" value="${esc(f[k])}" ${attrs}></label>`;
+  const methods = Object.keys(METHODS).map(m => `<button type="button" class="mth" data-method="${m}" aria-pressed="${f.method===m}"><b>${m}</b><span>${esc(L(METHODS[m]))}</span></button>`).join('');
+  const people = state.certs.filter(x => x.kind === 'person');
+  let mid;
+  if (f.method === 'UT'){
+    mid = `<div class="sec" id="sec-thk"><h3><i>03</i>${t('s_thk')}</h3>
+      <div class="g2">
+        ${fld('nominal', t('f_nom'), 'class="mono" inputmode="decimal"')}
+        ${fld('tmin', t('f_tmin'), 'class="mono" inputmode="decimal"')}
+        ${fld('prev', t('f_prev'), 'class="mono" inputmode="decimal"')}
+        ${fld('years', t('f_years'), 'class="mono" inputmode="decimal"')}
+      </div>
+      <div class="pts">${f.points.map((p,i) => `<div class="pt"><label for="pt-${i}">TML-${pad(i+1)}</label><input id="pt-${i}" class="mono s-${c.rows[i].st||'none'}" data-pt="${i}" value="${esc(p.v)}" inputmode="decimal"></div>`).join('')}</div>
+      <div class="row-actions"><button type="button" class="btn sm" data-act="addpt">${t('add_pt')}</button>${f.points.length>1?`<button type="button" class="btn sm ghost" data-act="rmpt">${t('rm_pt')}</button>`:''}</div>
+    </div>`;
+  } else {
+    mid = `<div class="sec"><h3><i>03</i>${t('s_ind')}</h3>
+      ${fld('limit', t('f_limit'), 'class="mono" inputmode="decimal"')}
+      ${f.inds.map((d,i) => `<div class="ind">
+        <label class="fld" for="il-${i}">${t('ind_loc')}<input id="il-${i}" data-ind="${i}" data-f="loc" value="${esc(d.loc)}"></label>
+        <label class="fld" for="it-${i}">${t('ind_type')}<select id="it-${i}" data-ind="${i}" data-f="type">${Object.keys(ITYPES).map(k => `<option value="${k}" ${d.type===k?'selected':''}>${L(ITYPES[k])}</option>`).join('')}</select></label>
+        <label class="fld" for="in-${i}">${t('ind_len')}<input id="in-${i}" class="mono" data-ind="${i}" data-f="len" value="${esc(d.len)}" inputmode="decimal"></label>
+        <button type="button" class="x" data-rmind="${i}" aria-label="remove">×</button></div>`).join('')}
+      <div class="row-actions"><button type="button" class="btn sm" data-act="addind">${t('add_ind')}</button></div>
+    </div>`;
+  }
+  return `
+    <div class="sec"><h3><i>01</i>${t('s_job')}</h3>
+      <div class="g2">
+        <label class="fld full" for="f-client">${t('f_client')}<input id="f-client" data-k="client" value="${esc(f.client)}"></label>
+        <label class="fld full" for="f-site">${t('f_site')}<input id="f-site" data-k="site" value="${esc(f.site)}"></label>
+        ${fld('tag', t('f_tag'), 'class="mono"')}
+        ${fld('date', t('f_date'), 'type="date"')}
+        ${fld('comp', t('f_comp'))}
+        ${fld('mat', t('f_mat'))}
+      </div>
+    </div>
+    <div class="sec"><h3><i>02</i>${t('s_method')}</h3>
+      <div class="methods" role="group">${methods}</div>
+      <label class="fld" for="f-std">${t('f_std')}<select id="f-std" data-k="std">${STDS.map(s => `<option ${f.std===s?'selected':''}>${s}</option>`).join('')}</select></label>
+    </div>
+    ${mid}
+    <div class="sec"><h3><i>04</i>${t('s_notes')}</h3>
+      <label class="fld" for="f-notes">${t('f_notes')}<textarea id="f-notes" data-k="notes" rows="4">${esc(f.notes)}</textarea></label>
+      <label class="drop" id="drop" for="f-photos">${t('drop')}</label>
+      <input id="f-photos" type="file" accept="image/*" multiple hidden>
+      <div class="thumbs" id="thumbs">${thumbsHTML()}</div>
+    </div>
+    <div class="sec"><h3><i>05</i>${t('s_insp')}</h3>
+      <label class="fld" for="f-insp">${t('f_insp')}<select id="f-insp" data-k="insp">${people.map(p => `<option value="${p.who||p.name}" ${f.insp===(p.who||p.name)?'selected':''}>${esc(certName(p))}</option>`).join('')}</select></label>
+      <div id="inspNote">${inspNoteHTML()}</div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn primary magnet" data-act="save">${state.editing?t('update'):t('save')}</button>
+      <button type="button" class="btn" data-act="copy">${t('copy')}</button>
+      <button type="button" class="btn ghost" data-act="reset">${t('reset')}</button>
+    </div>`;
+}
+function thumbsHTML(){ return state.photos.map((p,i) => `<figure><img src="${p.url}" alt=""><button type="button" data-rmph="${i}" aria-label="remove">×</button></figure>`).join(''); }
+function inspCert(){ const f = state.form; return state.certs.find(c => c.kind==='person' && (c.who||c.name) === f.insp); }
+function inspNoteHTML(){
+  const c = inspCert(); if (!c) return '';
+  const s = certStatus(c), d = daysUntil(c.exp);
+  const msg = s==='valid' ? t('cert_valid',{d:c.exp}) : s==='expiring' ? t('cert_expiring',{n:d,d:c.exp}) : t('cert_expired',{d:c.exp});
+  return `<div class="note ${s}"><span>${s==='expired'?'⚠':'●'}</span><span><span class="ltr">${esc(c.detail)}</span><br>${msg}</span></div>`;
+}
+
+function renderInspect(){
+  $('#app').innerHTML = `
+    <div class="pagehead"><div><h1>${state.editing ? `<span class="mono ltr">${state.editing}</span>` : t('in_title')}</h1><p>${t('in_sub')}</p></div><span class="sample">${t('sample')}</span></div>
+    <div class="inspect">
+      <form class="panel form" id="frm" autocomplete="off">${formHTML()}</form>
+      <section class="pv">
+        <div class="pbar"><span class="live">${t('live')}</span><button type="button" class="btn sm ghost" data-vopen>▶ ${t('v_watch')}</button><span style="flex:1"></span><span>${t('result')}:</span><span id="resPill"></span></div>
+        <div class="sheetwrap" id="sheet"><div id="paper"></div></div>
+      </section>
+    </div>`;
+  renderPaper();
+  bindForm();
+}
+
+/* ---------- report sheet ---------- */
+function chartSVG(c){
+  const rows = c.rows, n = rows.length; if (!n) return '';
+  const vals = rows.map(r => r.v).filter(isFinite);
+  const W = 520, H = 190, pl = 34, pr = 66, pt = 12, pb = 24;
+  const lo = Math.floor(Math.min(c.tmin, ...vals) - 1), hi = Math.ceil(Math.max(c.nom, ...vals) + 0.4);
+  const y = v => pt + (hi - v) / (hi - lo) * (H - pt - pb);
+  const bw = (W - pl - pr) / n;
+  const step = hi - lo > 8 ? 2 : 1;
+  const col = {accept:'#34A853', monitor:'#F2A900', reject:'#D70015'};
+  let g = '';
+  for (let v = lo; v <= hi; v += step) g += `<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="#EEF0F3"/><text x="${pl-6}" y="${y(v)+3.5}" text-anchor="end" font-size="9.5" fill="#6B7280">${v}</text>`;
+  const bars = rows.map((r,i) => {
+    const x = pl + i*bw + bw*.2, w = bw*.6;
+    const lab = `<text x="${x+w/2}" y="${H-8}" text-anchor="middle" font-size="9" fill="#6B7280">${pad(i+1)}</text>`;
+    if (!isFinite(r.v)) return lab;
+    const top = y(clamp(r.v, lo, hi));
+    return `<rect x="${x}" y="${top}" width="${w}" height="${Math.max(0, y(lo)-top)}" rx="3" fill="${col[r.st]}" opacity="${r.st==='accept'?.78:1}" data-tip="TML-${pad(i+1)} · ${r.v.toFixed(1)} mm · −${fx(r.loss,1)}%"></rect>${lab}`;
+  }).join('');
+  const line = (v, color, dash, label) => isFinite(v) ? `<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="${color}" stroke-width="1.5" stroke-dasharray="${dash}"/><text x="${W-pr+5}" y="${y(v)+3.5}" font-size="9.5" font-weight="600" fill="${color}">${label} ${v}</text>` : '';
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(t('r_chart'))}" style="display:block;direction:ltr;font-family:IBM Plex Mono,monospace">
+    ${g}${bars}
+    <line x1="${pl}" x2="${W-pr}" y1="${y(lo)}" y2="${y(lo)}" stroke="#9CA3AF"/>
+    ${line(c.nom,'#6B7280','2 3','nom')}${line(c.tmin,'#B91C1C','5 3','t-min')}
+  </svg>`;
+}
+function heatHTML(c){
+  const cols = 4, span = Math.max(.1, c.nom - c.tmin);
+  const cells = c.rows.map((r,i) => {
+    if (!isFinite(r.v)) return `<div style="background:#E5E7EB;color:#6B7280"><small>${pad(i+1)}</small>—</div>`;
+    const fr = clamp((r.v - c.tmin)/span, 0, 1);
+    const bg = r.v < c.tmin ? 'hsl(0 75% 32%)' : `hsl(${Math.round(fr*130)} ${fr>.5?55:78}% ${fr>.5?36:43}%)`;
+    return `<div style="background:${bg}" data-tip="TML-${pad(i+1)} · ${r.v.toFixed(1)} mm · ${t('res_'+r.st)}"><small>${pad(i+1)}</small>${r.v.toFixed(1)}</div>`;
+  }).join('');
+  return `<div class="heat" style="grid-template-columns:repeat(${cols},1fr)">${cells}</div><div class="legend"><span>t-min</span><i></i><span>nom</span></div>`;
+}
+function paperHTML(){
+  const f = state.form, c = compute(f), no = reportNo(), res = c.result;
+  const ic = inspCert(); const icS = ic ? certStatus(ic) : 'valid';
+  const inspName = ic ? certName(ic) : f.insp;
+  let results;
+  if (c.kind === 'ut'){
+    const nextTxt = res === 'reject' ? t('r_immediate') : `${fx(c.next,1)}<em>${t('yrs')}</em>`;
+    const nextDate = res === 'reject' ? '' : `<span class="ltr" style="font-size:10px;color:#6B7280">${addYears(f.date, c.next)}</span>`;
+    const half = Math.ceil(c.rows.length/2);
+    const tbl = part => `<table class="ptable"><thead><tr><th>${t('r_pt')}</th><th>${t('r_read')}</th><th>${t('r_lossc')}</th><th>${t('r_status')}</th></tr></thead><tbody>${part.map(r => `<tr><td class="num">${r.id}</td><td class="num">${fx(r.v,1)}</td><td class="num">${fx(r.loss,1)}</td><td class="c-${r.st||'accept'}" style="font-weight:600">${r.st?t('res_'+r.st):'—'}</td></tr>`).join('')}</tbody></table>`;
+    results = `
+      <div class="metrics">
+        <div><span>${t('r_min')}</span><b class="c-${res}">${fx(c.min,1)}<em>mm</em></b></div>
+        <div><span>${t('r_loss')}</span><b>${fx(c.loss,1)}<em>%</em></b></div>
+        <div><span>${t('r_rate')}</span><b>${c.rate>0?fx(c.rate,2):'0.00'}<em>${t('mmyr')}</em></b></div>
+        <div><span>${t('r_life')}</span><b class="c-${res}">${isFinite(c.life)?fx(Math.max(0,c.life),1)+`<em>${t('yrs')}</em>`:`<em>${t('nocorr')}</em>`}</b></div>
+        <div><span>${t('r_next')}</span><b>${nextTxt}</b>${nextDate}</div>
+      </div>
+      <div class="viz">
+        <figure><figcaption>${t('r_chart')}</figcaption>${chartSVG(c)}</figure>
+        <figure><figcaption>${t('r_map')}</figcaption>${heatHTML(c)}</figure>
+      </div>
+      <div class="two">${tbl(c.rows.slice(0,half))}${tbl(c.rows.slice(half))}</div>`;
+  } else {
+    results = `
+      <div class="metrics">
+        <div><span>${t('r_count')}</span><b>${c.rows.length}</b></div>
+        <div><span>${t('r_max')}</span><b>${fx(c.max,1)}<em>mm</em></b></div>
+        <div><span>${t('r_limit')}</span><b>${fx(c.limit,1)}<em>mm</em></b></div>
+        <div><span>${t('r_rej')}</span><b class="c-${c.rej?'reject':'accept'}">${c.rej}</b></div>
+        <div><span>${t('r_method')}</span><b>${f.method}</b></div>
+      </div>
+      <table class="ptable" style="margin-top:12px"><thead><tr><th>#</th><th>${t('ind_loc')}</th><th>${t('ind_type')}</th><th>${t('ind_len')}</th><th>${t('r_status')}</th></tr></thead>
+      <tbody>${c.rows.length ? c.rows.map(r => `<tr><td class="num">${r.id}</td><td><span class="ltr">${esc(r.loc)}</span></td><td>${L(ITYPES[r.type])}</td><td class="num">${fx(r.lenN,1)}</td><td class="c-${r.st}" style="font-weight:600">${t('res_'+r.st)}</td></tr>`).join('') : `<tr><td colspan="5" class="empty">—</td></tr>`}</tbody></table>`;
+  }
+  const sumKey = (c.kind==='ut'?'sum_':'sumi_') + res;
+  const photos = state.photos.length
+    ? `<div class="p-photos">${state.photos.map((p,i) => `<figure><img src="${p.url}" alt=""><figcaption>Fig. ${i+1} · ${esc(p.name.slice(0,22))}</figcaption></figure>`).join('')}</div>`
+    : `<p class="empty">${t('r_nophotos')}</p>`;
+  return `<article class="paper" lang="${state.lang}">
+    <div class="p-head">
+      <div class="p-logo">${t('r_logo')}</div>
+      <div class="p-title"><div class="t1">${t('r_title')}</div><div class="t2">${t('r_alt')} · ${esc(L(METHODS[f.method]))}</div></div>
+      <div class="p-no"><span>${t('r_no')}</span><b class="mono ltr">${no}</b><span class="mono ltr">${esc(f.date)}</span></div>
+    </div>
+    <div class="p-band">
+      <div class="p-tags"><span class="p-tag">${t('r_method')}: <b>${f.method}</b></span><span class="p-tag">${t('r_std')}: <b>${esc(f.std)}</b></span><span class="p-tag">Tag: <b>${esc(f.tag)}</b></span></div>
+      <span class="stamp c-${res}">${t('res_'+res)}<small>${res.toUpperCase()}</small></span>
+    </div>
+    <h4>${t('r_job')}</h4>
+    <table class="ptable kv"><tbody>
+      <tr><th>${t('f_client')}</th><td>${esc(f.client)}</td><th>${t('f_site')}</th><td>${esc(f.site)}</td></tr>
+      <tr><th>${t('f_tag')}</th><td class="mono">${esc(f.tag)}</td><th>${t('f_comp')}</th><td>${esc(f.comp)}</td></tr>
+      <tr><th>${t('f_mat')}</th><td class="mono">${esc(f.mat)}</td><th>${t('f_date')}</th><td class="mono">${esc(f.date)}</td></tr>
+      ${c.kind==='ut'?`<tr><th>${t('f_nom')}</th><td class="mono">${esc(f.nominal)} mm</td><th>t-min</th><td class="mono">${esc(f.tmin)} mm</td></tr>`:''}
+    </tbody></table>
+    <h4>${t('r_results')}<span>${esc(L(METHODS[f.method]))}</span></h4>
+    ${results}
+    <div class="summary c-${res} bg-${res}"><b>${t('result')}: ${t('res_'+res)}</b><p>${t(sumKey)}</p></div>
+    <h4>${t('r_notes')}</h4>
+    <p class="p-notes">${esc(f.notes) || '<span class="empty">—</span>'}</p>
+    <h4>${t('r_photos')}<span>${state.photos.length||''}</span></h4>
+    ${photos}
+    <div class="signs">
+      <div><span>${t('r_insp')}</span><b>${esc(inspName)}</b><span class="ltr">${ic?esc(ic.detail):''}</span>${icS==='expired'?`<div class="warnbox">${t('cert_expired',{d:ic.exp})}</div>`:''}<div class="line">${t('r_sign')}</div></div>
+      <div><span>${t('r_review')}</span><b>&nbsp;</b><div class="line">${t('r_sign')}</div></div>
+    </div>
+    <div class="p-foot"><span class="by">${t('r_auto')} ${LOGO(14)} Suna</span><span class="mono ltr">${no} · ${t('r_page')}</span></div>
+  </article>`;
+}
+function renderPaper(){
+  const p = $('#paper'); if (!p) return;
+  p.innerHTML = paperHTML();
+  const res = compute(state.form).result;
+  if (res !== renderPaper.last){ const st = p.querySelector('.stamp'); st && st.classList.add('pop'); renderPaper.last = res; }
+  $('#resPill').innerHTML = `<span class="pill ${res}">${t('res_'+res)}</span>`;
+}
+function refreshPointMarks(){
+  if (state.form.method !== 'UT') return;
+  const c = compute(state.form);
+  document.querySelectorAll('[data-pt]').forEach(el => { const r = c.rows[+el.dataset.pt]; el.className = 'mono s-' + (r && r.st || 'none'); });
+}
+
+/* ---------- form events ---------- */
+function bindForm(){
+  const frm = $('#frm');
+  frm.addEventListener('submit', e => e.preventDefault());
+  frm.addEventListener('input', e => {
+    const el = e.target, f = state.form;
+    if (el.dataset.k){ f[el.dataset.k] = el.value; if (['nominal','tmin'].includes(el.dataset.k)) refreshPointMarks(); if (el.dataset.k==='insp') $('#inspNote').innerHTML = inspNoteHTML(); }
+    else if (el.dataset.pt){ f.points[+el.dataset.pt].v = el.value; refreshPointMarks(); }
+    else if (el.dataset.ind){ f.inds[+el.dataset.ind][el.dataset.f] = el.value; }
+    else return;
+    renderPaper();
+  });
+  frm.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const f = state.form;
+    if (b.dataset.method){ f.method = b.dataset.method; f.std = {UT:'API 510',MT:'ASME Sec. V',PT:'ASME Sec. V',VT:'API 570',RT:'ASME B31.3'}[f.method]; return renderInspect(); }
+    if (b.dataset.rmind){ f.inds.splice(+b.dataset.rmind,1); return renderInspect(); }
+    if (b.dataset.rmph){ state.photos.splice(+b.dataset.rmph,1); $('#thumbs').innerHTML = thumbsHTML(); return renderPaper(); }
+    const a = b.dataset.act;
+    if (a==='addpt'){ const last = f.points[f.points.length-1]; f.points.push({v:last?last.v:''}); renderInspect(); const el = document.getElementById('pt-'+(f.points.length-1)); el && el.focus(); el && el.select(); }
+    if (a==='rmpt'){ f.points.pop(); renderInspect(); }
+    if (a==='addind'){ f.inds.push({loc:'', type:'linear', len:''}); renderInspect(); const el = document.getElementById('il-'+(f.inds.length-1)); el && el.focus(); }
+    if (a==='save') saveReport();
+    if (a==='copy') copySummary();
+    if (a==='reset'){ state.form = defaultForm(); state.editing = null; state.photos = []; renderInspect(); window.scrollTo({top:0}); }
+  });
+  const inp = $('#f-photos'), drop = $('#drop');
+  const addFiles = files => { [...files].filter(x => x.type.startsWith('image/')).slice(0, 8 - state.photos.length).forEach(x => state.photos.push({url:URL.createObjectURL(x), name:x.name})); $('#thumbs').innerHTML = thumbsHTML(); renderPaper(); };
+  inp.addEventListener('change', () => { addFiles(inp.files); inp.value = ''; });
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+}
+function saveReport(){
+  const f = state.form, res = compute(f).result, no = reportNo();
+  const entry = {no, date:f.date, tag:f.tag, method:f.method, result:res, insp:f.insp, user:true, form:JSON.parse(JSON.stringify(f)), photos:[...state.photos]};
+  const i = state.reports.findIndex(r => r.no === no);
+  if (i >= 0) state.reports[i] = entry; else { state.reports.unshift(entry); state.seq++; }
+  toast(t('saved',{no}));
+  state.highlight = no; state.editing = null; state.form = defaultForm(); state.photos = [];
+  go('reports');
+}
+function copySummary(){
+  const f = state.form, c = compute(f);
+  const lines = [
+    `${t('r_title')} — ${reportNo()}`,
+    `${t('f_client')}: ${f.client}`, `${t('f_site')}: ${f.site}`,
+    `${t('f_tag')}: ${f.tag} · ${f.comp}`, `${t('r_method')}: ${f.method} · ${f.std} · ${f.date}`,
+    c.kind==='ut' ? `${t('r_min')}: ${fx(c.min,1)} mm · ${t('r_loss')}: ${fx(c.loss,1)}% · ${t('r_life')}: ${isFinite(c.life)?fx(Math.max(0,c.life),1)+' '+t('yrs'):t('nocorr')}` : `${t('r_count')}: ${c.rows.length} · ${t('r_rej')}: ${c.rej}`,
+    `${t('result')}: ${t('res_'+c.result)}`, t((c.kind==='ut'?'sum_':'sumi_')+c.result)
+  ].join('\n');
+  try { navigator.clipboard.writeText(lines).then(() => toast(t('copied')), () => toast(t('copyFail'))); } catch(e){ toast(t('copyFail')); }
+}
+
+/* ---------- reports register ---------- */
+function renderReports(){
+  $('#app').innerHTML = `
+    <div class="pagehead"><div><h1>${t('rp_title')}</h1><p>${t('rp_sub')}</p></div><button class="btn primary" data-go="inspect">${t('go_new')}</button></div>
+    <section class="panel">
+      <div class="toolbar"><input id="q" type="search" placeholder="${t('rp_search')}" value="${esc(state.search)}" aria-label="${t('rp_search')}"></div>
+      <div class="tblwrap"><table class="tbl"><thead><tr><th>${t('rp_no')}</th><th>${t('rp_date')}</th><th>${t('rp_tag')}</th><th>${t('rp_method')}</th><th>${t('rp_insp')}</th><th>${t('rp_result')}</th><th></th></tr></thead><tbody id="rbody"></tbody></table></div>
+    </section>`;
+  const fill = () => {
+    const q = state.search.trim().toLowerCase();
+    const rows = state.reports.filter(r => !q || r.no.toLowerCase().includes(q) || r.tag.toLowerCase().includes(q));
+    $('#rbody').innerHTML = rows.length ? rows.map(r => `<tr class="${state.highlight===r.no?'hl':''}">
+      <td class="mono ltr">${r.no}</td><td class="mono">${r.date}</td><td class="mono ltr">${esc(r.tag)}</td>
+      <td><b class="mono">${r.method}</b> <span class="kind">${esc(L(METHODS[r.method]))}</span></td>
+      <td>${esc(L(PEOPLE[r.insp]) || r.insp)}</td><td><span class="pill ${r.result}">${t('res_'+r.result)}</span></td>
+      <td>${r.user?`<button class="btn sm" data-open="${r.no}">${t('rp_open')}</button>`:''}</td></tr>`).join('')
+      : `<tr><td colspan="7" style="color:var(--muted)">${t('rp_none')}</td></tr>`;
+  };
+  fill();
+  $('#q').addEventListener('input', e => { state.search = e.target.value; fill(); });
+  $('#rbody').addEventListener('click', e => {
+    const b = e.target.closest('[data-open]'); if (!b) return;
+    const r = state.reports.find(x => x.no === b.dataset.open);
+    state.form = JSON.parse(JSON.stringify(r.form)); state.photos = [...(r.photos||[])]; state.editing = r.no; go('inspect');
+  });
+}
+
+/* ---------- certifications ---------- */
+function renderCerts(){
+  const all = state.certs.map((c,i) => ({...c, i, st:certStatus(c), d:daysUntil(c.exp)})).sort((a,b) => a.d - b.d);
+  const cnt = k => k==='all' ? all.length : all.filter(c => c.st===k).length;
+  const rows = all.filter(c => state.certFilter==='all' || c.st===state.certFilter);
+  const barCol = {valid:'var(--ok)', expiring:'var(--warn)', expired:'var(--bad)'};
+  $('#app').innerHTML = `
+    <div class="pagehead"><div><h1>${t('c_title')}</h1><p>${t('c_sub')}</p></div><span class="sample">${t('sample')}</span></div>
+    <section class="panel">
+      <div class="toolbar"><div class="seg" role="group">${['all','expiring','expired'].map(k => `<button type="button" data-cf="${k}" aria-pressed="${state.certFilter===k}">${t('c_'+k)}<i>${cnt(k)}</i></button>`).join('')}</div></div>
+      <div class="tblwrap"><table class="tbl"><thead><tr><th>${t('c_name')}</th><th>${t('c_kind')}</th><th>${t('c_detail')}</th><th>${t('c_exp')}</th><th>${t('c_left')}</th><th>${t('c_status')}</th></tr></thead>
+      <tbody>${rows.map(c => `<tr>
+        <td><b style="font-weight:600">${esc(certName(c))}</b></td>
+        <td class="kind">${c.kind==='person'?t('k_person'):t('k_equip')}</td>
+        <td><span class="ltr">${esc(c.detail)}</span></td>
+        <td class="mono">${c.exp}</td>
+        <td><div class="days"><b>${c.d<0?t('ago',{n:-c.d}):c.d+' '+t('days')}</b><div class="bar"><i style="width:${c.d<0?100:clamp(c.d/365*100,4,100)}%;background:${barCol[c.st]}"></i></div></div></td>
+        <td><span class="pill ${c.st}">${t('st_'+c.st)}</span></td></tr>`).join('')}</tbody></table></div>
+      <form class="addc" id="addc" autocomplete="off">
+        <label class="fld" for="nc-name">${t('c_name')}<input id="nc-name"></label>
+        <label class="fld" for="nc-kind">${t('c_kind')}<select id="nc-kind"><option value="person">${t('k_person')}</option><option value="equip">${t('k_equip')}</option></select></label>
+        <label class="fld" for="nc-detail">${t('c_detail')}<input id="nc-detail" placeholder="ASNT Level II — PT"></label>
+        <label class="fld" for="nc-exp">${t('c_exp')}<input id="nc-exp" type="date" value="${dayOffset(20)}"></label>
+        <button class="btn primary" type="submit">${t('c_addbtn')}</button>
+      </form>
+    </section>`;
+  $('.seg').addEventListener('click', e => { const b = e.target.closest('[data-cf]'); if (b){ state.certFilter = b.dataset.cf; renderCerts(); } });
+  $('#addc').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#nc-name').value.trim(), exp = $('#nc-exp').value;
+    if (!name || !exp) return toast(t('c_need'));
+    const kind = $('#nc-kind').value;
+    state.certs.push(kind==='person' ? {kind, name, detail:$('#nc-detail').value.trim(), exp} : {kind, name:{ar:name,en:name}, detail:$('#nc-detail').value.trim(), exp});
+    toast(t('c_added')); renderTop(); renderCerts();
+  });
+}
+
+
+/* ---------- explainer video ---------- */
+const VDUR = 32, VS = [[0,4],[4,11],[11,17],[17,22],[22,27],[27,32]];
+const VV = [11.6,11.4,10.9,10.2,9.1,11.5,11.0,10.6,9.4,11.3,11.7,11.1];
+const ez = x => 1 - Math.pow(1 - clamp(x,0,1), 3);
+const sg = (x,a,b) => clamp((x-a)/(b-a), 0, 1);
+const ICON = {
+  play:'<svg viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>',
+  replay:'<svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>',
+  full:'<svg viewBox="0 0 24 24"><path d="M4 9V4h5v2H6v3zm11-5h5v5h-2V6h-3zM4 15h2v3h3v2H4zm14 3v-3h2v5h-5v-2z"/></svg>'
+};
+function vcap(n, title, sub){ return `<div class="vcap">${n?`<span class="num">${n} / 04</span>`:''}<h3>${title}</h3><p>${sub}</p></div>`; }
+function videoHTML(){
+  const cells = VV.map((v,k) => `<div class="vcell" style="left:${259+(k%4)*114}px;top:${222+(k/4|0)*76}px"><small>TML-${pad(k+1)}</small><span></span></div>`).join('');
+  const lo = 7, hi = 13, cy = v => 20 + (hi - v)/(hi - lo)*220;
+  const bars = VV.map((v,k) => `<rect class="vb" x="${48 + k*31}" width="20" rx="4" data-y="${cy(v)}" y="240" height="0" fill="${v < 9.24 ? '#F2A900' : '#34A853'}" opacity="${v < 9.24 ? 1 : .8}"/>`).join('');
+  const grid = [8,9,10,11,12,13].map(v => `<line x1="40" x2="420" y1="${cy(v)}" y2="${cy(v)}" stroke="#F0F0F2"/><text x="32" y="${cy(v)+4}" font-size="11" text-anchor="end" fill="#A1A1A6">${v}</text>`).join('');
+  const met = (x,y,lab,unit) => `<div class="vcard vmet" style="left:${x}px;top:${y}px"><span>${lab}</span><b><i class="vn" style="font-style:normal">0</i><em>${unit}</em></b></div>`;
+  const ppl = [['ali','ASNT Level II — UT','ok','st_valid'],['zainab','ASNT Level II — MT / PT','ok','st_valid'],['omar','API 510 Authorized Inspector','bad','st_expired']];
+  return `<div class="vplayer" data-vplayer>
+  <div class="vframe">
+    <div class="vstage" style="--vdir:${state.lang==='ar'?'rtl':'ltr'}">
+      <div class="vblob" style="width:420px;height:420px;background:#FFB877;left:620px;top:-120px"></div>
+      <div class="vblob" style="width:360px;height:360px;background:#FFD3AD;left:-100px;top:300px"></div>
+      <div class="sc" data-s="0">
+        <div class="vlogo" style="position:absolute;left:425px;top:150px">${LOGO(110)}</div>
+        <div style="position:absolute;left:0;right:0;top:290px;text-align:center"><div style="font-family:var(--f-display);font-size:64px;font-weight:700;letter-spacing:-.04em">Suna</div><p class="vtag" style="font-size:19px;color:#6E6E73;margin:4px 0 0">${t('v1s')}</p></div>
+      </div>
+      <div class="sc" data-s="1">${vcap('01', t('v2t'), t('v2s'))}
+        <div class="vcard" style="left:229px;top:176px;width:502px;height:288px"></div>
+        <div style="position:absolute;left:259px;top:188px;font-family:var(--f-mono);font-size:13px;color:#86868B;width:442px;display:flex;justify-content:space-between"><span>V-1203 · UT · API 510</span><span class="vcount">0 / 12</span></div>
+        ${cells}
+        <svg class="vcursor" viewBox="0 0 24 24"><path d="M4 2l15 9-7 1.6L9 20z" fill="#1D1D1F" stroke="#fff" stroke-width="1.5"/></svg>
+      </div>
+      <div class="sc" data-s="2">${vcap('02', t('v3t'), t('v3s'))}
+        <div class="vcard" style="left:110px;top:190px;width:460px;height:290px">
+          <svg width="460" height="290" viewBox="0 -10 440 280" style="position:absolute;inset:0;padding:12px 10px">${grid}${bars}
+            <line class="vtmin" x1="40" x2="420" y1="${cy(8.4)}" y2="${cy(8.4)}" stroke="#D70015" stroke-width="2" stroke-dasharray="6 5" pathLength="380" style="stroke-dasharray:380;stroke-dashoffset:380"/>
+            <text class="vtmint" x="420" y="${cy(8.4)-6}" text-anchor="end" font-size="12" font-weight="700" fill="#D70015" opacity="0">t-min 8.4</text>
+          </svg></div>
+        ${met(600,190,t('r_min'),'mm')}${met(766,190,t('r_loss'),'%')}${met(600,318,t('r_rate'),t('mmyr'))}${met(766,318,t('r_life'),t('yrs'))}
+      </div>
+      <div class="sc" data-s="3">${vcap('03', t('v4t'), t('v4s'))}
+        <div class="vcard vrep" style="left:290px;top:182px;width:380px;height:300px">
+          <div style="position:absolute;left:24px;top:22px;display:flex;align-items:center;gap:10px">${LOGO(30)}<div><div style="font-weight:700;font-size:15px">${t('r_title')}</div><div style="font-family:var(--f-mono);font-size:11px;color:#86868B">NDT-UT-2026-0147</div></div></div>
+          <div class="vline" style="left:24px;top:84px;width:332px;height:2px;background:#FF7A00"></div>
+          <div class="vline" style="left:24px;top:104px;width:200px"></div><div class="vline" style="left:24px;top:124px;width:260px"></div><div class="vline" style="left:24px;top:144px;width:170px"></div>
+          <div class="vline" style="left:24px;top:176px;width:332px;height:44px;border-radius:10px;background:#F5F5F7"></div>
+          <div class="vsum" style="position:absolute;left:24px;right:24px;top:236px;padding:9px 12px;border-left:4px solid #A15C07;background:#FDF3D9;border-radius:6px;font-size:12.5px;color:#1D1D1F;opacity:0;direction:${state.lang==='ar'?'rtl':'ltr'}">${t('sum_monitor')}</div>
+          <div class="vstamp" style="left:196px;top:100px">${t('res_monitor')}<small>MONITOR</small></div>
+        </div>
+      </div>
+      <div class="sc" data-s="4">${vcap('04', t('v5t'), t('v5s'))}
+        ${ppl.map((p,i) => `<div class="vcard vrow" style="top:${190+i*76}px;direction:${state.lang==='ar'?'rtl':'ltr'}"><span class="av">${esc(L(PEOPLE[p[0]])[0])}</span><div class="nm"><b>${esc(L(PEOPLE[p[0]]))}</b><span>${p[1]}</span></div><span class="vpill" data-final="${p[2]}" data-label="${esc(t(p[3]))}">···</span></div>`).join('')}
+        <div class="vban" style="top:426px">⚠ ${t('v5ban')}</div>
+      </div>
+      <div class="sc" data-s="5">
+        <div class="vcard vthumb" style="left:200px;top:110px;width:250px;height:330px">
+          <div style="position:absolute;left:20px;top:20px">${LOGO(26)}</div>
+          <div class="vline" style="left:20px;top:62px;width:210px;height:2px;background:#FF7A00"></div>
+          ${[80,98,116,134].map((y,i) => `<div class="vline" style="left:20px;top:${y}px;width:${[180,150,200,120][i]}px;height:7px"></div>`).join('')}
+          <div class="vline" style="left:20px;top:156px;width:210px;height:70px;border-radius:8px;background:#FFF1E5"></div>
+          ${[240,256,272].map(y => `<div class="vline" style="left:20px;top:${y}px;width:210px;height:7px"></div>`).join('')}
+          <div style="position:absolute;left:20px;right:20px;bottom:20px;border-top:1px solid #C7C7CC;padding-top:4px;font-size:10px;color:#A1A1A6">${t('r_sign')}</div>
+          <svg width="76" height="76" viewBox="0 0 76 76" style="position:absolute;right:-26px;bottom:-26px"><circle cx="38" cy="38" r="36" fill="#FF7A00"/><path class="vchk" d="M22 39l10 10 22-22" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" pathLength="1" style="stroke-dasharray:1;stroke-dashoffset:1"/></svg>
+        </div>
+        <div style="position:absolute;left:520px;top:140px;width:380px;direction:${state.lang==='ar'?'rtl':'ltr'};text-align:start" class="vend"><h3 style="font-family:var(--f-display);font-size:38px;font-weight:700;letter-spacing:-.025em;margin:0;line-height:1.1">${t('v6t')}</h3><p style="font-size:16px;color:#6E6E73;margin:8px 0 0">${t('v6s')}</p></div>
+        <div class="vlist" style="direction:${state.lang==='ar'?'rtl':'ltr'};${state.lang==='ar'?'left:auto;right:60px':''}">${['v6a','v6b','v6c'].map(k => `<div><i>✓</i>${t(k)}</div>`).join('')}</div>
+      </div>
+    </div>
+    <button class="vbig" type="button" aria-label="${t('v_play')}">${ICON.play}</button>
+    <div class="vctrl">
+      <button type="button" class="vpp" aria-label="${t('v_play')}">${ICON.play}</button>
+      <div class="vbar"><div class="tr"></div><div class="fl"></div>${VS.slice(1).map(s => `<span class="mk" style="left:${s[0]/VDUR*100}%"></span>`).join('')}<span class="kn"></span></div>
+      <span class="vchap"></span><span class="vtime">0:00 / 0:32</span>
+      <button type="button" class="vfs" aria-label="${t('v_full')}">${ICON.full}</button>
+    </div>
+  </div></div>`;
+}
+const fmtT = x => `${Math.floor(x/60)}:${pad(Math.floor(x%60))}`;
+function mountPlayers(root){ root.querySelectorAll('[data-vplayer]').forEach(initPlayer); }
+function initPlayer(el){
+  if (el._v) return;
+  const q = s => el.querySelector(s), qa = s => [...el.querySelectorAll(s)];
+  const frame = q('.vframe'), stage = q('.vstage'), scenes = qa('.sc'), cells = qa('.vcell'), bars = qa('.vb'), mets = qa('.vn'), pills = qa('.vpill'), rows = qa('.vrow');
+  const P = {t:2.6, playing:false, started:false, idleT:0};
+  el._v = P;
+  const fit = () => { const w = frame.clientWidth, h = frame.clientHeight || w*9/16, s = Math.min(w/960, h/540); stage.style.transform = `translate(${(w - 960*s)/2}px, ${(h - 540*s)/2}px) scale(${s})`; };
+  try { new ResizeObserver(fit).observe(frame); } catch(e){ addEventListener('resize', fit); }
+  fit();
+  const metVals = [[12,9.1,1],[0,24.2,1],[0,0.53,2],[0,1.3,1]];
+  function draw(t){
+    VS.forEach(([a,b],i) => {
+      const sc = scenes[i], lt = t - a;
+      const vin = sg(lt,0,.55), vout = i === VS.length-1 ? 1 : 1 - sg(t, b-.45, b);
+      const o = (t >= a && t <= b + .001) ? Math.min(ez(vin), vout) : 0;
+      sc.style.opacity = o; sc.style.visibility = o > 0 ? 'visible' : 'hidden';
+      sc.style.transform = `translateY(${(1-ez(vin))*18 - (1-vout)*10}px) scale(${.985 + .015*ez(vin)})`;
+    });
+    // 0 intro
+    { const lt = t; const lg = q('.vlogo'); const p = ez(sg(lt,.2,1.1));
+      lg.style.transform = `scale(${.6+.4*p}) rotate(${(1-p)*-25}deg)`; lg.style.opacity = p; q('.vtag').style.opacity = sg(lt,1,1.7); }
+    // 1 readings
+    { const lt = t - 4; let cur = 0, done = 0;
+      cells.forEach((c,k) => { const st = .9 + k*.42, str = VV[k].toFixed(1), n = Math.round(sg(lt,st,st+.3)*str.length);
+        c.lastChild.textContent = str.slice(0,n);
+        const full = n === str.length; c.classList.toggle('ok', full && VV[k] >= 9.24); c.classList.toggle('warn', full && VV[k] < 9.24);
+        c.style.transform = lt >= st && lt < st + .35 ? 'scale(1.06)' : ''; c.style.background = (lt >= st && lt < st+.35) ? '#fff' : '';
+        c.style.boxShadow = (lt >= st && lt < st+.35) ? '0 0 0 3px rgba(255,122,0,.35)' : '';
+        if (lt >= st - .15) cur = k; if (full) done++; });
+      q('.vcount').textContent = `${done} / 12 ${t_('v_pts')}`;
+      const k = cur, x = 259 + (k%4)*114 + 70, y = 222 + (k/4|0)*76 + 44;
+      const cu = q('.vcursor'); cu.style.left = x + 'px'; cu.style.top = y + 'px'; cu.style.opacity = sg(lt,.5,.9) * (1 - sg(lt,6.3,6.8)); cu.style.transition = 'left .25s cubic-bezier(.22,1,.36,1), top .25s cubic-bezier(.22,1,.36,1)'; }
+    // 2 maths
+    { const lt = t - 11;
+      bars.forEach((b,k) => { const p = ez(sg(lt,.4 + k*.07, 1.1 + k*.07)), y1 = +b.dataset.y; b.setAttribute('y', 240 - (240 - y1)*p); b.setAttribute('height', (240 - y1)*p); });
+      const tm = q('.vtmin'); tm.style.strokeDashoffset = 380*(1 - ez(sg(lt,1.4,2.3))); tm.style.strokeDasharray = sg(lt,1.4,2.3) >= 1 ? '6 5' : '380';
+      q('.vtmint').setAttribute('opacity', sg(lt,2.1,2.5));
+      mets.forEach((m,i) => { const [a0,a1,d] = metVals[i], p = ez(sg(lt,1.8 + i*.25, 3.4 + i*.25)); m.textContent = (a0 + (a1-a0)*p).toFixed(d); m.parentElement.style.color = (i===0||i===3) && p >= 1 ? '#A15C07' : ''; });
+      qa('[data-s="2"] .vmet').forEach((m,i) => { const p = ez(sg(lt,1.5 + i*.15, 2.1 + i*.15)); m.style.opacity = p; m.style.transform = `translateY(${(1-p)*16}px)`; }); }
+    // 3 verdict
+    { const lt = t - 17; const rep = q('.vrep'), stp = q('.vstamp');
+      const pin = ez(sg(lt,.1,.8)); const shake = lt > 1.45 && lt < 1.8 ? Math.sin((lt-1.45)*70)*4*(1 - sg(lt,1.45,1.8)) : 0;
+      rep.style.transform = `translate(${shake}px, ${(1-pin)*30}px)`; rep.style.opacity = pin;
+      const sp = sg(lt,1.1,1.45); stp.style.opacity = sp; stp.style.transform = `rotate(-6deg) scale(${2.4 - 1.4*ez(sp)})`;
+      q('.vsum').style.opacity = sg(lt,1.9,2.5); }
+    // 4 certificates
+    { const lt = t - 22;
+      rows.forEach((r,i) => { const p = ez(sg(lt,.3 + i*.22, .9 + i*.22)); r.style.opacity = p; r.style.transform = `translateY(${(1-p)*18}px)`; });
+      pills.forEach((pl,i) => { const at = 1.2 + i*.45; if (lt >= at){ pl.className = 'vpill ' + pl.dataset.final; pl.textContent = pl.dataset.label; } else { pl.className = 'vpill'; pl.textContent = '···'; } });
+      const sh = lt > 2.1 && lt < 2.5 ? Math.sin((lt-2.1)*80)*5*(1-sg(lt,2.1,2.5)) : 0;
+      rows[2].style.transform += ` translateX(${sh}px)`; rows[2].style.boxShadow = lt >= 2.1 ? '0 0 0 2px rgba(215,0,21,.45), 0 24px 50px -20px rgba(215,0,21,.35)' : '';
+      const bp = ez(sg(lt,2.8,3.3)), bn = q('.vban'); bn.style.opacity = bp; bn.style.transform = `translateY(${(1-bp)*16}px) scale(${.96+.04*bp})`; }
+    // 5 outro
+    { const lt = t - 27; const th = q('.vthumb'), p = ez(sg(lt,.1,.9));
+      th.style.transform = `translateY(${(1-p)*40}px) rotate(${-4*p}deg)`; th.style.opacity = p;
+      q('.vchk').style.strokeDashoffset = 1 - ez(sg(lt,.9,1.5));
+      const ve = q('.vend'), pe = ez(sg(lt,.5,1.2)); ve.style.opacity = pe; ve.style.transform = `translateY(${(1-pe)*14}px)`;
+      qa('.vlist div').forEach((d,i) => { const pp = ez(sg(lt,1.3 + i*.3, 1.8 + i*.3)); d.style.opacity = pp; d.style.transform = `translateX(${(1-pp)*(state.lang==='ar'?-14:14)}px)`; }); }
+    // background drift
+    qa('.vblob').forEach((b,i) => b.style.transform = `translate(${Math.sin(t/4 + i*2)*40}px, ${Math.cos(t/5 + i)*30}px)`);
+    // controls
+    const pr = (P.started ? t : 0)/VDUR*100;
+    q('.fl').style.width = pr + '%'; q('.kn').style.left = pr + '%';
+    q('.vtime').textContent = `${fmtT(P.started ? t : 0)} / ${fmtT(VDUR)}`;
+    const ci = Math.max(0, VS.findIndex(([a,b]) => t >= a && t < b)); q('.vchap').textContent = P.started ? T[state.lang].vch[t >= VDUR ? 5 : ci] : '';
+  }
+  const t_ = k => t(k);
+  let last = 0, raf = 0;
+  function loop(now){
+    raf = 0; if (!el.isConnected){ P.playing = false; return; }
+    if (P.playing){ P.t += Math.min(.05, (now - last)/1000); last = now;
+      if (P.t >= VDUR){ P.t = VDUR; setPlaying(false, true); } else raf = requestAnimationFrame(loop);
+      if (now - P.idleT > 2200) frame.classList.add('idle'); }
+    draw(P.t);
+  }
+  function setPlaying(on, ended){
+    P.playing = on; frame.classList.toggle('playing', on);
+    q('.vpp').innerHTML = on ? ICON.pause : (ended ? ICON.replay : ICON.play);
+    q('.vbig').innerHTML = ended ? ICON.replay : ICON.play;
+    if (on){ if (!P.started || P.t >= VDUR){ P.t = P.started && P.t < VDUR ? P.t : 0; } P.started = true; last = performance.now(); P.idleT = last; if (!raf) raf = requestAnimationFrame(loop); }
+  }
+  P.play = () => setPlaying(true); P.toggle = () => setPlaying(!P.playing);
+  frame.addEventListener('click', e => { if (e.target.closest('.vctrl') && !e.target.closest('.vpp')) return; if (e.target.closest('.vpp') || e.target.closest('.vbig') || !e.target.closest('.vctrl')) P.toggle(); });
+  frame.addEventListener('pointermove', () => { P.idleT = performance.now(); frame.classList.remove('idle'); });
+  q('.vfs').addEventListener('click', e => { e.stopPropagation(); try { if (document.fullscreenElement) document.exitFullscreen(); else frame.requestFullscreen().catch(() => {}); } catch(_){} });
+  const bar = q('.vbar');
+  const seek = e => { const r = bar.getBoundingClientRect(); P.t = clamp((e.clientX - r.left)/r.width, 0, 1)*VDUR; P.started = true; if (P.t < VDUR && !P.playing) q('.vpp').innerHTML = ICON.play; draw(P.t); };
+  bar.addEventListener('pointerdown', e => { e.stopPropagation(); bar.classList.add('drag'); bar.setPointerCapture(e.pointerId); seek(e); });
+  bar.addEventListener('pointermove', e => { if (bar.classList.contains('drag')) seek(e); });
+  bar.addEventListener('pointerup', () => bar.classList.remove('drag'));
+  bar.addEventListener('click', e => e.stopPropagation());
+  draw(P.t);
+}
+function openVideo(){
+  const m = $('#vmodal'); $('#vslot').innerHTML = videoHTML(); m.hidden = false; mountPlayers(m);
+  setTimeout(() => { const p = m.querySelector('[data-vplayer]'); p && p._v && p._v.play(); }, 250);
+}
+function closeVideo(){ const m = $('#vmodal'); m.hidden = true; $('#vslot').innerHTML = ''; }
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-vopen]')){ openVideo(); return; }
+  if (e.target.closest('[data-vclose]') || e.target.id === 'vmodal'){ closeVideo(); return; }
+  if (e.target.closest('[data-vjump]')){ const s = $('#howto'); s && s.scrollIntoView({behavior:'smooth', block:'center'}); const p = s && s.querySelector('[data-vplayer]'); setTimeout(() => p && p._v && p._v.play(), 500); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#vmodal').hidden) closeVideo(); });
+
+/* ---------- shell ---------- */
+let toastTimer;
+function toast(msg){ const el = $('#toast'); el.textContent = msg; el.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), 2600); }
+const VIEWS = {overview:renderOverview, inspect:renderInspect, reports:renderReports, certs:renderCerts};
+function render(){
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
+  document.title = 'Suna';
+  renderTop(); VIEWS[state.view]();
+}
+function go(v){ if (location.hash.slice(1) !== v) location.hash = v; else { state.view = v; render(); } window.scrollTo({top:0}); }
+window.addEventListener('hashchange', () => { const v = location.hash.slice(1); state.view = VIEWS[v] ? v : 'overview'; if (state.view !== 'reports') state.highlight = null; render(); animateIn(); });
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g){ e.preventDefault(); go(g.dataset.go); return; }
+  if (e.target.closest('#langBtn')){
+    const prev = state.lang, untouched = JSON.stringify(state.form) === JSON.stringify(defaultForm());
+    state.lang = prev === 'ar' ? 'en' : 'ar';
+    if (untouched && !state.editing) state.form = defaultForm();
+    render(); animateIn();
+  }
+});
+state.view = VIEWS[location.hash.slice(1)] ? location.hash.slice(1) : 'overview';
+render(); animateIn();
+
+/* ---------- motion & mouse ---------- */
+var fine = matchMedia('(pointer: fine)').matches, calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animateIn(){
+  const a = $('#app'); a.classList.remove('view-in'); void a.offsetWidth; a.classList.add('view-in');
+  if (calm) return;
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const end = +el.dataset.count, suf = el.dataset.suffix || '', t0 = performance.now(), dur = 900;
+    const step = now => { const p = Math.min(1, (now - t0)/dur), e = 1 - Math.pow(1-p, 3); el.textContent = Math.round(end*e) + suf; if (p < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+const glow = $('#glow'), tip = $('#tip'), layers = [...document.querySelectorAll('.scene .layer')];
+let tiltEl = null, magEl = null, raf = 0, mx = innerWidth/2, my = innerHeight/2;
+document.addEventListener('pointermove', e => {
+  mx = e.clientX; my = e.clientY;
+  if (!raf) raf = requestAnimationFrame(frame);
+  // tooltip
+  const tg = e.target.closest && e.target.closest('[data-tip]');
+  if (tg){ tip.textContent = tg.getAttribute('data-tip'); tip.classList.add('on');
+    const w = tip.offsetWidth; tip.style.left = Math.min(innerWidth - w - 8, Math.max(8, mx - w/2)) + 'px'; tip.style.top = (my - 40) + 'px'; }
+  else tip.classList.remove('on');
+  if (!fine || calm) return;
+  // card tilt + spotlight
+  const tl = e.target.closest && e.target.closest('.tilt');
+  if (tiltEl && tiltEl !== tl){ tiltEl.style.transform = ''; }
+  tiltEl = tl;
+  if (tl){ const r = tl.getBoundingClientRect(), px = (mx - r.left)/r.width, py = (my - r.top)/r.height;
+    tl.style.setProperty('--mx', px*100 + '%'); tl.style.setProperty('--my', py*100 + '%');
+    const k = Math.min(1, 320 / Math.max(r.width, r.height));
+    tl.style.transform = `perspective(1000px) rotateX(${(.5-py)*7*k}deg) rotateY(${(px-.5)*7*k}deg) translateY(-2px)`; }
+  // magnetic buttons
+  const mg = e.target.closest && e.target.closest('.magnet');
+  if (magEl && magEl !== mg) magEl.style.transform = '';
+  magEl = mg;
+  if (mg){ const r = mg.getBoundingClientRect(); mg.style.transform = `translate(${(mx - r.left - r.width/2)*.22}px, ${(my - r.top - r.height/2)*.35}px)`; }
+}, {passive:true});
+function frame(){
+  raf = 0;
+  if (fine && !calm){ glow.style.opacity = 1; glow.style.transform = `translate(${mx}px, ${my}px)`; }
+  if (calm) return;
+  const dx = mx/innerWidth - .5, dy = my/innerHeight - .5;
+  layers.forEach(l => { const d = +l.dataset.depth; l.style.transform = `translate(${-dx*d*2}px, ${-dy*d}px)`; });
+}
+document.addEventListener('pointerleave', () => { glow.style.opacity = 0; tip.classList.remove('on'); });
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('.btn,.mth,.tab'); if (!b || calm) return;
+  const r = b.getBoundingClientRect(), s = Math.max(r.width, r.height)*2.2, sp = document.createElement('span');
+  sp.className = 'ripple'; sp.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX - r.left - s/2}px;top:${e.clientY - r.top - s/2}px`;
+  if (getComputedStyle(b).position === 'static') b.style.position = 'relative';
+  b.style.overflow = 'hidden'; b.appendChild(sp); setTimeout(() => sp.remove(), 650);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('.brand')) go('overview'); });
+// flash the report row that changed
+document.addEventListener('input', e => {
+  const el = e.target; if (!el.dataset || !el.dataset.pt) return;
+  const id = 'TML-' + pad(+el.dataset.pt + 1);
+  document.querySelectorAll('.paper .two td.num').forEach(td => { if (td.textContent === id){ const tr = td.parentElement; tr.classList.remove('flash'); void tr.offsetWidth; tr.classList.add('flash'); } });
+});
+</script>
+</body>
+</html>
